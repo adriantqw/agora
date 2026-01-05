@@ -3,9 +3,7 @@ Backend interface for the app. Contains API endpoints to interface with the fron
 
 ## Contributing
 ### Environment management
-The project uses uv for python package management.
-
-- Install dependencies
+The project uses uv for python package management. Install dependencies:
 
 ```bash
 uv sync --frozen
