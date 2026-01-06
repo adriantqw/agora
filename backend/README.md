@@ -13,5 +13,5 @@ uv sync --frozen
 Create a `.env` file with the following configuration
 
 ```env
-TESTING=123
+GOOGLE_API_KEY=<your_google_api_key>
 ```
