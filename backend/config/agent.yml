@@ -1,0 +1,12 @@
+# Agent configs
+## Merchant agents
+### Catalogue ingestor config
+catalogue_ingestor: &base_agent_recipe
+  model: &base_model_recipe
+    name: gemini-3.0-flash
+    params:
+      temperature: 0.7
+      max_tokens: 1024
+      thinking_config:
+        include_thoughts: true
+        thinking_level: high
