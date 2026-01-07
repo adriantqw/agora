@@ -33,10 +33,9 @@ interface Product {
 
 **Implemented Screens:**
 1. ✅ `src/pages/MerchantLoginPage.jsx` - Login with demo credentials
-2. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination
-3. ✅ `src/components/EditModal.jsx` - Product editing modal
-4. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
-5. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard
+2. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
+3. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
+4. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard
 
 **Key Constraints:**
 - No single item add (bulk import only)
@@ -69,17 +68,24 @@ From `merchant-login-page.jsx`, the established design system uses:
 
 ## Navigation Pattern
 
-Breadcrumb format: `Home / [Section] / [Action]`
+Breadcrumb format: `Home / [Section] / [Detail]`
 - Dashboard: `Home / Inventory`
-- Edit Modal: `Home / Inventory / Edit Item`
+- Edit View: `Home / Inventory / {Product Name}` (full-page view, not modal)
 - Bulk Import: `Home / Inventory / Bulk Import`
 
 ## User Flows
 
 **Inventory Management:**
-- Click row (not checkbox) → Opens Edit Modal
+- Click row (not checkbox) → Opens full-page edit view
 - Click checkbox → Toggles selection
 - "Delete Selected" button shows count, opens confirmation dialog
+
+**Edit View (Full-Page):**
+- Two-column layout: Image upload (left, 380px, sticky) + Form sections (right)
+- Form sections: Basic Info, Pricing & Inventory, Tags & Categories, Description
+- Breadcrumb navigation allows returning to dashboard
+- SKU field is read-only (cannot be edited)
+- Low stock warning when quantity < 20
 
 **Bulk Import (4 steps):**
 1. File upload (CSV, Excel; PDF deferred)
@@ -110,17 +116,16 @@ npm run lint
 
 ```
 src/
-  components/
-    EditModal.jsx              # Product edit modal component
   pages/
     MerchantLoginPage.jsx      # Login page (demo: demo@merchant.com)
-    MerchantDashboardPage.jsx  # Inventory management dashboard
+    MerchantDashboardPage.jsx  # Inventory dashboard with full-page edit view
     MerchantBulkImportPage.jsx # Bulk import wizard
   App.jsx                      # Main app with routing & auth
   main.jsx                     # App entry point
   index.css                    # Global styles
 wireframe/                     # Original wireframe components (reference)
 public/                        # Static assets
+BACKEND_INTEGRATION.md         # API integration requirements
 ```
 
 ## Tech Stack
