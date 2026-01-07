@@ -229,7 +229,7 @@ export default function MerchantDashboardPage({ onLogout }) {
               {filteredInventory.length} product{filteredInventory.length !== 1 ? 's' : ''} total
             </p>
           </div>
-          <button onClick={() => navigate('/import')} style={{
+          <button onClick={() => navigate('/merchant/import')} style={{
             padding: '12px 20px',
             fontSize: '14px',
             fontWeight: '600',
