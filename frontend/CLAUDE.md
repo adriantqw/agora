@@ -8,7 +8,6 @@ This is the **Merchant Inventory Management Platform** (MerchantHub) - currently
 
 **Current State:**
 - `merchant-frontend-overview.md` - Complete design specification (source of truth)
-- `login-page.js` - Reference implementation for styling patterns
 - No package.json or build system yet
 
 ## Design Specification Reference
@@ -30,7 +29,7 @@ interface Product {
 ```
 
 **Screens to Implement:**
-1. Login Page (exists as reference in `login-page.js`)
+1. Login Page (exists as reference in `merchant-login-page.jsx`)
 2. Dashboard / Inventory List - Table with search, filter, sort
 3. Edit Item Modal - Form for product modification
 4. Bulk Delete Confirmation Dialog
@@ -45,7 +44,7 @@ interface Product {
 
 ## Styling Patterns
 
-From `login-page.js`, the established design system uses:
+From `merchant-login-page.jsx`, the established design system uses:
 
 **Colors:**
 - Primary blue: `#4299e1`, `#63b3ed`, `#3182ce`
