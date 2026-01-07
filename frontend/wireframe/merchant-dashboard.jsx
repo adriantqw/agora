@@ -1012,7 +1012,7 @@ export default function Dashboard() {
 
       {/* Edit Modal */}
       {editingItem && (
-        <EditModal
+        <EditPanel
           item={editingItem}
           onClose={() => setEditingItem(null)}
           onSave={handleSaveEdit}
@@ -1127,10 +1127,11 @@ export default function Dashboard() {
   );
 }
 
-// Edit Modal Component
-function EditModal({ item, onClose, onSave }) {
+// Edit Panel Component - Replaces table content instead of modal overlay
+function EditPanel({ item, onClose, onSave }) {
   const [formData, setFormData] = useState({ ...item });
   const [newTag, setNewTag] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -1149,338 +1150,148 @@ function EditModal({ item, onClose, onSave }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+    setIsSaving(true);
+    setTimeout(() => {
+      onSave(formData);
+      setIsSaving(false);
+    }, 500);
   };
 
   return (
     <div style={{
       position: 'fixed',
       inset: 0,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
+      background: '#f8f9fb',
+      zIndex: 100,
+      overflowY: 'auto',
+      fontFamily: '"Source Sans 3", -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
-      <div style={{
+      {/* Header - Same as Dashboard */}
+      <header style={{
         background: 'white',
-        borderRadius: '16px',
-        width: '100%',
-        maxWidth: '560px',
-        maxHeight: '90vh',
-        overflowY: 'auto',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+        borderBottom: '1px solid #e2e8f0',
+        padding: '0 32px',
+        height: '64px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        position: 'sticky',
+        top: 0,
+        zIndex: 101
       }}>
-        {/* Modal Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '20px 24px',
-          borderBottom: '1px solid #e2e8f0'
-        }}>
-          <div>
-            <nav style={{ fontSize: '13px', color: '#718096', marginBottom: '4px' }}>
-              Home / Inventory / <span style={{ color: '#1a202c' }}>Edit Item</span>
-            </nav>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#1a202c' }}>Edit Product</h2>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: '36px',
-              height: '36px',
-              border: 'none',
-              background: '#f7fafc',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
+        {/* Left - Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
-          </button>
+          </div>
+          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>MerchantHub</span>
         </div>
 
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-          {/* Image Upload */}
-          <div style={{ marginBottom: '24px', textAlign: 'center' }}>
+        {/* Right - User Menu (same as dashboard) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
-              width: '160px',
-              height: '160px',
-              background: '#f7fafc',
-              borderRadius: '12px',
-              border: '2px dashed #e2e8f0',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 12px',
-              cursor: 'pointer'
-            }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <polyline points="21 15 16 10 5 21"/>
-              </svg>
-              <span style={{ fontSize: '13px', color: '#a0aec0', marginTop: '8px' }}>No image</span>
-            </div>
-            <button type="button" style={{
-              padding: '8px 16px',
-              fontSize: '13px',
-              color: '#4299e1',
-              background: 'none',
-              border: '1px solid #4299e1',
-              borderRadius: '6px',
-              cursor: 'pointer'
-            }}>
-              Change Image
-            </button>
-          </div>
-
-          {/* Product Name */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '13px',
+              color: 'white',
               fontWeight: '600',
-              color: '#4a5568',
-              marginBottom: '6px'
+              fontSize: '14px'
             }}>
-              Product Name <span style={{ color: '#e53e3e' }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-          </div>
-
-          {/* SKU */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: '#4a5568',
-              marginBottom: '6px'
-            }}>
-              SKU <span style={{ color: '#e53e3e' }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.sku}
-              disabled
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                background: '#f7fafc',
-                color: '#718096',
-                boxSizing: 'border-box'
-              }}
-            />
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#a0aec0' }}>SKU cannot be changed</p>
-          </div>
-
-          {/* Price & Quantity */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div>
-              <label style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#4a5568',
-                marginBottom: '6px'
-              }}>
-                Price <span style={{ color: '#e53e3e' }}>*</span>
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#718096'
-                }}>$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 28px',
-                    fontSize: '14px',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
+              JS
             </div>
-            <div>
-              <label style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#4a5568',
-                marginBottom: '6px'
-              }}>
-                Quantity <span style={{ color: '#e53e3e' }}>*</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.quantity}
-                onChange={(e) => handleChange('quantity', parseInt(e.target.value) || 0)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  fontSize: '14px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>John's Store</div>
+              <div style={{ fontSize: '12px', color: '#718096' }}>demo@merchant.com</div>
             </div>
           </div>
-
-          {/* Tags */}
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: '#4a5568',
-              marginBottom: '6px'
-            }}>
-              Tags
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' }}>
-              {formData.tags.map(tag => (
-                <span key={tag} style={{
-                  padding: '6px 12px',
-                  fontSize: '13px',
-                  background: '#edf2f7',
-                  color: '#4a5568',
-                  borderRadius: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  {tag}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTag(tag)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: 0,
-                      display: 'flex',
-                      color: '#718096'
-                    }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                placeholder="Add a tag..."
-                style={{
-                  flex: 1,
-                  padding: '10px 12px',
-                  fontSize: '14px',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  outline: 'none'
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleAddTag}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: '14px',
-                  color: '#4299e1',
-                  background: 'white',
-                  border: '1px solid #4299e1',
-                  borderRadius: '8px',
-                  cursor: 'pointer'
-                }}
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{
-              display: 'block',
-              fontSize: '13px',
-              fontWeight: '600',
-              color: '#4a5568',
-              marginBottom: '6px'
-            }}>
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              rows={4}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '14px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                outline: 'none',
-                resize: 'vertical',
-                boxSizing: 'border-box',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          {/* Actions */}
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            justifyContent: 'flex-end',
-            paddingTop: '16px',
-            borderTop: '1px solid #e2e8f0'
+          <div style={{ width: '1px', height: '32px', background: '#e2e8f0' }} />
+          <button style={{
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: '#718096',
+            background: 'none',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
           }}>
+            Logout
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main style={{ padding: '24px 32px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Breadcrumb */}
+        <nav style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          marginBottom: '24px',
+          fontSize: '14px'
+        }}>
+          <a href="#" onClick={(e) => { e.preventDefault(); onClose(); }} style={{ color: '#4299e1', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Home
+          </a>
+          <span style={{ color: '#cbd5e0' }}>/</span>
+          <a href="#" onClick={(e) => { e.preventDefault(); onClose(); }} style={{ color: '#4299e1', textDecoration: 'none' }}>Inventory</a>
+          <span style={{ color: '#cbd5e0' }}>/</span>
+          <span style={{ color: '#1a202c', fontWeight: '500' }}>{formData.name}</span>
+        </nav>
+
+        {/* Page Header with Actions */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start',
+          marginBottom: '32px' 
+        }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: 0 }}>
+                Edit Product
+              </h1>
+              <span style={{
+                padding: '4px 12px',
+                fontSize: '12px',
+                fontWeight: '500',
+                background: '#edf2f7',
+                color: '#718096',
+                borderRadius: '12px',
+                fontFamily: 'monospace'
+              }}>
+                {formData.sku}
+              </span>
+            </div>
+            <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>
+              Update product details, pricing, and inventory information
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button
               type="button"
               onClick={onClose}
@@ -1492,30 +1303,576 @@ function EditModal({ item, onClose, onSave }) {
                 background: 'white',
                 border: '1px solid #e2e8f0',
                 borderRadius: '8px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
               Cancel
             </button>
             <button
-              type="submit"
+              onClick={handleSubmit}
+              disabled={isSaving}
               style={{
                 padding: '12px 24px',
                 fontSize: '14px',
                 fontWeight: '600',
                 color: 'white',
-                background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+                background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)',
                 border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(66, 153, 225, 0.3)'
+                boxShadow: '0 2px 8px rgba(72, 187, 120, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              Save Changes
+              {isSaving ? (
+                <>
+                  <div style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderTopColor: 'white',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite'
+                  }} />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                  </svg>
+                  Save Changes
+                </>
+              )}
             </button>
           </div>
+        </div>
+
+        {/* Form Content */}
+        <form onSubmit={handleSubmit}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '380px 1fr',
+            gap: '32px',
+            alignItems: 'start'
+          }}>
+            {/* Left Column - Image */}
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              padding: '24px',
+              position: 'sticky',
+              top: '88px'
+            }}>
+              <h3 style={{
+                fontSize: '14px',
+                fontWeight: '600',
+                color: '#1a202c',
+                margin: '0 0 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Product Image
+              </h3>
+
+              {/* Image Preview Area */}
+              <div style={{
+                width: '100%',
+                aspectRatio: '1',
+                background: '#f7fafc',
+                borderRadius: '12px',
+                border: '2px dashed #e2e8f0',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                marginBottom: '20px',
+                transition: 'all 0.2s'
+              }}>
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e0" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span style={{ fontSize: '14px', color: '#a0aec0', marginTop: '16px' }}>No image uploaded</span>
+                <span style={{ fontSize: '13px', color: '#cbd5e0', marginTop: '4px' }}>Click or drag to upload</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button type="button" style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#4299e1',
+                  background: 'white',
+                  border: '1px solid #4299e1',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  Upload
+                </button>
+                <button type="button" style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#718096',
+                  background: 'white',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '10px',
+                  cursor: 'pointer'
+                }}>
+                  Remove
+                </button>
+              </div>
+
+              {/* Image Guidelines */}
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                background: '#f7fafc',
+                borderRadius: '10px'
+              }}>
+                <h4 style={{ fontSize: '12px', fontWeight: '600', color: '#4a5568', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Image Guidelines
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: '#718096', lineHeight: '2' }}>
+                  <li>Recommended: 800×800px</li>
+                  <li>Max file size: 5MB</li>
+                  <li>Formats: JPG, PNG, WebP</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Right Column - Form Fields */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Basic Information Card */}
+              <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '24px'
+              }}>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#1a202c',
+                  margin: '0 0 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2">
+                    <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                  Basic Information
+                </h3>
+
+                {/* Product Name */}
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#1a202c',
+                    marginBottom: '8px'
+                  }}>
+                    Product Name <span style={{ color: '#e53e3e' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    placeholder="Enter product name"
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      fontSize: '15px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#4299e1'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                  />
+                </div>
+
+                {/* SKU - Read Only */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#1a202c',
+                    marginBottom: '8px'
+                  }}>
+                    SKU <span style={{ color: '#e53e3e' }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.sku}
+                    disabled
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      fontSize: '15px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '10px',
+                      background: '#f7fafc',
+                      color: '#718096',
+                      boxSizing: 'border-box',
+                      fontFamily: 'monospace'
+                    }}
+                  />
+                  <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#a0aec0' }}>
+                    SKU cannot be modified after creation
+                  </p>
+                </div>
+              </div>
+
+              {/* Pricing & Inventory Card */}
+              <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '24px'
+              }}>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#1a202c',
+                  margin: '0 0 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  Pricing & Inventory
+                </h3>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  {/* Price */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#1a202c',
+                      marginBottom: '8px'
+                    }}>
+                      Price <span style={{ color: '#e53e3e' }}>*</span>
+                    </label>
+                    <div style={{ position: 'relative' }}>
+                      <span style={{
+                        position: 'absolute',
+                        left: '16px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#718096',
+                        fontSize: '15px',
+                        fontWeight: '500'
+                      }}>$</span>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.price}
+                        onChange={(e) => handleChange('price', parseFloat(e.target.value) || 0)}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px 14px 36px',
+                          fontSize: '15px',
+                          border: '2px solid #e2e8f0',
+                          borderRadius: '10px',
+                          outline: 'none',
+                          boxSizing: 'border-box',
+                          transition: 'border-color 0.2s'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = '#4299e1'}
+                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quantity */}
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: '#1a202c',
+                      marginBottom: '8px'
+                    }}>
+                      Quantity in Stock <span style={{ color: '#e53e3e' }}>*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.quantity}
+                      onChange={(e) => handleChange('quantity', parseInt(e.target.value) || 0)}
+                      style={{
+                        width: '100%',
+                        padding: '14px 16px',
+                        fontSize: '15px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '10px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.2s'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#4299e1'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                    />
+                    {formData.quantity < 20 && (
+                      <p style={{
+                        margin: '8px 0 0',
+                        fontSize: '13px',
+                        color: '#e53e3e',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 12px',
+                        background: '#fff5f5',
+                        borderRadius: '8px'
+                      }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <line x1="12" y1="8" x2="12" y2="12"/>
+                          <line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        Low stock warning
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags Card */}
+              <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '24px'
+              }}>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#1a202c',
+                  margin: '0 0 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                    <line x1="7" y1="7" x2="7.01" y2="7"/>
+                  </svg>
+                  Tags & Categories
+                </h3>
+
+                {/* Current Tags */}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '10px',
+                  marginBottom: '20px',
+                  minHeight: '48px',
+                  padding: '16px',
+                  background: '#f7fafc',
+                  borderRadius: '10px',
+                  alignItems: 'flex-start'
+                }}>
+                  {formData.tags.length === 0 ? (
+                    <span style={{ fontSize: '14px', color: '#a0aec0' }}>No tags added yet</span>
+                  ) : (
+                    formData.tags.map(tag => (
+                      <span key={tag} style={{
+                        padding: '8px 14px',
+                        fontSize: '14px',
+                        background: 'white',
+                        color: '#4a5568',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag)}
+                          style={{
+                            background: '#fed7d7',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            display: 'flex',
+                            color: '#c53030',
+                            borderRadius: '50%',
+                            width: '20px',
+                            height: '20px',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                        </button>
+                      </span>
+                    ))
+                  )}
+                </div>
+
+                {/* Add Tag Input */}
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                    placeholder="Type a tag name and press Enter..."
+                    style={{
+                      flex: 1,
+                      padding: '14px 16px',
+                      fontSize: '14px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      transition: 'border-color 0.2s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#4299e1'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddTag}
+                    disabled={!newTag.trim()}
+                    style={{
+                      padding: '14px 24px',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      color: newTag.trim() ? '#4299e1' : '#a0aec0',
+                      background: 'white',
+                      border: `2px solid ${newTag.trim() ? '#4299e1' : '#e2e8f0'}`,
+                      borderRadius: '10px',
+                      cursor: newTag.trim() ? 'pointer' : 'not-allowed',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Tag
+                  </button>
+                </div>
+              </div>
+
+              {/* Description Card */}
+              <div style={{
+                background: 'white',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                padding: '24px'
+              }}>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#1a202c',
+                  margin: '0 0 24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  Product Description
+                </h3>
+
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  placeholder="Write a detailed description of your product to help customers understand what they're buying..."
+                  rows={6}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    fontSize: '15px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '10px',
+                    outline: 'none',
+                    resize: 'vertical',
+                    boxSizing: 'border-box',
+                    fontFamily: 'inherit',
+                    lineHeight: '1.6',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#4299e1'}
+                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                />
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginTop: '8px'
+                }}>
+                  <span style={{ fontSize: '12px', color: '#a0aec0' }}>
+                    Tip: Include key features, materials, and care instructions
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#a0aec0' }}>
+                    {formData.description.length} / 2000
+                  </span>
+                </div>
+              </div>
+
+              {/* Bottom Spacer */}
+              <div style={{ height: '40px' }} />
+            </div>
+          </div>
         </form>
-      </div>
+      </main>
     </div>
   );
 }
