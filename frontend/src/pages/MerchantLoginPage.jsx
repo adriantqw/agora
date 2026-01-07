@@ -96,7 +96,7 @@ export default function LoginPage({ onLogin }) {
             margin: '0 0 12px',
             letterSpacing: '-0.5px'
           }}>
-            MerchantHub
+            Agora MerchantHub
           </h1>
 
           <p style={{
@@ -409,7 +409,7 @@ export default function LoginPage({ onLogin }) {
             color: '#a0aec0',
             marginTop: '40px'
           }}>
-            © 2026 MerchantHub. All rights reserved.
+            © 2026 Agora MerchantHub. All rights reserved.
           </p>
         </div>
       </div>

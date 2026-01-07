@@ -153,7 +153,7 @@ export default function DashboardPage({ onLogout }) {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
-          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>MerchantHub</span>
+          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>Agora MerchantHub</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

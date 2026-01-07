@@ -73,7 +73,7 @@ export default function BulkImportPage() {
           <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           </div>
-          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>MerchantHub</span>
+          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>Agora MerchantHub</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '14px' }}>JS</div>

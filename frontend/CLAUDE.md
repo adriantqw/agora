@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-This is the **Merchant Inventory Management Platform** (MerchantHub) - currently in early development with design specifications complete but project scaffolding not yet set up.
+This is the **Agora MerchantHub** - a merchant inventory management platform built with React + Vite.
 
 **Current State:**
+- ✅ Vite project scaffolded with React 18
+- ✅ All merchant pages implemented (Login, Dashboard, Bulk Import)
+- ✅ React Router configured with authentication flow
+- ✅ Dependencies installed
 - `merchant-frontend-overview.md` - Complete design specification (source of truth)
-- No package.json or build system yet
 
 ## Design Specification Reference
 
@@ -28,12 +31,12 @@ interface Product {
 }
 ```
 
-**Screens to Implement:**
-1. Login Page (exists as reference in `merchant-login-page.jsx`)
-2. Dashboard / Inventory List - Table with search, filter, sort
-3. Edit Item Modal - Form for product modification
-4. Bulk Delete Confirmation Dialog
-5. Bulk Import Wizard (4 steps: Upload → Preview → Confirm → Results)
+**Implemented Screens:**
+1. ✅ `src/pages/MerchantLoginPage.jsx` - Login with demo credentials
+2. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination
+3. ✅ `src/components/EditModal.jsx` - Product editing modal
+4. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
+5. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard
 
 **Key Constraints:**
 - No single item add (bulk import only)
@@ -84,24 +87,58 @@ Breadcrumb format: `Home / [Section] / [Action]`
 3. Confirmation summary
 4. Results with success/skip counts
 
-## Project Setup (When Scaffolding)
+## Development Commands
 
-Recommended stack based on existing patterns:
-- React 18+ with Vite
-- React Router for navigation
-- Context API for auth state
-- React Hook Form for forms
-- papaparse for CSV, xlsx for Excel
-- Jest + React Testing Library
+```bash
+# Install dependencies
+npm install
 
-## File Structure (Planned)
+# Start development server (runs on http://localhost:3000)
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
+```
+
+## Project Structure
 
 ```
 src/
-  components/     # Reusable UI components
-  pages/          # Route-level components
-  contexts/       # React Context providers
-  hooks/          # Custom hooks
-  services/       # API calls
-  types/          # TypeScript interfaces
+  components/
+    EditModal.jsx              # Product edit modal component
+  pages/
+    MerchantLoginPage.jsx      # Login page (demo: demo@merchant.com)
+    MerchantDashboardPage.jsx  # Inventory management dashboard
+    MerchantBulkImportPage.jsx # Bulk import wizard
+  App.jsx                      # Main app with routing & auth
+  main.jsx                     # App entry point
+  index.css                    # Global styles
+wireframe/                     # Original wireframe components (reference)
+public/                        # Static assets
 ```
+
+## Tech Stack
+
+- **Build Tool:** Vite 6
+- **Framework:** React 18.3
+- **Routing:** React Router v6
+- **Styling:** Inline styles (no CSS framework)
+- **State:** Local useState (no global state library yet)
+- **Auth:** Simple boolean state in App.jsx
+
+## Routes
+
+- `/login` - Login page (redirects to `/` if authenticated)
+- `/` - Dashboard (requires authentication)
+- `/import` - Bulk import wizard (requires authentication)
+
+## Demo Credentials
+
+- **Email:** demo@merchant.com
+- **Password:** Any password ≥6 characters
