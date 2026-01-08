@@ -1,34 +1,34 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const isValidEmail = email.includes('@') && email.includes('.')
   const isFormValid = isValidEmail && password.length >= 6
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!isFormValid) return
 
     setIsLoading(true)
     setError('')
 
-    // Simulate login
-    setTimeout(() => {
+    try {
+      await login(email, password)
+      navigate('/merchant')
+    } catch (err) {
+      setError(err.message || 'Invalid email or password')
+    } finally {
       setIsLoading(false)
-      if (email === 'demo@merchant.com') {
-        onLogin()
-        navigate('/merchant')
-      } else {
-        setError('Invalid email or password. Try demo@merchant.com')
-      }
-    }, 1500)
+    }
   }
 
   return (

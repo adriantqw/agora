@@ -1,15 +1,21 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-export default function MerchantHomePage({ onLogout }) {
+export default function MerchantHomePage() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const [store] = useState({
-    name: "John's Store",
-    email: 'demo@merchant.com',
-    plan: 'Professional',
-    memberSince: 'January 2024'
-  });
+  // Format memberSince date
+  const formatMemberSince = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/merchant/login');
+  };
 
   const [stats] = useState({
     totalProducts: 147,
@@ -84,16 +90,16 @@ export default function MerchantHomePage({ onLogout }) {
               fontWeight: '600',
               fontSize: '14px'
             }}>
-              JS
+              {user?.merchantName?.substring(0, 2).toUpperCase() || 'JS'}
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>{store.name}</div>
-              <div style={{ fontSize: '12px', color: '#718096' }}>{store.email}</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>{user?.storeName || 'Store'}</div>
+              <div style={{ fontSize: '12px', color: '#718096' }}>{user?.email || ''}</div>
             </div>
           </div>
           <div style={{ width: '1px', height: '32px', background: '#e2e8f0' }} />
           <button
-            onClick={onLogout}
+            onClick={handleLogout}
             style={{
               padding: '8px 16px',
               fontSize: '14px',
@@ -121,10 +127,10 @@ export default function MerchantHomePage({ onLogout }) {
           color: 'white'
         }}>
           <h1 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 8px' }}>
-            Welcome back, John! 👋
+            Welcome back, {user?.merchantName?.split(' ')[0] || 'Merchant'}! 👋
           </h1>
           <p style={{ fontSize: '16px', opacity: 0.9, margin: 0 }}>
-            Here's what's happening with your store today.
+            Here's what's happening with {user?.storeName || 'your store'} today.
           </p>
         </div>
 
@@ -521,14 +527,14 @@ export default function MerchantHomePage({ onLogout }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
               <span style={{ fontSize: '14px', color: '#718096' }}>Store Name</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{store.name}</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{user?.storeName || ''}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
               <span style={{ fontSize: '14px', color: '#718096' }}>Email</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{store.email}</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{user?.email || ''}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Plan</span>
+              <span style={{ fontSize: '14px', color: '#718096' }}>Store ID</span>
               <span style={{
                 fontSize: '12px',
                 fontWeight: '600',
@@ -537,12 +543,14 @@ export default function MerchantHomePage({ onLogout }) {
                 padding: '4px 12px',
                 borderRadius: '12px'
               }}>
-                {store.plan}
+                {user?.storeId || 'N/A'}
               </span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
               <span style={{ fontSize: '14px', color: '#718096' }}>Member Since</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{store.memberSince}</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>
+                {user?.memberSince ? formatMemberSince(user.memberSince) : 'N/A'}
+              </span>
             </div>
           </div>
         </div>
