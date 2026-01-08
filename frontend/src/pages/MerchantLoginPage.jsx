@@ -24,7 +24,7 @@ export default function LoginPage({ onLogin }) {
       setIsLoading(false)
       if (email === 'demo@merchant.com') {
         onLogin()
-        navigate('/merchant/dashboard')
+        navigate('/merchant')
       } else {
         setError('Invalid email or password. Try demo@merchant.com')
       }

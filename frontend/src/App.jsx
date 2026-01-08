@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
+import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
@@ -26,16 +27,20 @@ function App() {
         path="/merchant/login"
         element={
           isAuthenticated
-            ? <Navigate to="/merchant/dashboard" replace />
+            ? <Navigate to="/merchant" replace />
             : <LoginPage onLogin={handleLogin} />
         }
       />
       <Route
         path="/merchant"
-        element={<Navigate to="/merchant/dashboard" replace />}
+        element={
+          isAuthenticated
+            ? <MerchantHomePage onLogout={handleLogout} />
+            : <Navigate to="/merchant/login" replace />
+        }
       />
       <Route
-        path="/merchant/dashboard"
+        path="/merchant/inventory"
         element={
           isAuthenticated
             ? <DashboardPage onLogout={handleLogout} />

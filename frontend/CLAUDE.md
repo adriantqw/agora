@@ -117,7 +117,8 @@ npm run lint
 ```
 src/
   pages/
-    StorefrontLandingPage.jsx  # Customer storefront (NEW)
+    StorefrontLandingPage.jsx  # Customer storefront
+    MerchantHomePage.jsx       # Merchant dashboard home with metrics
     MerchantLoginPage.jsx      # Merchant login page
     MerchantDashboardPage.jsx  # Inventory dashboard with full-page edit view
     MerchantBulkImportPage.jsx # Bulk import wizard
@@ -144,9 +145,9 @@ BACKEND_INTEGRATION.md         # API integration requirements
 - `/` - Customer storefront landing page (public)
 
 **Merchant Routes:**
-- `/merchant/login` - Merchant login (redirects to dashboard if authenticated)
-- `/merchant` - Redirects to `/merchant/dashboard`
-- `/merchant/dashboard` - Inventory management (requires authentication)
+- `/merchant/login` - Merchant login (redirects to home if authenticated)
+- `/merchant` - Merchant home page with dashboard metrics (requires authentication)
+- `/merchant/inventory` - Inventory management (requires authentication)
 - `/merchant/import` - Bulk import wizard (requires authentication)
 
 ## Demo Credentials

@@ -84,12 +84,12 @@ export default function BulkImportPage() {
       <main style={{ padding: '24px 32px', maxWidth: '900px', margin: '0 auto' }}>
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '14px' }}>
-          <span onClick={() => navigate('/merchant/dashboard')} style={{ color: '#4299e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span onClick={() => navigate('/merchant/inventory')} style={{ color: '#4299e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Home
           </span>
           <span style={{ color: '#cbd5e0' }}>/</span>
-          <span onClick={() => navigate('/merchant/dashboard')} style={{ color: '#4299e1', cursor: 'pointer' }}>Inventory</span>
+          <span onClick={() => navigate('/merchant/inventory')} style={{ color: '#4299e1', cursor: 'pointer' }}>Inventory</span>
           <span style={{ color: '#cbd5e0' }}>/</span>
           <span style={{ color: '#1a202c', fontWeight: '500' }}>Bulk Import</span>
         </nav>
@@ -151,7 +151,7 @@ export default function BulkImportPage() {
                 <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>Excel</a>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => navigate('/merchant/dashboard')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
                 <button onClick={handleContinueToPreview} disabled={!uploadedFile || isProcessing} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: uploadedFile ? 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)' : '#cbd5e0', border: 'none', borderRadius: '8px', cursor: uploadedFile ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {isProcessing ? <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Processing...</> : <>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></>}
                 </button>
@@ -241,7 +241,7 @@ export default function BulkImportPage() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
-                <button onClick={() => navigate('/merchant/dashboard')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
             </div>
           )}
