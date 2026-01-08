@@ -50,6 +50,9 @@ COPY --from=build /app/dist .
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy password file for basic auth
+COPY .htpasswd /etc/nginx/.htpasswd
+
 # Expose port 80
 EXPOSE 80
 
