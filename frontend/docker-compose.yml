@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Development service
+  frontend-dev:
+    container_name: agora-frontend-dev
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./index.html:/app/index.html
+      - ./vite.config.js:/app/vite.config.js
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    networks:
+      - agora-network
+
+  # Production service
+  frontend-prod:
+    container_name: agora-frontend-prod
+    build:
+      context: .
+      target: production
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - agora-network
+    profiles:
+      - production
+
+networks:
+  agora-network:
+    driver: bridge
