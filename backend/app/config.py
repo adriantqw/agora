@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./agora.db"
 
     # JWT Configuration
-    JWT_SECRET_KEY: str
+    JWT_SECRET_KEY: str = "liNUz--7VNJgYYc1GNISY2Kb8_BFZVyeHfEizVR7zpk"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_HOURS: int = 24
     REFRESH_TOKEN_EXPIRE_DAYS: int = 90
