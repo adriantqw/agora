@@ -75,6 +75,10 @@ export async function put(url, data, options = {}) {
 /**
  * Helper for DELETE requests
  */
-export async function del(url, options = {}) {
-  return fetchWithAuth(url, { ...options, method: 'DELETE' });
+export async function del(url, data = null, options = {}) {
+  const config = { ...options, method: 'DELETE' };
+  if (data) {
+    config.body = JSON.stringify(data);
+  }
+  return fetchWithAuth(url, config);
 }

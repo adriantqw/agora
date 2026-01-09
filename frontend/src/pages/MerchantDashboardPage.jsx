@@ -1,21 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-
-const initialInventory = [
-  { id: '1', name: 'Blue Cotton Shirt', sku: 'SH001', price: 29.99, quantity: 50, tags: ['summer', 'new', 'cotton'], image: null, description: 'A comfortable blue cotton shirt.' },
-  { id: '2', name: 'Black Slim Pants', sku: 'PA002', price: 49.99, quantity: 30, tags: ['formal', 'bestseller'], image: null, description: 'Classic black slim-fit pants.' },
-  { id: '3', name: 'Red Summer Dress', sku: 'DR003', price: 79.99, quantity: 15, tags: ['summer', 'sale'], image: null, description: 'Elegant red dress for summer.' },
-  { id: '4', name: 'White Basic Tee', sku: 'TE004', price: 19.99, quantity: 100, tags: ['basic', 'cotton'], image: null, description: 'Essential white t-shirt.' },
-  { id: '5', name: 'Denim Jacket', sku: 'JK005', price: 89.99, quantity: 25, tags: ['winter', 'new'], image: null, description: 'Classic denim jacket.' },
-  { id: '6', name: 'Floral Skirt', sku: 'SK006', price: 39.99, quantity: 40, tags: ['summer', 'floral'], image: null, description: 'Beautiful floral print skirt.' },
-  { id: '7', name: 'Navy Blazer', sku: 'BL007', price: 129.99, quantity: 20, tags: ['formal', 'premium'], image: null, description: 'Professional navy blazer.' },
-  { id: '8', name: 'Striped Polo', sku: 'PO008', price: 34.99, quantity: 60, tags: ['casual', 'cotton'], image: null, description: 'Casual striped polo shirt.' },
-  { id: '9', name: 'Leather Belt', sku: 'AC009', price: 24.99, quantity: 80, tags: ['accessories', 'leather'], image: null, description: 'Genuine leather belt.' },
-  { id: '10', name: 'Wool Sweater', sku: 'SW010', price: 69.99, quantity: 35, tags: ['winter', 'wool'], image: null, description: 'Warm wool sweater.' },
-  { id: '11', name: 'Linen Shorts', sku: 'SH011', price: 44.99, quantity: 45, tags: ['summer', 'linen'], image: null, description: 'Breathable linen shorts.' },
-  { id: '12', name: 'Silk Scarf', sku: 'AC012', price: 54.99, quantity: 30, tags: ['accessories', 'silk', 'premium'], image: null, description: 'Elegant silk scarf.' },
-]
+import productService from '../services/productService'
 
 const getAllTags = (inventory) => {
   const tags = new Set()
@@ -26,7 +12,10 @@ const getAllTags = (inventory) => {
 export default function MerchantDashboardPage() {
   const navigate = useNavigate()
   const { logout } = useAuth()
-  const [inventory, setInventory] = useState(initialInventory)
+  const [inventory, setInventory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 })
 
   const handleLogout = async () => {
     await logout()
@@ -43,40 +32,40 @@ export default function MerchantDashboardPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [toast, setToast] = useState(null)
 
-  const itemsPerPage = 5
+  const itemsPerPage = 20
   const allTags = useMemo(() => getAllTags(inventory), [inventory])
 
-  const filteredInventory = useMemo(() => {
-    let result = [...inventory]
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(item =>
-        item.name.toLowerCase().includes(query) ||
-        item.sku.toLowerCase().includes(query)
-      )
+  // Fetch products from API
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const data = await productService.list({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchQuery,
+        tags: selectedTags,
+        sortBy: sortConfig.key,
+        sortOrder: sortConfig.direction
+      })
+      setInventory(data.items)
+      setPagination(data.pagination)
+    } catch (err) {
+      setError(err.message)
+      showToast(err.message, 'error')
+    } finally {
+      setLoading(false)
     }
-    if (selectedTags.length > 0) {
-      result = result.filter(item =>
-        selectedTags.some(tag => item.tags.includes(tag))
-      )
-    }
-    result.sort((a, b) => {
-      let aVal = a[sortConfig.key]
-      let bVal = b[sortConfig.key]
-      if (typeof aVal === 'string') aVal = aVal.toLowerCase()
-      if (typeof bVal === 'string') bVal = bVal.toLowerCase()
-      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1
-      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1
-      return 0
-    })
-    return result
-  }, [inventory, searchQuery, selectedTags, sortConfig])
+  }, [currentPage, searchQuery, selectedTags, sortConfig])
 
-  const totalPages = Math.ceil(filteredInventory.length / itemsPerPage)
-  const paginatedInventory = filteredInventory.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  // Fetch on mount and when filters change
+  useEffect(() => {
+    fetchProducts()
+  }, [fetchProducts])
+
+  // Server-side filtering and pagination - inventory is already filtered/sorted
+  const paginatedInventory = inventory
+  const totalPages = pagination.totalPages
 
   const handleSort = (key) => {
     setSortConfig(prev => ({
@@ -103,19 +92,34 @@ export default function MerchantDashboardPage() {
     setSelectedItems(newSelected)
   }
 
-  const handleDelete = () => {
-    setInventory(prev => prev.filter(item => !selectedItems.has(item.id)))
-    showToast(`${selectedItems.size} item${selectedItems.size > 1 ? 's' : ''} deleted successfully`, 'success')
-    setSelectedItems(new Set())
-    setShowDeleteDialog(false)
+  const handleDelete = async () => {
+    try {
+      await productService.bulkDelete(Array.from(selectedItems))
+      showToast(`${selectedItems.size} item${selectedItems.size > 1 ? 's' : ''} deleted successfully`, 'success')
+      setSelectedItems(new Set())
+      setShowDeleteDialog(false)
+      fetchProducts()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
-  const handleSaveEdit = (updatedItem) => {
-    setInventory(prev => prev.map(item =>
-      item.id === updatedItem.id ? updatedItem : item
-    ))
-    showToast('Product updated successfully', 'success')
-    setEditingItem(null)
+  const handleSaveEdit = async (updatedItem) => {
+    try {
+      await productService.update(updatedItem.id, {
+        name: updatedItem.name,
+        price: updatedItem.price,
+        quantity: updatedItem.quantity,
+        tags: updatedItem.tags,
+        image: updatedItem.image,
+        description: updatedItem.description
+      })
+      showToast('Product updated successfully', 'success')
+      setEditingItem(null)
+      fetchProducts()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
   }
 
   const showToast = (message, type = 'success') => {
@@ -233,7 +237,7 @@ export default function MerchantDashboardPage() {
           <div>
             <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 4px' }}>Inventory</h1>
             <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>
-              {filteredInventory.length} product{filteredInventory.length !== 1 ? 's' : ''} total
+              {pagination.total} product{pagination.total !== 1 ? 's' : ''} total
             </p>
           </div>
           <button onClick={() => navigate('/merchant/import')} style={{
@@ -368,7 +372,16 @@ export default function MerchantDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedInventory.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="6" style={{ padding: '60px 16px', textAlign: 'center' }}>
+                    <div style={{ color: '#a0aec0' }}>
+                      <div style={{ width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#4299e1', borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 0.8s linear infinite' }} />
+                      <p style={{ margin: 0, fontSize: '14px' }}>Loading products...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedInventory.length === 0 ? (
                 <tr>
                   <td colSpan="6" style={{ padding: '60px 16px', textAlign: 'center' }}>
                     <div style={{ color: '#a0aec0' }}>
@@ -416,7 +429,7 @@ export default function MerchantDashboardPage() {
           {/* Pagination */}
           {totalPages > 1 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderTop: '1px solid #e2e8f0', background: '#f7fafc' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredInventory.length)} of {filteredInventory.length}</span>
+              <span style={{ fontSize: '14px', color: '#718096' }}>Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, pagination.total)} of {pagination.total}</span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ padding: '8px 12px', fontSize: '14px', border: '1px solid #e2e8f0', borderRadius: '6px', background: 'white', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}>Previous</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (

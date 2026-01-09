@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import productService from '../services/productService'
 
 const simulatedParsedData = [
   { row: 1, name: 'Canvas Backpack', sku: 'BG001', price: 59.99, quantity: 40, status: 'valid', statusText: 'Ready to import' },
@@ -20,6 +21,8 @@ export default function BulkImportPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [parsedData, setParsedData] = useState([])
   const [skipErrors, setSkipErrors] = useState(true)
+  const [importResult, setImportResult] = useState(null)
+  const [importError, setImportError] = useState(null)
   const fileInputRef = useRef(null)
 
   const validCount = parsedData.filter(r => r.status === 'valid').length
@@ -45,9 +48,35 @@ export default function BulkImportPage() {
     setTimeout(() => { setParsedData(simulatedParsedData); setIsProcessing(false); setCurrentStep(2) }, 1500)
   }
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     setIsProcessing(true)
-    setTimeout(() => { setIsProcessing(false); setCurrentStep(4) }, 2000)
+    setImportError(null)
+    try {
+      // Filter to only import valid/warning/duplicate rows (skip errors if skipErrors is true)
+      const rowsToImport = parsedData.filter(row => {
+        if (row.status === 'error' && skipErrors) return false
+        if (row.status === 'error') return false // Always skip error rows
+        return true
+      })
+
+      const productsToImport = rowsToImport.map(row => ({
+        name: row.name,
+        sku: row.sku,
+        price: row.price,
+        quantity: row.quantity,
+        tags: row.tags || [],
+        image: row.image || null,
+        description: row.description || null
+      }))
+
+      const result = await productService.bulkImport(productsToImport, false)
+      setImportResult(result)
+      setCurrentStep(4)
+    } catch (err) {
+      setImportError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const getFileIcon = (filename) => {
@@ -217,6 +246,14 @@ export default function BulkImportPage() {
                   {errorCount > 0 && skipErrors && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: '#fed7d7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c53030" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><span style={{ fontSize: '15px', color: '#1a202c' }}><strong>{errorCount}</strong> rows will be skipped (errors)</span></div>}
                 </div>
               </div>
+              {importError && (
+                <div style={{ padding: '16px', background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: '8px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c53030' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <span style={{ fontWeight: '500' }}>Import failed: {importError}</span>
+                  </div>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => setCurrentStep(2)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
                 <button onClick={handleConfirmImport} disabled={isProcessing} style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(72, 187, 120, 0.3)' }}>
@@ -233,14 +270,14 @@ export default function BulkImportPage() {
               <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 12px' }}>Import Successful!</h2>
               <p style={{ fontSize: '16px', color: '#718096', margin: '0 0 36px' }}>Your products have been imported to your inventory</p>
               <div style={{ display: 'inline-flex', gap: '32px', padding: '24px 40px', background: '#f7fafc', borderRadius: '12px', marginBottom: '36px' }}>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#38a169' }}>{validCount}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Added</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#38a169' }}>{importResult?.created || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Added</div></div>
                 <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#4299e1' }}>{parsedData.filter(r => r.status === 'duplicate').length}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Updated</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#4299e1' }}>{importResult?.updated || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Updated</div></div>
                 <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{errorCount}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{importResult?.skipped || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
+                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
             </div>
