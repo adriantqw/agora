@@ -2,16 +2,136 @@ import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import productService from '../services/productService'
 
-const simulatedParsedData = [
-  { row: 1, name: 'Canvas Backpack', sku: 'BG001', price: 59.99, quantity: 40, status: 'valid', statusText: 'Ready to import' },
-  { row: 2, name: 'Leather Wallet', sku: 'AC010', price: 34.99, quantity: 100, status: 'valid', statusText: 'Ready to import' },
-  { row: 3, name: 'Running Shoes', sku: 'SH012', price: 89.99, quantity: 25, status: 'warning', statusText: 'Missing image URL' },
-  { row: 4, name: 'Summer Hat', sku: '', price: 24.99, quantity: 30, status: 'error', statusText: 'Missing SKU' },
-  { row: 5, name: 'Yoga Mat', sku: 'SP001', price: -15.00, quantity: 50, status: 'error', statusText: 'Invalid price' },
-  { row: 6, name: 'Cotton Socks Pack', sku: 'AC011', price: 12.99, quantity: 200, status: 'valid', statusText: 'Ready to import' },
-  { row: 7, name: 'Denim Shorts', sku: 'PA003', price: 44.99, quantity: 35, status: 'valid', statusText: 'Ready to import' },
-  { row: 8, name: 'Silk Tie', sku: 'AC012', price: 29.99, quantity: 45, status: 'duplicate', statusText: 'SKU exists - will update' },
-]
+/**
+ * Parse CSV content into array of objects
+ * Handles quoted fields with commas inside
+ */
+const parseCSV = (content) => {
+  const lines = content.split('\n').filter(line => line.trim())
+  if (lines.length < 2) return []
+
+  // Parse header row
+  const headers = parseCSVLine(lines[0])
+
+  // Parse data rows
+  const rows = []
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i])
+    if (values.length === 0) continue
+
+    const row = {}
+    headers.forEach((header, index) => {
+      row[header.trim().toLowerCase()] = values[index]?.trim() || ''
+    })
+    rows.push(row)
+  }
+  return rows
+}
+
+/**
+ * Parse a single CSV line, handling quoted fields
+ */
+const parseCSVLine = (line) => {
+  const result = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      result.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  result.push(current)
+  return result
+}
+
+/**
+ * Validate a parsed row and return status
+ */
+const validateRow = (row, rowIndex, existingSkus = []) => {
+  const errors = []
+  const warnings = []
+
+  // Required field: name
+  if (!row.name || row.name.trim() === '') {
+    errors.push('Missing product name')
+  }
+
+  // Required field: SKU
+  if (!row.sku || row.sku.trim() === '') {
+    errors.push('Missing SKU')
+  }
+
+  // Required field: price (must be valid number >= 0)
+  const price = parseFloat(row.price)
+  if (isNaN(price)) {
+    errors.push('Invalid price')
+  } else if (price < 0) {
+    errors.push('Price cannot be negative')
+  }
+
+  // Required field: quantity (must be valid integer >= 0)
+  const quantity = parseInt(row.quantity, 10)
+  if (isNaN(quantity)) {
+    errors.push('Invalid quantity')
+  } else if (quantity < 0) {
+    errors.push('Quantity cannot be negative')
+  }
+
+  // Optional warning: missing image
+  if (!row.image || row.image.trim() === '') {
+    warnings.push('Missing image URL')
+  }
+
+  // Check for duplicate SKU
+  const isDuplicate = existingSkus.includes(row.sku?.trim())
+
+  let status = 'valid'
+  let statusText = 'Ready to import'
+
+  if (errors.length > 0) {
+    status = 'error'
+    statusText = errors[0]
+  } else if (isDuplicate) {
+    status = 'duplicate'
+    statusText = 'SKU exists - will update'
+  } else if (warnings.length > 0) {
+    status = 'warning'
+    statusText = warnings[0]
+  }
+
+  return {
+    row: rowIndex + 1,
+    name: row.name || '',
+    sku: row.sku || '',
+    price: isNaN(price) ? 0 : price,
+    quantity: isNaN(quantity) ? 0 : quantity,
+    tags: row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+    image: row.image || null,
+    description: row.description || null,
+    status,
+    statusText
+  }
+}
+
+/**
+ * Read file contents as text using FileReader API
+ */
+const readFileAsText = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target.result)
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
 
 export default function BulkImportPage() {
   const navigate = useNavigate()
@@ -43,9 +163,25 @@ export default function BulkImportPage() {
     }
   }
 
-  const handleContinueToPreview = () => {
+  const handleContinueToPreview = async () => {
+    if (!uploadedFile) return
+
     setIsProcessing(true)
-    setTimeout(() => { setParsedData(simulatedParsedData); setIsProcessing(false); setCurrentStep(2) }, 1500)
+
+    try {
+      const content = await readFileAsText(uploadedFile)
+      const rawRows = parseCSV(content)
+
+      // Validate each row
+      const validatedRows = rawRows.map((row, index) => validateRow(row, index))
+
+      setParsedData(validatedRows)
+      setCurrentStep(2)
+    } catch (error) {
+      alert('Failed to parse file: ' + error.message)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleConfirmImport = async () => {
