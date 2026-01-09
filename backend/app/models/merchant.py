@@ -6,7 +6,7 @@ from app.database import Base
 class Merchant(Base):
     """Merchant model for storing merchant account information."""
 
-    __tablename__ = "merchants"
+    __tablename__ = "merchant_info"
 
     id = Column(String, primary_key=True, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
@@ -27,7 +27,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    merchant_id = Column(String, ForeignKey("merchants.id", ondelete="CASCADE"), nullable=False)
+    merchant_id = Column(String, ForeignKey("merchant_info.id", ondelete="CASCADE"), nullable=False)
     token = Column(String, unique=True, nullable=False, index=True)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_revoked = Column(Boolean, default=False, nullable=False)
