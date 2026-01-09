@@ -45,6 +45,8 @@ RUN useradd -m -u 1000 appuser && \
 COPY --chown=appuser:appuser app ./app
 COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser run.py .
+# Copy pre-seeded database file from repository
+COPY --chown=appuser:appuser agora.db ./agora.db
 
 # Switch to non-root user
 USER appuser
@@ -56,7 +58,6 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8080/health', timeout=5)" || exit 1
 
-# Run database initialization and start server
+# Start server (database is pre-seeded in image)
 # Cloud Run provides PORT environment variable, default to 8080
-CMD python scripts/seed_database.py && \
-    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --no-access-log
+CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --no-access-log
