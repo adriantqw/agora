@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductUpdate, BulkImportResult
 import uuid
+import random
 
 
 def get_products(
@@ -257,3 +258,63 @@ def bulk_delete_products(db: Session, merchant_id: str, product_ids: List[str]) 
     ).delete(synchronize_session=False)
     db.commit()
     return deleted
+
+
+# Mock tag categories for dummy AI tagging
+MOCK_TAG_CATEGORIES = {
+    "category": ["Electronics", "Clothing", "Home & Garden", "Sports", "Beauty", "Toys"],
+    "material": ["Cotton", "Leather", "Plastic", "Wood", "Metal", "Organic"],
+    "style": ["Modern", "Vintage", "Minimalist", "Casual", "Premium", "Eco-friendly"],
+    "audience": ["Men", "Women", "Kids", "Unisex", "Teens", "Adults"]
+}
+
+
+def generate_ai_tags_for_products(
+    db: Session,
+    merchant_id: str,
+    product_ids: List[str]
+) -> dict:
+    """
+    Generate mock AI tags for products (dummy implementation).
+
+    In a real implementation, this would call an AI service.
+
+    Args:
+        db: Database session
+        merchant_id: Merchant's unique identifier
+        product_ids: List of product IDs to generate tags for
+
+    Returns:
+        Dictionary with processed count and results list
+    """
+    results = []
+    processed = 0
+
+    for product_id in product_ids:
+        product = get_product_by_id(db, merchant_id, product_id)
+        if product:
+            # Generate 2-4 random mock tags based on product name
+            num_tags = random.randint(2, 4)
+            suggested_tags = []
+
+            # Pick random tags from different categories
+            categories = random.sample(
+                list(MOCK_TAG_CATEGORIES.keys()),
+                min(num_tags, len(MOCK_TAG_CATEGORIES))
+            )
+            for category in categories:
+                tag = random.choice(MOCK_TAG_CATEGORIES[category])
+                if tag not in suggested_tags:
+                    suggested_tags.append(tag)
+
+            results.append({
+                "productId": product_id,
+                "suggestedTags": suggested_tags,
+                "applied": False
+            })
+            processed += 1
+
+    return {
+        "processed": processed,
+        "results": results
+    }

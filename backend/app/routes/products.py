@@ -17,7 +17,10 @@ from app.schemas.product import (
     BulkImportResponse,
     BulkDeleteRequest,
     BulkDeleteResponse,
-    BulkDeleteResult
+    BulkDeleteResult,
+    AITaggingRequest,
+    AITaggingResponse,
+    AITaggingResult
 )
 from app.services import product_service
 
@@ -320,4 +323,45 @@ def bulk_delete_products(
     return BulkDeleteResponse(
         success=True,
         data=BulkDeleteResult(deleted=deleted_count)
+    )
+
+
+@router.post("/ai-tags", response_model=AITaggingResponse)
+def generate_ai_tags(
+    request_data: AITaggingRequest,
+    current_user: Merchant = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate AI-suggested tags for products (dummy implementation).
+
+    Args:
+        request_data: Request with product IDs
+        current_user: Current authenticated merchant
+        db: Database session
+
+    Returns:
+        AI-generated tag suggestions for each product
+    """
+    if len(request_data.productIds) > 100:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "error": {
+                    "code": "TOO_MANY_ITEMS",
+                    "message": "Maximum 100 products per request"
+                }
+            }
+        )
+
+    result = product_service.generate_ai_tags_for_products(
+        db=db,
+        merchant_id=current_user.id,
+        product_ids=request_data.productIds
+    )
+
+    return AITaggingResponse(
+        success=True,
+        data=AITaggingResult(**result)
     )

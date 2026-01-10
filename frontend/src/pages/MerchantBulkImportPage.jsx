@@ -143,6 +143,9 @@ export default function BulkImportPage() {
   const [skipErrors, setSkipErrors] = useState(true)
   const [importResult, setImportResult] = useState(null)
   const [importError, setImportError] = useState(null)
+  const [isTagging, setIsTagging] = useState(false)
+  const [taggingResult, setTaggingResult] = useState(null)
+  const [importedProducts, setImportedProducts] = useState([])
   const fileInputRef = useRef(null)
 
   const validCount = parsedData.filter(r => r.status === 'valid').length
@@ -206,11 +209,33 @@ export default function BulkImportPage() {
 
       const result = await productService.bulkImport(productsToImport, false)
       setImportResult(result)
+
+      // Fetch products to get their IDs for AI tagging
+      const importedSkus = rowsToImport.map(r => r.sku)
+      const productsResponse = await productService.list({ limit: 100 })
+      const imported = productsResponse.items.filter(p => importedSkus.includes(p.sku))
+      setImportedProducts(imported)
+
       setCurrentStep(4)
     } catch (err) {
       setImportError(err.message)
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  const handleAITagging = async () => {
+    if (importedProducts.length === 0) return
+
+    setIsTagging(true)
+    try {
+      const productIds = importedProducts.map(p => p.id)
+      const result = await productService.generateAITags(productIds)
+      setTaggingResult(result)
+    } catch (err) {
+      console.error('Failed to generate AI tags:', err)
+    } finally {
+      setIsTagging(false)
     }
   }
 
@@ -409,8 +434,53 @@ export default function BulkImportPage() {
                 <div style={{ width: '1px', background: '#e2e8f0' }} />
                 <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{importResult?.skipped || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
               </div>
+
+              {/* AI Tagging Section */}
+              {importedProducts.length > 0 && (
+                <div style={{ maxWidth: '500px', margin: '0 auto 36px', textAlign: 'left' }}>
+                  {!taggingResult ? (
+                    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <span style={{ fontSize: '16px', fontWeight: '600' }}>AI-Powered Tagging</span>
+                      </div>
+                      <p style={{ fontSize: '14px', opacity: 0.9, margin: '0 0 16px' }}>Automatically generate relevant tags for your {importedProducts.length} imported products using AI</p>
+                      <button onClick={handleAITagging} disabled={isTagging} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: '#667eea', background: 'white', border: 'none', borderRadius: '8px', cursor: isTagging ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {isTagging ? (
+                          <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(102, 126, 234, 0.3)', borderTopColor: '#667eea', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Generating Tags...</>
+                        ) : (
+                          <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Generate AI Tags</>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '24px', background: '#f0fff4', borderRadius: '12px', border: '1px solid #c6f6d5' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38a169" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#276749' }}>AI Tags Generated for {taggingResult.processed} Products</span>
+                      </div>
+                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {taggingResult.results.map((result, idx) => {
+                          const product = importedProducts.find(p => p.id === result.productId)
+                          return (
+                            <div key={result.productId} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: idx < taggingResult.results.length - 1 ? '1px solid #c6f6d5' : 'none' }}>
+                              <span style={{ fontSize: '13px', color: '#4a5568', minWidth: '140px', fontWeight: '500' }}>{product?.name?.slice(0, 20) || 'Product'}...</span>
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                {result.suggestedTags.map(tag => (
+                                  <span key={tag} style={{ padding: '4px 10px', fontSize: '11px', background: '#c6f6d5', color: '#276749', borderRadius: '12px' }}>{tag}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
+                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null); setTaggingResult(null); setImportedProducts([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
             </div>

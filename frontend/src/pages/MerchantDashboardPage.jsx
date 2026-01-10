@@ -31,6 +31,9 @@ export default function MerchantDashboardPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [toast, setToast] = useState(null)
+  const [isTagging, setIsTagging] = useState(false)
+  const [taggingResult, setTaggingResult] = useState(null)
+  const [showTaggingDialog, setShowTaggingDialog] = useState(false)
 
   const itemsPerPage = 20
   const allTags = useMemo(() => getAllTags(inventory), [inventory])
@@ -116,6 +119,39 @@ export default function MerchantDashboardPage() {
       })
       showToast('Product updated successfully', 'success')
       setEditingItem(null)
+      fetchProducts()
+    } catch (err) {
+      showToast(err.message, 'error')
+    }
+  }
+
+  const handleGenerateAITags = async () => {
+    setIsTagging(true)
+    try {
+      const result = await productService.generateAITags(Array.from(selectedItems))
+      setTaggingResult(result)
+      setShowTaggingDialog(true)
+      showToast(`Generated tags for ${result.processed} products`, 'success')
+    } catch (err) {
+      showToast(err.message, 'error')
+    } finally {
+      setIsTagging(false)
+    }
+  }
+
+  const handleApplyTags = async () => {
+    try {
+      for (const result of taggingResult.results) {
+        const product = inventory.find(p => p.id === result.productId)
+        if (product) {
+          const newTags = [...new Set([...product.tags, ...result.suggestedTags])]
+          await productService.update(result.productId, { tags: newTags })
+        }
+      }
+      showToast('Tags applied successfully', 'success')
+      setShowTaggingDialog(false)
+      setTaggingResult(null)
+      setSelectedItems(new Set())
       fetchProducts()
     } catch (err) {
       showToast(err.message, 'error')
@@ -340,6 +376,19 @@ export default function MerchantDashboardPage() {
         {selectedItems.size > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px 16px', background: '#ebf8ff', borderRadius: '8px', marginBottom: '16px', border: '1px solid #bee3f8' }}>
             <span style={{ fontSize: '14px', color: '#2b6cb0', fontWeight: '500' }}>{selectedItems.size} item{selectedItems.size > 1 ? 's' : ''} selected</span>
+            <button onClick={handleGenerateAITags} disabled={isTagging} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', color: 'white', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', borderRadius: '6px', cursor: isTagging ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: isTagging ? 0.7 : 1 }}>
+              {isTagging ? (
+                <>
+                  <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  AI Tags
+                </>
+              )}
+            </button>
             <button onClick={() => setShowDeleteDialog(true)} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', color: 'white', background: '#e53e3e', border: 'none', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
               Delete Selected
@@ -466,6 +515,44 @@ export default function MerchantDashboardPage() {
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button onClick={() => setShowDeleteDialog(false)} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
               <button onClick={handleDelete} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '500', color: 'white', background: '#e53e3e', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Delete {selectedItems.size} Item{selectedItems.size > 1 ? 's' : ''}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Tagging Dialog */}
+      {showTaggingDialog && taggingResult && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: 'white', borderRadius: '16px', padding: '24px', width: '100%', maxWidth: '560px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#1a202c' }}>AI Tag Suggestions</h3>
+                <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>Generated for {taggingResult.processed} products</p>
+              </div>
+            </div>
+            <div style={{ background: '#f7fafc', borderRadius: '8px', padding: '12px', marginBottom: '20px', maxHeight: '300px', overflowY: 'auto' }}>
+              {taggingResult.results.map((result, idx) => {
+                const product = inventory.find(p => p.id === result.productId)
+                return (
+                  <div key={result.productId} style={{ padding: '12px', background: 'white', borderRadius: '8px', marginBottom: idx < taggingResult.results.length - 1 ? '8px' : 0 }}>
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c', marginBottom: '8px' }}>
+                      {product?.name || `Product ${result.productId.slice(0, 8)}...`}
+                    </div>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {result.suggestedTags.map(tag => (
+                        <span key={tag} style={{ padding: '4px 12px', fontSize: '12px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '12px' }}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowTaggingDialog(false); setTaggingResult(null) }} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleApplyTags} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '500', color: 'white', background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Apply Tags</button>
             </div>
           </div>
         </div>

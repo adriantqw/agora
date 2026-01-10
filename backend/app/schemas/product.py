@@ -150,3 +150,33 @@ class BulkDeleteResponse(BaseModel):
 
     success: bool = True
     data: BulkDeleteResult
+
+
+# === AI Tagging Schemas ===
+
+class AITaggingRequest(BaseModel):
+    """Request schema for AI tagging."""
+
+    productIds: List[str] = Field(..., min_length=1, max_length=100)
+
+
+class ProductTagResult(BaseModel):
+    """Individual product tagging result."""
+
+    productId: str
+    suggestedTags: List[str]
+    applied: bool = False
+
+
+class AITaggingResult(BaseModel):
+    """AI tagging result."""
+
+    processed: int
+    results: List[ProductTagResult]
+
+
+class AITaggingResponse(BaseModel):
+    """AI tagging response."""
+
+    success: bool = True
+    data: AITaggingResult

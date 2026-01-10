@@ -90,6 +90,18 @@ const productService = {
   async uploadImage(file) {
     const response = await uploadFile('/api/products/upload-image', file);
     return response.data;
+  },
+
+  /**
+   * Generate AI tags for products
+   * @param {string[]} productIds - Array of product IDs to generate tags for
+   * @returns {Promise<{processed: number, results: Array<{productId: string, suggestedTags: string[], applied: boolean}>}>}
+   */
+  async generateAITags(productIds) {
+    const response = await post('/api/products/ai-tags', {
+      productIds
+    });
+    return response.data;
   }
 };
 
