@@ -151,8 +151,26 @@ src/
   index.css                    # Global styles
 wireframe/                     # Original wireframe components (reference)
 public/                        # Static assets
+  favicon.svg                  # SVG favicon (primary)
+  favicon.png                  # PNG favicon fallback (32×32)
+  apple-touch-icon.png         # Apple touch icon (180×180)
+scripts/
+  favicon-generator.html       # Tool to generate PNG favicons from SVG
 BACKEND_INTEGRATION.md         # API integration requirements
 ```
+
+## Branding & Assets
+
+**Favicon:**
+- Primary: SVG format with shopping bag icon and blue gradient (#4299e1 → #3182ce)
+- Fallback: PNG versions for older browsers
+- Apple touch icon: 180×180 for iOS devices
+- Theme color: `#4299e1` (matches primary brand blue)
+
+To regenerate PNG favicons:
+1. Open `scripts/favicon-generator.html` in a browser
+2. Download the generated PNG files
+3. Save to `public/` directory
 
 ## Tech Stack
 
