@@ -70,6 +70,8 @@ class CatalogueIngestor:
         structured_output_model = self.model.with_structured_output(CatalogueItemList)
         try:
             catalogue_items = structured_output_model.invoke([message]).items
+            for item in catalogue_items:
+                item.page = idx
             return {"catalogue_items": catalogue_items, "current_page_idx": idx + 1}
         except Exception as e:
             print(f"Error extracting items from page {idx}: {e}")
@@ -125,10 +127,10 @@ class CatalogueIngestor:
     def ingest(self, pdf_path: str) -> dict:
         """Ingest the catalogue."""
         initial_state = CatalogueIngestorState(pdf_path=pdf_path)
-        final_state = self.graph.invoke(initial_state)
+        final_state = self.graph.invoke(initial_state, config={"recursion_limit": 200})
         return final_state
     
     async def stream_ingest(self, pdf_path: str):
         """Asynchronously ingest the catalogue."""
         initial_state = CatalogueIngestorState(pdf_path=pdf_path)
-        return self.graph.astream_events(initial_state)
+        return self.graph.astream_events(initial_state, config={"recursion_limit": 200})
