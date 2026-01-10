@@ -9,6 +9,8 @@ This is the **Agora MerchantHub** - a merchant inventory management platform bui
 **Current State:**
 - ✅ Vite project scaffolded with React 18
 - ✅ All merchant pages implemented (Login, Home, Inventory, Bulk Import)
+- ✅ Product inventory management (CRUD, bulk import, bulk delete)
+- ✅ AI product tagging (dummy implementation)
 - ✅ React Router configured with authentication flow
 - ✅ Dependencies installed
 - ✅ Docker configuration complete (development & production)
@@ -42,7 +44,8 @@ interface Product {
 3. ✅ `src/pages/MerchantHomePage.jsx` - Dashboard home with metrics and quick actions
 4. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
 5. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
-6. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard
+6. ✅ AI Tagging Dialog (in Dashboard) - Shows suggested tags with apply functionality
+7. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard with AI tagging on success step
 
 **Key Constraints:**
 - No single item add (bulk import only)
@@ -60,6 +63,7 @@ From `merchant-login-page.jsx`, the established design system uses:
 - Dark background: `#1a2b4a`, `#0f1a2e`
 - Gray scale: `#1a202c`, `#4a5568`, `#718096`, `#a0aec0`, `#e2e8f0`
 - Error red: `#c53030`, `#feb2b2`, `#fff5f5`
+- AI feature purple: `#667eea`, `#764ba2` (gradient for AI-related features)
 
 **Typography:**
 - Font family: "Source Sans 3" (Google Fonts)
@@ -98,7 +102,32 @@ Breadcrumb format: `Home / [Section] / [Detail]`
 1. File upload (CSV only)
 2. Preview with validation status per row
 3. Confirmation summary
-4. Results with success/skip counts
+4. Results with success/skip counts + AI tagging option
+
+**AI Product Tagging:**
+- **Inventory Page Flow:**
+  1. Select products using checkboxes
+  2. Click "AI Tags" button in bulk actions bar (purple gradient)
+  3. Loading state with spinner
+  4. Dialog displays suggested tags per product
+  5. User reviews suggestions and clicks "Apply Tags"
+  6. Tags are merged with existing product tags (no duplicates)
+  7. Success toast notification
+
+- **Bulk Import Flow:**
+  1. Complete import successfully (Step 4)
+  2. Purple "AI-Powered Tagging" card appears
+  3. Click "Generate AI Tags" button
+  4. Loading state with spinner
+  5. Inline display of generated tags per product
+  6. Tags are displayed but not automatically applied (for review)
+
+- **Styling:**
+  - Purple gradient (`#667eea` to `#764ba2`) for all AI-related UI elements
+  - Tag pills with rounded borders
+  - Loading spinners for async operations
+  - Modal dialogs for tag preview (inventory page)
+  - Inline display for bulk import success
 
 ## Development Commands
 
@@ -292,22 +321,61 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - ✅ Documented real-time feature architecture
 - ✅ Planned authentication flow for streaming connections
 
+### January 11, 2026
+
+**Product Inventory Management UI**
+- ✅ Implemented full product inventory management interface
+- ✅ Added product list with pagination, search, filter by tags, and sorting
+- ✅ Created full-page edit view for products (two-column layout)
+- ✅ Implemented bulk delete with confirmation dialog
+- ✅ Added real-time inventory updates via productService API
+- ✅ Created productService.js with all CRUD operations
+- ✅ Integrated with backend product endpoints
+
+**AI Product Tagging Feature (Dummy Implementation)**
+- ✅ Added "AI Tags" button to inventory page bulk actions bar
+- ✅ Implemented AI tagging dialog with suggested tags display
+- ✅ Created tag application logic (merges with existing tags)
+- ✅ Added AI tagging card to bulk import success step
+- ✅ Implemented loading states and error handling
+- ✅ Used purple gradient (`#667eea` to `#764ba2`) for AI-related UI
+- ✅ Added `generateAITags()` method to productService
+- ✅ Integrated with backend POST /api/products/ai-tags endpoint
+
+**Key Features:**
+- Select multiple products → Click "AI Tags" → Review suggestions → Apply
+- Bulk import success → Click "Generate AI Tags" → View inline results
+- Tags are merged with existing tags (no duplicates)
+- Maximum 100 products per AI tagging request
+- Loading spinners and success/error toast notifications
+
 ### Next Steps
 
-**Backend Integration:**
-- Implement service layer (`src/services/`) with API calls
-- Add JWT authentication service
-- Implement SSE for bulk import progress
-- Add WebSocket service for real-time inventory updates
+**AI Product Tagging - Production Implementation:**
+- Replace dummy implementation with actual AI service integration
+- Add confidence scores for tag suggestions
+- Implement user feedback mechanism for tag quality
+- Add tag history and version tracking
+- Consider implementing:
+  - Auto-apply tags above certain confidence threshold
+  - Manual tag editing before applying
+  - Tag suggestions based on similar products
+  - Batch processing for large imports
 
 **Enhanced Features:**
-- Product image upload and management
-- Advanced filtering and search
-- Export functionality (CSV, Excel)
-- Inventory analytics and reporting
+- Product image upload and management (drag-and-drop, cropping)
+- Advanced filtering (price range, stock levels, date ranges)
+- Export functionality (CSV, Excel) for inventory reports
+- Inventory analytics dashboard (sales trends, stock alerts)
+- Product variants and SKU management
+
+**Real-Time Features:**
+- Implement SSE for bulk import progress streaming
+- Add WebSocket service for real-time inventory updates
+- Multi-user collaboration indicators
 
 **Infrastructure:**
-- Set up CI/CD pipeline
+- Set up CI/CD pipeline (GitHub Actions)
 - Configure production environment variables
-- Implement error tracking (Sentry, etc.)
-- Add monitoring and logging
+- Implement error tracking (Sentry)
+- Add performance monitoring (Web Vitals)
