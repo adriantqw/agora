@@ -155,11 +155,10 @@ export default function BulkImportPage() {
   const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]) }
 
   const handleFileSelect = (file) => {
-    const validExtensions = ['.csv', '.xlsx', '.xls', '.pdf']
-    if (validExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
+    if (file.name.toLowerCase().endsWith('.csv')) {
       setUploadedFile(file)
     } else {
-      alert('Please upload a CSV, Excel, or PDF file')
+      alert('Please upload a CSV file')
     }
   }
 
@@ -283,10 +282,10 @@ export default function BulkImportPage() {
             <div style={{ padding: '40px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Upload Your File</h2>
-                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Import products from a CSV, Excel, or PDF catalogue</p>
+                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Import products from a CSV file</p>
               </div>
               <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed ${isDragging ? '#4299e1' : '#e2e8f0'}`, borderRadius: '12px', padding: '48px', textAlign: 'center', cursor: 'pointer', background: isDragging ? '#ebf8ff' : '#f7fafc' }}>
-                <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.pdf" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
+                <input ref={fileInputRef} type="file" accept=".csv" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
                 {!uploadedFile ? (
                   <>
                     <div style={{ width: '72px', height: '72px', background: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
@@ -295,7 +294,7 @@ export default function BulkImportPage() {
                     <p style={{ fontSize: '16px', fontWeight: '500', color: '#1a202c', margin: '0 0 8px' }}>Drag and drop your file here</p>
                     <p style={{ fontSize: '14px', color: '#718096', margin: '0 0 16px' }}>or click to browse from your computer</p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                      {['CSV', 'Excel', 'PDF'].map(format => <span key={format} style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>{format}</span>)}
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>CSV</span>
                     </div>
                   </>
                 ) : (
@@ -312,8 +311,6 @@ export default function BulkImportPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span style={{ fontSize: '14px', color: '#718096' }}>Download template:</span>
                 <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>CSV</a>
-                <span style={{ color: '#cbd5e0' }}>|</span>
-                <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>Excel</a>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>

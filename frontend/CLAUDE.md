@@ -95,7 +95,7 @@ Breadcrumb format: `Home / [Section] / [Detail]`
 - Low stock warning when quantity < 20
 
 **Bulk Import (4 steps):**
-1. File upload (CSV, Excel; PDF deferred)
+1. File upload (CSV only)
 2. Preview with validation status per row
 3. Confirmation summary
 4. Results with success/skip counts
