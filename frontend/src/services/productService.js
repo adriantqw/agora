@@ -1,4 +1,4 @@
-import { get, post, put, del } from './api';
+import { get, post, put, del, uploadFile } from './api';
 
 const productService = {
   /**
@@ -79,6 +79,16 @@ const productService = {
    */
   async bulkDelete(ids) {
     const response = await del('/api/products/bulk', { ids });
+    return response.data;
+  },
+
+  /**
+   * Upload a product image
+   * @param {File} file - Image file to upload
+   * @returns {Promise<{url: string, filename: string}>}
+   */
+  async uploadImage(file) {
+    const response = await uploadFile('/api/products/upload-image', file);
     return response.data;
   }
 };

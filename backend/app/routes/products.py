@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.merchant import Merchant
+from app.services.storage_service import storage_service
 from app.schemas.product import (
     ProductCreate,
     ProductUpdate,
@@ -21,6 +22,44 @@ from app.schemas.product import (
 from app.services import product_service
 
 router = APIRouter(prefix="/api/products", tags=["Products"])
+
+
+@router.post("/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    current_user: Merchant = Depends(get_current_user),
+):
+    """
+    Upload a product image to Cloudflare R2.
+
+    Args:
+        file: Image file (jpg, png, webp, gif - max 5MB)
+        current_user: Current authenticated merchant
+
+    Returns:
+        URL of the uploaded image
+    """
+    result = await storage_service.upload_image(file)
+
+    if "error" in result:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "success": False,
+                "error": {
+                    "code": "UPLOAD_FAILED",
+                    "message": result["error"]
+                }
+            }
+        )
+
+    return {
+        "success": True,
+        "data": {
+            "url": result["url"],
+            "filename": result["filename"]
+        }
+    }
 
 
 @router.get("", response_model=ProductListResponse)
