@@ -262,8 +262,7 @@ def bulk_delete_products(db: Session, merchant_id: str, product_ids: List[str]) 
 
 # Mock tag categories for dummy AI tagging
 MOCK_TAG_CATEGORIES = {
-    "category": ["Electronics", "Clothing", "Home & Garden", "Sports", "Beauty", "Toys"],
-    "material": ["Cotton", "Leather", "Plastic", "Wood", "Metal", "Organic"],
+    "material": ["Cotton", "Leather", "Synthetic", "Wool", "Silk", "Denim"],
     "style": ["Modern", "Vintage", "Minimalist", "Casual", "Premium", "Eco-friendly"],
     "audience": ["Men", "Women", "Kids", "Unisex", "Teens", "Adults"]
 }
