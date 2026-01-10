@@ -1,4 +1,5 @@
 import { get, post, put, del, uploadFile } from './api';
+import mockPDFService from './mockPDFService';
 
 const productService = {
   /**
@@ -102,6 +103,62 @@ const productService = {
       productIds
     });
     return response.data;
+  },
+
+  // ========== PDF Import Methods ==========
+
+  /**
+   * Upload PDF catalogue and start extraction
+   * @param {File} file - PDF file to upload
+   * @returns {Promise<{jobId: string, status: string, message: string}>}
+   */
+  async uploadPDF(file) {
+    // TODO: Replace with real API call when backend is implemented
+    // const response = await uploadFile('/api/products/pdf-extract', file);
+    // return response.data;
+    return mockPDFService.uploadPDF(file);
+  },
+
+  /**
+   * Get PDF extraction status and results
+   * @param {string} jobId - Job ID to check
+   * @returns {Promise<{jobId: string, status: string, progress?: number, products?: Array, metadata?: Object}>}
+   */
+  async getPDFExtractionStatus(jobId) {
+    // TODO: Replace with real API call when backend is implemented
+    // const response = await get(`/api/products/pdf-extract/${jobId}`);
+    // return response.data;
+    return mockPDFService.getPDFExtractionStatus(jobId);
+  },
+
+  /**
+   * Import products from PDF extraction
+   * @param {string} jobId - Job ID
+   * @param {Array} products - Edited products to import
+   * @param {boolean} skipDuplicates - Skip existing SKUs instead of updating
+   * @returns {Promise<{created: number, updated: number, skipped: number, errors: Array}>}
+   */
+  async importPDFProducts(jobId, products, skipDuplicates = false) {
+    // TODO: Replace with real API call when backend is implemented
+    // const response = await post('/api/products/pdf-import', {
+    //   jobId,
+    //   products,
+    //   skipDuplicates
+    // });
+    // return response.data;
+    return mockPDFService.importPDFProducts(jobId, products, skipDuplicates);
+  },
+
+  /**
+   * Cancel PDF extraction and cleanup
+   * @param {string} jobId - Job ID to cancel
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async cancelPDFExtraction(jobId) {
+    // TODO: Replace with real API call when backend is implemented
+    // const response = await del(`/api/products/pdf-extract/${jobId}`);
+    // return response.data;
+    return mockPDFService.cancelPDFExtraction(jobId);
   }
 };
 

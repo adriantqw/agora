@@ -282,6 +282,133 @@ export default function MerchantHomePage() {
           </button>
         </div>
 
+        {/* Quick Actions */}
+        <h2 style={{ fontSize: '14px', fontWeight: '600', color: '#718096', margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          Quick Actions
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: '20px',
+          marginBottom: '32px'
+        }}>
+          {/* Bulk Import CSV */}
+          <button
+            onClick={() => navigate('/merchant/import')}
+            style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid #e2e8f0',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 153, 225, 0.15)';
+              e.currentTarget.style.borderColor = '#4299e1';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'start', gap: '16px' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1a202c', margin: '0 0 6px' }}>
+                  Bulk Import CSV
+                </h3>
+                <p style={{ fontSize: '14px', color: '#718096', margin: 0, lineHeight: '1.5' }}>
+                  Upload CSV files to add multiple products at once
+                </p>
+                <div style={{ marginTop: '12px', fontSize: '13px', color: '#4299e1', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  Start importing
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* PDF Import */}
+          <button
+            onClick={() => navigate('/merchant/pdf-import')}
+            style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '24px',
+              border: '1px solid #e2e8f0',
+              cursor: 'pointer',
+              textAlign: 'left',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.15)';
+              e.currentTarget.style.borderColor = '#667eea';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'start', gap: '16px' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <path d="M9 15h6"/>
+                  <path d="M12 18v-6"/>
+                </svg>
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1a202c', margin: '0 0 6px' }}>
+                  Import from PDF
+                </h3>
+                <p style={{ fontSize: '14px', color: '#718096', margin: 0, lineHeight: '1.5' }}>
+                  Upload product catalogues and extract data with AI
+                </p>
+                <div style={{ marginTop: '12px', fontSize: '13px', color: '#667eea', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  Try it now
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </button>
+        </div>
+
         {/* Stats Grid - Sales */}
         <h2 style={{ fontSize: '14px', fontWeight: '600', color: '#718096', margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Sales Overview
