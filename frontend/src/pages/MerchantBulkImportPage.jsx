@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import productService from '../services/productService'
 
@@ -147,6 +147,12 @@ export default function BulkImportPage() {
   const [taggingResult, setTaggingResult] = useState(null)
   const [importedProducts, setImportedProducts] = useState([])
   const fileInputRef = useRef(null)
+
+  // PDF-specific state
+  const [uploadType, setUploadType] = useState('csv') // 'csv' | 'pdf'
+  const [jobId, setJobId] = useState(null) // PDF extraction job ID
+  const [extractionStatus, setExtractionStatus] = useState(null) // PDF progress
+  const [isPolling, setIsPolling] = useState(false) // PDF polling flag
 
   const validCount = parsedData.filter(r => r.status === 'valid').length
   const warningCount = parsedData.filter(r => r.status === 'warning' || r.status === 'duplicate').length
