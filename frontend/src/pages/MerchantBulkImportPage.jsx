@@ -159,15 +159,71 @@ export default function BulkImportPage() {
   const errorCount = parsedData.filter(r => r.status === 'error').length
   const importableCount = validCount + warningCount
 
+  // Poll for PDF extraction status
+  useEffect(() => {
+    if (!isPolling || !jobId || uploadType !== 'pdf') return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const status = await productService.getPDFExtractionStatus(jobId)
+        setExtractionStatus(status)
+
+        if (status.status === 'completed') {
+          setIsPolling(false)
+
+          // Transform PDF products to same format as CSV parsed data
+          const transformedProducts = status.products.map((product, index) => ({
+            row: index + 1,
+            name: product.name,
+            sku: product.sku,
+            price: product.price,
+            quantity: product.quantity,
+            tags: product.tags || [],
+            image: product.image || null,
+            description: product.description || null,
+            status: 'valid',
+            statusText: `Confidence: ${(product.confidence * 100).toFixed(0)}%`,
+            confidence: product.confidence
+          }))
+
+          setParsedData(transformedProducts)
+        } else if (status.status === 'failed') {
+          setIsPolling(false)
+          alert('PDF extraction failed: ' + status.message)
+        }
+      } catch (error) {
+        setIsPolling(false)
+        alert('Failed to check extraction status: ' + error.message)
+      }
+    }, 2000) // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [isPolling, jobId, uploadType])
+
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true) }
   const handleDragLeave = () => setIsDragging(false)
   const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]) }
 
   const handleFileSelect = (file) => {
-    if (file.name.toLowerCase().endsWith('.csv')) {
+    const fileExtension = file.name.toLowerCase().split('.').pop()
+
+    // Auto-detect file type from extension
+    if (fileExtension === 'csv') {
+      setUploadType('csv')
+      setUploadedFile(file)
+    } else if (fileExtension === 'pdf') {
+      setUploadType('pdf')
+
+      // PDF-specific validation: size limit
+      if (file.size > 10 * 1024 * 1024) {
+        alert('PDF file size exceeds 10MB limit')
+        return
+      }
+
       setUploadedFile(file)
     } else {
-      alert('Please upload a CSV file')
+      // Unsupported file type
+      alert('Please upload a CSV or PDF file')
     }
   }
 
@@ -177,16 +233,25 @@ export default function BulkImportPage() {
     setIsProcessing(true)
 
     try {
-      const content = await readFileAsText(uploadedFile)
-      const rawRows = parseCSV(content)
+      if (uploadType === 'csv') {
+        // CSV: Parse client-side
+        const content = await readFileAsText(uploadedFile)
+        const rawRows = parseCSV(content)
 
-      // Validate each row
-      const validatedRows = rawRows.map((row, index) => validateRow(row, index))
+        // Validate each row
+        const validatedRows = rawRows.map((row, index) => validateRow(row, index))
 
-      setParsedData(validatedRows)
-      setCurrentStep(2)
+        setParsedData(validatedRows)
+        setCurrentStep(2)
+      } else if (uploadType === 'pdf') {
+        // PDF: Upload to server for extraction
+        const result = await productService.uploadPDF(uploadedFile)
+        setJobId(result.jobId)
+        setIsPolling(true)
+        setCurrentStep(2) // Move to Step 2 immediately (will show polling UI)
+      }
     } catch (error) {
-      alert('Failed to parse file: ' + error.message)
+      alert('Failed to process file: ' + error.message)
     } finally {
       setIsProcessing(false)
     }
@@ -313,10 +378,10 @@ export default function BulkImportPage() {
             <div style={{ padding: '40px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Upload Your File</h2>
-                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Import products from a CSV file</p>
+                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Upload a CSV file or PDF catalogue - we'll automatically detect the format</p>
               </div>
               <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed ${isDragging ? '#4299e1' : '#e2e8f0'}`, borderRadius: '12px', padding: '48px', textAlign: 'center', cursor: 'pointer', background: isDragging ? '#ebf8ff' : '#f7fafc' }}>
-                <input ref={fileInputRef} type="file" accept=".csv" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
+                <input ref={fileInputRef} type="file" accept=".csv,.pdf" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
                 {!uploadedFile ? (
                   <>
                     <div style={{ width: '72px', height: '72px', background: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
@@ -326,6 +391,7 @@ export default function BulkImportPage() {
                     <p style={{ fontSize: '14px', color: '#718096', margin: '0 0 16px' }}>or click to browse from your computer</p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                       <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>CSV</span>
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>PDF</span>
                     </div>
                   </>
                 ) : (
@@ -342,6 +408,8 @@ export default function BulkImportPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span style={{ fontSize: '14px', color: '#718096' }}>Download template:</span>
                 <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>CSV</a>
+                <span style={{ fontSize: '14px', color: '#cbd5e0', margin: '0 4px' }}>•</span>
+                <span style={{ fontSize: '14px', color: '#718096' }}>PDF: Any product catalogue</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
@@ -355,7 +423,44 @@ export default function BulkImportPage() {
           {/* Step 2: Preview */}
           {currentStep === 2 && (
             <div style={{ padding: '32px' }}>
-              <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Review the data before importing</p></div>
+              {/* Show polling UI for PDF */}
+              {uploadType === 'pdf' && isPolling ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    border: '4px solid #f0f0f0',
+                    borderTopColor: '#667eea',
+                    borderRadius: '50%',
+                    margin: '0 auto 24px',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a202c', marginBottom: '8px' }}>
+                    {extractionStatus?.message || 'Extracting products from PDF...'}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#718096', marginBottom: '24px' }}>
+                    Progress: {extractionStatus?.progress || 0}%
+                  </p>
+                  <div style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    height: '8px',
+                    background: '#f0f0f0',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    margin: '0 auto'
+                  }}>
+                    <div style={{
+                      width: `${extractionStatus?.progress || 0}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Review the data before importing</p></div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f7fafc', borderRadius: '8px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ fontSize: '20px' }}>{getFileIcon(uploadedFile?.name || 'file.csv')}</span><span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{uploadedFile?.name || 'products.csv'}</span></div>
                 <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ fontSize: '13px', color: '#4299e1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Change File</button>
@@ -391,6 +496,8 @@ export default function BulkImportPage() {
                 <button onClick={() => setCurrentStep(1)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
                 <button onClick={() => setCurrentStep(3)} disabled={importableCount === 0} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: importableCount > 0 ? 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)' : '#cbd5e0', border: 'none', borderRadius: '8px', cursor: importableCount > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
+                </>
+              )}
             </div>
           )}
 
