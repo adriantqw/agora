@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import productService from '../services/productService'
@@ -178,6 +178,7 @@ export default function MerchantDashboardPage() {
         onClose={() => setEditingItem(null)}
         onSave={handleSaveEdit}
         handleLogout={handleLogout}
+        showToast={showToast}
       />
     )
   }
@@ -450,8 +451,12 @@ export default function MerchantDashboardPage() {
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '40px', height: '40px', background: '#edf2f7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <div style={{ width: '40px', height: '40px', background: '#edf2f7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          )}
                         </div>
                         <span style={{ fontWeight: '500', color: '#1a202c' }}>{item.name}</span>
                       </div>
@@ -574,13 +579,34 @@ export default function MerchantDashboardPage() {
 }
 
 // Edit Panel Component - Full page view instead of modal
-function EditPanel({ item, onClose, onSave, handleLogout }) {
+function EditPanel({ item, onClose, onSave, handleLogout, showToast }) {
   const [formData, setFormData] = useState({ ...item })
   const [newTag, setNewTag] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const fileInputRef = useRef(null)
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0]
+    if (!file) return
+
+    setIsUploadingImage(true)
+    try {
+      const response = await productService.uploadImage(file)
+      handleChange('image', response.url)
+      showToast('Image uploaded successfully', 'success')
+    } catch (error) {
+      showToast(`Image upload failed: ${error.message}`, 'error')
+    } finally {
+      setIsUploadingImage(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
   }
 
   const handleAddTag = () => {
@@ -675,17 +701,30 @@ function EditPanel({ item, onClose, onSave, handleLogout }) {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Product Image
               </h3>
-              <div style={{ width: '100%', aspectRatio: '1', background: '#f7fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: '20px' }}>
-                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e0" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span style={{ fontSize: '14px', color: '#a0aec0', marginTop: '16px' }}>No image uploaded</span>
-                <span style={{ fontSize: '13px', color: '#cbd5e0', marginTop: '4px' }}>Click or drag to upload</span>
+              <div style={{ width: '100%', aspectRatio: '1', background: '#f7fafc', borderRadius: '12px', border: '2px dashed #e2e8f0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', marginBottom: '20px', overflow: 'hidden' }}>
+                {formData.image ? (
+                  <img src={formData.image} alt={formData.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <>
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e0" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <span style={{ fontSize: '14px', color: '#a0aec0', marginTop: '16px' }}>No image uploaded</span>
+                    <span style={{ fontSize: '13px', color: '#cbd5e0', marginTop: '4px' }}>Click or drag to upload</span>
+                  </>
+                )}
               </div>
               <div style={{ display: 'flex', gap: '12px' }}>
-                <button type="button" style={{ flex: 1, padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#4299e1', background: 'white', border: '1px solid #4299e1', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                <button type="button" onClick={() => fileInputRef.current.click()} style={{ flex: 1, padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#4299e1', background: 'white', border: '1px solid #4299e1', borderRadius: '10px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Upload
                 </button>
-                <button type="button" style={{ flex: 1, padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#718096', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer' }}>Remove</button>
+                <button type="button" onClick={() => handleChange('image', null)} disabled={!formData.image} style={{ flex: 1, padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#718096', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', cursor: 'pointer', opacity: formData.image ? 1 : 0.5 }}>Remove</button>
               </div>
               <div style={{ marginTop: '24px', padding: '16px', background: '#f7fafc', borderRadius: '10px' }}>
                 <h4 style={{ fontSize: '12px', fontWeight: '600', color: '#4a5568', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Image Guidelines</h4>
