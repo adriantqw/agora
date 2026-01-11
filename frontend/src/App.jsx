@@ -4,6 +4,7 @@ import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
+import OrdersPage from './pages/MerchantOrdersPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
 import PDFImportPage from './pages/PDFImportPage'
 
@@ -57,6 +58,14 @@ function AppRoutes() {
         element={
           isAuthenticated
             ? <DashboardPage />
+            : <Navigate to="/merchant/login" replace />
+        }
+      />
+      <Route
+        path="/merchant/orders"
+        element={
+          isAuthenticated
+            ? <OrdersPage />
             : <Navigate to="/merchant/login" replace />
         }
       />

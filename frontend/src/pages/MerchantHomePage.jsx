@@ -397,8 +397,8 @@ export default function MerchantHomePage() {
           </div>
 
           {/* View Orders Quick Action */}
-          <a
-            href="#orders"
+          <button
+            onClick={() => navigate('/merchant/orders?status=processing,pending')}
             style={{
               background: 'linear-gradient(135deg, #805ad5 0%, #6b46c1 100%)',
               borderRadius: '12px',
@@ -408,7 +408,10 @@ export default function MerchantHomePage() {
               flexDirection: 'column',
               justifyContent: 'space-between',
               transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(128, 90, 213, 0.25)'
+              boxShadow: '0 4px 12px rgba(128, 90, 213, 0.25)',
+              border: 'none',
+              cursor: 'pointer',
+              textAlign: 'left'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'translateY(-2px)';
@@ -447,7 +450,7 @@ export default function MerchantHomePage() {
                 </svg>
               </div>
             </div>
-          </a>
+          </button>
         </div>
 
         {/* Recent Orders */}
@@ -468,9 +471,12 @@ export default function MerchantHomePage() {
             <h2 style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c', margin: 0 }}>
               Recent Orders
             </h2>
-            <a href="#orders" style={{ fontSize: '13px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>
+            <button
+              onClick={() => navigate('/merchant/orders?date=today')}
+              style={{ fontSize: '13px', color: '#4299e1', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
               View All →
-            </a>
+            </button>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
