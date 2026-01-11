@@ -75,6 +75,44 @@ export async function put(url, data, options = {}) {
 /**
  * Helper for DELETE requests
  */
-export async function del(url, options = {}) {
-  return fetchWithAuth(url, { ...options, method: 'DELETE' });
+export async function del(url, data = null, options = {}) {
+  const config = { ...options, method: 'DELETE' };
+  if (data) {
+    config.body = JSON.stringify(data);
+  }
+  return fetchWithAuth(url, config);
+}
+
+/**
+ * Helper for file upload requests (multipart/form-data)
+ */
+export async function uploadFile(url, file, fieldName = 'file') {
+  await authService.ensureValidToken();
+  const token = authService.getToken();
+
+  const formData = new FormData();
+  formData.append(fieldName, file);
+
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (response.status === 401) {
+    authService.clearTokens();
+    window.location.href = '/merchant/login';
+    throw new Error('Authentication required');
+  }
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({
+      error: { message: `Upload failed with status ${response.status}` }
+    }));
+    throw new Error(error.error?.message || error.detail?.error?.message || `Upload failed with status ${response.status}`);
+  }
+
+  return response.json();
 }

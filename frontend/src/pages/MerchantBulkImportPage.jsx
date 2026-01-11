@@ -1,16 +1,137 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import productService from '../services/productService'
 
-const simulatedParsedData = [
-  { row: 1, name: 'Canvas Backpack', sku: 'BG001', price: 59.99, quantity: 40, status: 'valid', statusText: 'Ready to import' },
-  { row: 2, name: 'Leather Wallet', sku: 'AC010', price: 34.99, quantity: 100, status: 'valid', statusText: 'Ready to import' },
-  { row: 3, name: 'Running Shoes', sku: 'SH012', price: 89.99, quantity: 25, status: 'warning', statusText: 'Missing image URL' },
-  { row: 4, name: 'Summer Hat', sku: '', price: 24.99, quantity: 30, status: 'error', statusText: 'Missing SKU' },
-  { row: 5, name: 'Yoga Mat', sku: 'SP001', price: -15.00, quantity: 50, status: 'error', statusText: 'Invalid price' },
-  { row: 6, name: 'Cotton Socks Pack', sku: 'AC011', price: 12.99, quantity: 200, status: 'valid', statusText: 'Ready to import' },
-  { row: 7, name: 'Denim Shorts', sku: 'PA003', price: 44.99, quantity: 35, status: 'valid', statusText: 'Ready to import' },
-  { row: 8, name: 'Silk Tie', sku: 'AC012', price: 29.99, quantity: 45, status: 'duplicate', statusText: 'SKU exists - will update' },
-]
+/**
+ * Parse CSV content into array of objects
+ * Handles quoted fields with commas inside
+ */
+const parseCSV = (content) => {
+  const lines = content.split('\n').filter(line => line.trim())
+  if (lines.length < 2) return []
+
+  // Parse header row
+  const headers = parseCSVLine(lines[0])
+
+  // Parse data rows
+  const rows = []
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i])
+    if (values.length === 0) continue
+
+    const row = {}
+    headers.forEach((header, index) => {
+      row[header.trim().toLowerCase()] = values[index]?.trim() || ''
+    })
+    rows.push(row)
+  }
+  return rows
+}
+
+/**
+ * Parse a single CSV line, handling quoted fields
+ */
+const parseCSVLine = (line) => {
+  const result = []
+  let current = ''
+  let inQuotes = false
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+
+    if (char === '"') {
+      inQuotes = !inQuotes
+    } else if (char === ',' && !inQuotes) {
+      result.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  result.push(current)
+  return result
+}
+
+/**
+ * Validate a parsed row and return status
+ */
+const validateRow = (row, rowIndex, existingSkus = []) => {
+  const errors = []
+  const warnings = []
+
+  // Required field: name
+  if (!row.name || row.name.trim() === '') {
+    errors.push('Missing product name')
+  }
+
+  // Required field: SKU
+  if (!row.sku || row.sku.trim() === '') {
+    errors.push('Missing SKU')
+  }
+
+  // Required field: price (must be valid number >= 0)
+  const price = parseFloat(row.price)
+  if (isNaN(price)) {
+    errors.push('Invalid price')
+  } else if (price < 0) {
+    errors.push('Price cannot be negative')
+  }
+
+  // Required field: quantity (must be valid integer >= 0)
+  const quantity = parseInt(row.quantity, 10)
+  if (isNaN(quantity)) {
+    errors.push('Invalid quantity')
+  } else if (quantity < 0) {
+    errors.push('Quantity cannot be negative')
+  }
+
+  // Optional warning: missing image
+  if (!row.image || row.image.trim() === '') {
+    warnings.push('Missing image URL')
+  }
+
+  // Check for duplicate SKU
+  const isDuplicate = existingSkus.includes(row.sku?.trim())
+
+  let status = 'valid'
+  let statusText = 'Ready to import'
+
+  if (errors.length > 0) {
+    status = 'error'
+    statusText = errors[0]
+  } else if (isDuplicate) {
+    status = 'duplicate'
+    statusText = 'SKU exists - will update'
+  } else if (warnings.length > 0) {
+    status = 'warning'
+    statusText = warnings[0]
+  }
+
+  return {
+    row: rowIndex + 1,
+    name: row.name || '',
+    sku: row.sku || '',
+    price: isNaN(price) ? 0 : price,
+    quantity: isNaN(quantity) ? 0 : quantity,
+    tags: row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+    image: row.image || null,
+    description: row.description || null,
+    status,
+    statusText
+  }
+}
+
+/**
+ * Read file contents as text using FileReader API
+ */
+const readFileAsText = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => resolve(e.target.result)
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
 
 export default function BulkImportPage() {
   const navigate = useNavigate()
@@ -20,34 +141,173 @@ export default function BulkImportPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [parsedData, setParsedData] = useState([])
   const [skipErrors, setSkipErrors] = useState(true)
+  const [importResult, setImportResult] = useState(null)
+  const [importError, setImportError] = useState(null)
+  const [isTagging, setIsTagging] = useState(false)
+  const [taggingResult, setTaggingResult] = useState(null)
+  const [importedProducts, setImportedProducts] = useState([])
   const fileInputRef = useRef(null)
+
+  // PDF-specific state
+  const [uploadType, setUploadType] = useState('csv') // 'csv' | 'pdf'
+  const [jobId, setJobId] = useState(null) // PDF extraction job ID
+  const [extractionStatus, setExtractionStatus] = useState(null) // PDF progress
+  const [isPolling, setIsPolling] = useState(false) // PDF polling flag
 
   const validCount = parsedData.filter(r => r.status === 'valid').length
   const warningCount = parsedData.filter(r => r.status === 'warning' || r.status === 'duplicate').length
   const errorCount = parsedData.filter(r => r.status === 'error').length
   const importableCount = validCount + warningCount
 
+  // Poll for PDF extraction status
+  useEffect(() => {
+    if (!isPolling || !jobId || uploadType !== 'pdf') return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const status = await productService.getPDFExtractionStatus(jobId)
+        setExtractionStatus(status)
+
+        if (status.status === 'completed') {
+          setIsPolling(false)
+
+          // Transform PDF products to same format as CSV parsed data
+          const transformedProducts = status.products.map((product, index) => ({
+            row: index + 1,
+            name: product.name,
+            sku: product.sku,
+            price: product.price,
+            quantity: product.quantity,
+            tags: product.tags || [],
+            image: product.image || null,
+            description: product.description || null,
+            status: 'valid',
+            statusText: `Confidence: ${(product.confidence * 100).toFixed(0)}%`,
+            confidence: product.confidence
+          }))
+
+          setParsedData(transformedProducts)
+        } else if (status.status === 'failed') {
+          setIsPolling(false)
+          alert('PDF extraction failed: ' + status.message)
+        }
+      } catch (error) {
+        setIsPolling(false)
+        alert('Failed to check extraction status: ' + error.message)
+      }
+    }, 2000) // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [isPolling, jobId, uploadType])
+
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true) }
   const handleDragLeave = () => setIsDragging(false)
   const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files[0]) handleFileSelect(e.dataTransfer.files[0]) }
 
   const handleFileSelect = (file) => {
-    const validExtensions = ['.csv', '.xlsx', '.xls', '.pdf']
-    if (validExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
+    const fileExtension = file.name.toLowerCase().split('.').pop()
+
+    // Auto-detect file type from extension
+    if (fileExtension === 'csv') {
+      setUploadType('csv')
+      setUploadedFile(file)
+    } else if (fileExtension === 'pdf') {
+      setUploadType('pdf')
+
+      // PDF-specific validation: size limit
+      if (file.size > 10 * 1024 * 1024) {
+        alert('PDF file size exceeds 10MB limit')
+        return
+      }
+
       setUploadedFile(file)
     } else {
-      alert('Please upload a CSV, Excel, or PDF file')
+      // Unsupported file type
+      alert('Please upload a CSV or PDF file')
     }
   }
 
-  const handleContinueToPreview = () => {
+  const handleContinueToPreview = async () => {
+    if (!uploadedFile) return
+
     setIsProcessing(true)
-    setTimeout(() => { setParsedData(simulatedParsedData); setIsProcessing(false); setCurrentStep(2) }, 1500)
+
+    try {
+      if (uploadType === 'csv') {
+        // CSV: Parse client-side
+        const content = await readFileAsText(uploadedFile)
+        const rawRows = parseCSV(content)
+
+        // Validate each row
+        const validatedRows = rawRows.map((row, index) => validateRow(row, index))
+
+        setParsedData(validatedRows)
+        setCurrentStep(2)
+      } else if (uploadType === 'pdf') {
+        // PDF: Upload to server for extraction
+        const result = await productService.uploadPDF(uploadedFile)
+        setJobId(result.jobId)
+        setIsPolling(true)
+        setCurrentStep(2) // Move to Step 2 immediately (will show polling UI)
+      }
+    } catch (error) {
+      alert('Failed to process file: ' + error.message)
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     setIsProcessing(true)
-    setTimeout(() => { setIsProcessing(false); setCurrentStep(4) }, 2000)
+    setImportError(null)
+    try {
+      // Filter to only import valid/warning/duplicate rows (skip errors if skipErrors is true)
+      const rowsToImport = parsedData.filter(row => {
+        if (row.status === 'error' && skipErrors) return false
+        if (row.status === 'error') return false // Always skip error rows
+        return true
+      })
+
+      const productsToImport = rowsToImport.map(row => ({
+        name: row.name,
+        sku: row.sku,
+        price: row.price,
+        quantity: row.quantity,
+        tags: row.tags || [],
+        image: row.image || null,
+        description: row.description || null
+      }))
+
+      const result = await productService.bulkImport(productsToImport, false)
+      setImportResult(result)
+
+      // Fetch products to get their IDs for AI tagging
+      const importedSkus = rowsToImport.map(r => r.sku)
+      const productsResponse = await productService.list({ limit: 100 })
+      const imported = productsResponse.items.filter(p => importedSkus.includes(p.sku))
+      setImportedProducts(imported)
+
+      setCurrentStep(4)
+    } catch (err) {
+      setImportError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleAITagging = async () => {
+    if (importedProducts.length === 0) return
+
+    setIsTagging(true)
+    try {
+      const productIds = importedProducts.map(p => p.id)
+      const result = await productService.generateAITags(productIds)
+      setTaggingResult(result)
+    } catch (err) {
+      console.error('Failed to generate AI tags:', err)
+    } finally {
+      setIsTagging(false)
+    }
   }
 
   const getFileIcon = (filename) => {
@@ -118,10 +378,10 @@ export default function BulkImportPage() {
             <div style={{ padding: '40px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                 <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Upload Your File</h2>
-                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Import products from a CSV, Excel, or PDF catalogue</p>
+                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Upload a CSV file or PDF catalogue - we'll automatically detect the format</p>
               </div>
               <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed ${isDragging ? '#4299e1' : '#e2e8f0'}`, borderRadius: '12px', padding: '48px', textAlign: 'center', cursor: 'pointer', background: isDragging ? '#ebf8ff' : '#f7fafc' }}>
-                <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.pdf" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
+                <input ref={fileInputRef} type="file" accept=".csv,.pdf" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
                 {!uploadedFile ? (
                   <>
                     <div style={{ width: '72px', height: '72px', background: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
@@ -130,7 +390,8 @@ export default function BulkImportPage() {
                     <p style={{ fontSize: '16px', fontWeight: '500', color: '#1a202c', margin: '0 0 8px' }}>Drag and drop your file here</p>
                     <p style={{ fontSize: '14px', color: '#718096', margin: '0 0 16px' }}>or click to browse from your computer</p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                      {['CSV', 'Excel', 'PDF'].map(format => <span key={format} style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>{format}</span>)}
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>CSV</span>
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>PDF</span>
                     </div>
                   </>
                 ) : (
@@ -147,8 +408,8 @@ export default function BulkImportPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span style={{ fontSize: '14px', color: '#718096' }}>Download template:</span>
                 <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>CSV</a>
-                <span style={{ color: '#cbd5e0' }}>|</span>
-                <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>Excel</a>
+                <span style={{ fontSize: '14px', color: '#cbd5e0', margin: '0 4px' }}>•</span>
+                <span style={{ fontSize: '14px', color: '#718096' }}>PDF: Any product catalogue</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
@@ -162,7 +423,44 @@ export default function BulkImportPage() {
           {/* Step 2: Preview */}
           {currentStep === 2 && (
             <div style={{ padding: '32px' }}>
-              <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Review the data before importing</p></div>
+              {/* Show polling UI for PDF */}
+              {uploadType === 'pdf' && isPolling ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    border: '4px solid #f0f0f0',
+                    borderTopColor: '#667eea',
+                    borderRadius: '50%',
+                    margin: '0 auto 24px',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a202c', marginBottom: '8px' }}>
+                    {extractionStatus?.message || 'Extracting products from PDF...'}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: '#718096', marginBottom: '24px' }}>
+                    Progress: {extractionStatus?.progress || 0}%
+                  </p>
+                  <div style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    height: '8px',
+                    background: '#f0f0f0',
+                    borderRadius: '4px',
+                    overflow: 'hidden',
+                    margin: '0 auto'
+                  }}>
+                    <div style={{
+                      width: `${extractionStatus?.progress || 0}%`,
+                      height: '100%',
+                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Review the data before importing</p></div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f7fafc', borderRadius: '8px', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ fontSize: '20px' }}>{getFileIcon(uploadedFile?.name || 'file.csv')}</span><span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{uploadedFile?.name || 'products.csv'}</span></div>
                 <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ fontSize: '13px', color: '#4299e1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Change File</button>
@@ -198,6 +496,8 @@ export default function BulkImportPage() {
                 <button onClick={() => setCurrentStep(1)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
                 <button onClick={() => setCurrentStep(3)} disabled={importableCount === 0} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: importableCount > 0 ? 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)' : '#cbd5e0', border: 'none', borderRadius: '8px', cursor: importableCount > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -217,6 +517,14 @@ export default function BulkImportPage() {
                   {errorCount > 0 && skipErrors && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: '#fed7d7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c53030" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><span style={{ fontSize: '15px', color: '#1a202c' }}><strong>{errorCount}</strong> rows will be skipped (errors)</span></div>}
                 </div>
               </div>
+              {importError && (
+                <div style={{ padding: '16px', background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: '8px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c53030' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    <span style={{ fontWeight: '500' }}>Import failed: {importError}</span>
+                  </div>
+                </div>
+              )}
               <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <button onClick={() => setCurrentStep(2)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
                 <button onClick={handleConfirmImport} disabled={isProcessing} style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(72, 187, 120, 0.3)' }}>
@@ -233,14 +541,59 @@ export default function BulkImportPage() {
               <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 12px' }}>Import Successful!</h2>
               <p style={{ fontSize: '16px', color: '#718096', margin: '0 0 36px' }}>Your products have been imported to your inventory</p>
               <div style={{ display: 'inline-flex', gap: '32px', padding: '24px 40px', background: '#f7fafc', borderRadius: '12px', marginBottom: '36px' }}>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#38a169' }}>{validCount}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Added</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#38a169' }}>{importResult?.created || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Added</div></div>
                 <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#4299e1' }}>{parsedData.filter(r => r.status === 'duplicate').length}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Updated</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#4299e1' }}>{importResult?.updated || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Updated</div></div>
                 <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{errorCount}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{importResult?.skipped || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
               </div>
+
+              {/* AI Tagging Section */}
+              {importedProducts.length > 0 && (
+                <div style={{ maxWidth: '500px', margin: '0 auto 36px', textAlign: 'left' }}>
+                  {!taggingResult ? (
+                    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        <span style={{ fontSize: '16px', fontWeight: '600' }}>AI-Powered Tagging</span>
+                      </div>
+                      <p style={{ fontSize: '14px', opacity: 0.9, margin: '0 0 16px' }}>Automatically generate relevant tags for your {importedProducts.length} imported products using AI</p>
+                      <button onClick={handleAITagging} disabled={isTagging} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: '#667eea', background: 'white', border: 'none', borderRadius: '8px', cursor: isTagging ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {isTagging ? (
+                          <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(102, 126, 234, 0.3)', borderTopColor: '#667eea', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Generating Tags...</>
+                        ) : (
+                          <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Generate AI Tags</>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '24px', background: '#f0fff4', borderRadius: '12px', border: '1px solid #c6f6d5' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38a169" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#276749' }}>AI Tags Generated for {taggingResult.processed} Products</span>
+                      </div>
+                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                        {taggingResult.results.map((result, idx) => {
+                          const product = importedProducts.find(p => p.id === result.productId)
+                          return (
+                            <div key={result.productId} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: idx < taggingResult.results.length - 1 ? '1px solid #c6f6d5' : 'none' }}>
+                              <span style={{ fontSize: '13px', color: '#4a5568', minWidth: '140px', fontWeight: '500' }}>{product?.name?.slice(0, 20) || 'Product'}...</span>
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                {result.suggestedTags.map(tag => (
+                                  <span key={tag} style={{ padding: '4px 10px', fontSize: '11px', background: '#c6f6d5', color: '#276749', borderRadius: '12px' }}>{tag}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
+                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null); setTaggingResult(null); setImportedProducts([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
                 <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
             </div>

@@ -11,6 +11,9 @@ This is the **Agora MerchantHub Backend API** - a FastAPI-based REST API for mer
 - ✅ JWT-based authentication system (access & refresh tokens)
 - ✅ SQLite database with SQLAlchemy ORM
 - ✅ Merchant profile management endpoints
+- ✅ Product inventory management (CRUD, bulk import, bulk delete)
+- ✅ AI product tagging (dummy implementation)
+- ✅ Image upload to Cloudflare R2
 - ✅ Docker configuration for Cloud Run deployment
 - ✅ CORS middleware configured
 - ✅ Auto-generated OpenAPI documentation
@@ -62,17 +65,22 @@ backend/
 │   ├── dependencies.py      # Dependency injection functions
 │   ├── models/              # SQLAlchemy ORM models
 │   │   ├── __init__.py
-│   │   └── merchant.py      # Merchant database model
+│   │   ├── merchant.py      # Merchant database model
+│   │   └── product.py       # Product database model
 │   ├── schemas/             # Pydantic models for request/response
 │   │   ├── __init__.py
 │   │   ├── auth.py          # Authentication schemas
-│   │   └── merchant.py      # Merchant profile schemas
+│   │   ├── merchant.py      # Merchant profile schemas
+│   │   └── product.py       # Product schemas (CRUD, bulk, AI tagging)
 │   ├── routes/              # API route handlers
 │   │   ├── __init__.py
-│   │   └── auth.py          # Authentication endpoints
+│   │   ├── auth.py          # Authentication endpoints
+│   │   └── products.py      # Product endpoints
 │   ├── services/            # Business logic layer
 │   │   ├── __init__.py
-│   │   └── auth_service.py  # Authentication service
+│   │   ├── auth_service.py  # Authentication service
+│   │   ├── product_service.py  # Product business logic
+│   │   └── storage_service.py  # Cloudflare R2 image storage
 │   └── utils/               # Utility functions
 │       ├── __init__.py
 │       ├── jwt.py           # JWT token creation and validation
@@ -283,6 +291,152 @@ Response: {
   "member_since": "datetime"
 }
 ```
+
+### Product Inventory Endpoints
+
+**List Products:**
+```
+GET /api/products
+Headers: Authorization: Bearer <access_token>
+Query Parameters:
+  - page: int (default: 1)
+  - limit: int (default: 20, max: 100)
+  - search: string (search by name or SKU)
+  - tags: string (comma-separated tag filter)
+  - sortBy: string (name, sku, price, quantity, createdAt)
+  - sortOrder: string (asc, desc)
+Response: {
+  "success": true,
+  "data": {
+    "items": [Product...],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "totalPages": 8
+    }
+  }
+}
+```
+
+**Get Single Product:**
+```
+GET /api/products/{product_id}
+Headers: Authorization: Bearer <access_token>
+Response: {
+  "success": true,
+  "data": Product
+}
+```
+
+**Create Product:**
+```
+POST /api/products
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "name": "string",
+  "sku": "string",
+  "price": 19.99,
+  "quantity": 100,
+  "tags": ["Electronics", "Gadgets"],
+  "image": "https://...",
+  "description": "Product description"
+}
+Response: {
+  "success": true,
+  "data": Product
+}
+```
+
+**Update Product:**
+```
+PUT /api/products/{product_id}
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "name": "string",
+  "price": 24.99,
+  "quantity": 75,
+  "tags": ["Electronics", "New"],
+  "image": "https://...",
+  "description": "Updated description"
+}
+Response: {
+  "success": true,
+  "data": Product
+}
+```
+
+**Bulk Import Products:**
+```
+POST /api/products/bulk
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "products": [ProductCreate...],
+  "skipDuplicates": false
+}
+Response: {
+  "success": true,
+  "data": {
+    "created": 50,
+    "updated": 10,
+    "skipped": 2,
+    "errors": []
+  }
+}
+```
+
+**Bulk Delete Products:**
+```
+DELETE /api/products/bulk
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "ids": ["uuid1", "uuid2", ...]
+}
+Response: {
+  "success": true,
+  "data": {
+    "deleted": 5
+  }
+}
+```
+
+**Upload Product Image:**
+```
+POST /api/products/upload-image
+Headers: Authorization: Bearer <access_token>
+Content-Type: multipart/form-data
+Body: file (jpg, png, webp, gif - max 5MB)
+Response: {
+  "success": true,
+  "data": {
+    "url": "https://...",
+    "filename": "..."
+  }
+}
+```
+
+**AI Product Tagging (Dummy):**
+```
+POST /api/products/ai-tags
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "productIds": ["uuid1", "uuid2", ...]
+}
+Response: {
+  "success": true,
+  "data": {
+    "processed": 5,
+    "results": [
+      {
+        "productId": "uuid1",
+        "suggestedTags": ["Electronics", "Modern", "Premium"],
+        "applied": false
+      }
+    ]
+  }
+}
+```
+Note: This is a dummy implementation that returns random tags from predefined categories (material, style, audience). Replace with actual AI service integration in production.
 
 ## Database
 
@@ -510,33 +664,82 @@ curl -X POST http://localhost:8000/api/auth/refresh \
 - ✅ Health check endpoints
 - ✅ Cloud Run deployment configuration
 
+### January 11, 2026
+
+**Product Inventory Management System**
+- ✅ Implemented full CRUD operations for products
+- ✅ Added product model with SQLAlchemy (id, merchant_id, name, sku, price, quantity, tags, image, description)
+- ✅ Created product schemas for request/response validation
+- ✅ Implemented bulk import with upsert logic (create or update based on SKU)
+- ✅ Added bulk delete functionality
+- ✅ Implemented pagination, search, filtering, and sorting
+- ✅ Added image upload to Cloudflare R2 storage
+- ✅ Created product service layer with business logic
+
+**AI Product Tagging (Dummy Implementation)**
+- ✅ Added POST /api/products/ai-tags endpoint
+- ✅ Implemented mock AI tag generation (random tags from predefined categories)
+- ✅ Created AITaggingRequest, AITaggingResult, AITaggingResponse schemas
+- ✅ Added generate_ai_tags_for_products() service function
+- ✅ Returns suggested tags for up to 100 products per request
+- ✅ Categories: material (Cotton, Leather, etc.), style (Modern, Vintage, etc.), audience (Men, Women, etc.)
+- 📝 Note: Replace with actual AI service (OpenAI, Anthropic, etc.) for production use
+
 ## Next Steps
 
-### Inventory Management API
+### AI Product Tagging - Production Implementation
 
-**Product Endpoints:**
-- GET /api/products - List products with pagination, search, filter
-- GET /api/products/{id} - Get single product
-- POST /api/products - Create product (bulk import)
-- PUT /api/products/{id} - Update product
-- DELETE /api/products - Bulk delete products
-- GET /api/products/export - Export products (CSV, Excel)
+**Current State:** Dummy implementation with random tags from predefined categories
 
-**Product Model:**
+**Production Requirements:**
+- Integrate with AI service (OpenAI GPT-4, Anthropic Claude, or custom model)
+- Implement proper prompt engineering for product categorization
+- Add confidence scores for tag suggestions
+- Implement tag validation and filtering
+- Add rate limiting for AI API calls
+- Cache common product patterns
+- Handle batch processing for large imports
+- Add user feedback loop for tag quality improvement
+
+**Recommended AI Service Integration:**
 ```python
-class Product(Base):
-    id: str              # UUID
-    merchant_id: str     # Foreign key to merchant
-    name: str            # Max 255 chars
-    sku: str             # Unique per merchant, read-only after creation
-    price: Decimal       # 2 decimal places
-    quantity: int        # >= 0
-    tags: JSON           # Array of strings
-    image: str           # URL (optional)
-    description: str     # Max 2000 chars (optional)
-    created_at: datetime
-    updated_at: datetime
+# Example OpenAI integration
+async def generate_ai_tags_for_products(db, merchant_id, product_ids):
+    products = [get_product_by_id(db, merchant_id, pid) for pid in product_ids]
+
+    # Batch products for AI processing
+    batch_results = []
+    for product in products:
+        prompt = f"""Analyze this product and suggest 3-5 relevant tags:
+        Name: {product.name}
+        Description: {product.description}
+
+        Categories: material, style, audience, category
+        Return JSON: {{"tags": ["tag1", "tag2", ...]}}
+        """
+
+        response = await openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+
+        suggested_tags = parse_ai_response(response)
+        batch_results.append({
+            "productId": product.id,
+            "suggestedTags": suggested_tags,
+            "applied": False
+        })
+
+    return {"processed": len(batch_results), "results": batch_results}
 ```
+
+### Enhanced Product Features
+
+**Product Endpoints to Add:**
+- GET /api/products/export - Export products (CSV, Excel)
+- GET /api/products/stats - Get inventory statistics and analytics
+- POST /api/products/bulk-update - Bulk update specific fields
 
 ### Real-Time Features
 
