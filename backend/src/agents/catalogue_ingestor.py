@@ -1,5 +1,3 @@
-import io
-import os
 import base64
 import pypdfium2 as pdfium
 from dotenv import load_dotenv
@@ -7,7 +5,7 @@ import uuid
 from pathlib import Path
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage
-from src.agents.schemas import CatalogueItem, CatalogueItemList
+from src.agents.schemas import CatalogueItemList
 from src.agents.states import CatalogueIngestorState
 from src.models.utils import load_model_from_config
 from src.utils import load_prompt_templates, load_config
@@ -33,7 +31,7 @@ class CatalogueIngestor:
             catalogue_path.mkdir(parents=True, exist_ok=True)
             for page_indices in range(len(pdf)):
                 page = pdf[page_indices]
-                bitmap = page.render(scale=1.5)  # Scale for better OCR quality
+                bitmap = page.render(scale=2.0)  # Scale for better OCR quality
                 pil_image = bitmap.to_pil()
                 
                 pdf_page_path=catalogue_path / f'{page_indices}.jpeg'
@@ -49,6 +47,16 @@ class CatalogueIngestor:
         except Exception as e:
             return {"error": f"Failed to convert PDF to images: {str(e)}"}
 
+    def _read_pdf(self, state: CatalogueIngestorState):
+        """Read PDF text"""
+        try:
+            idx = state["current_page_idx"]
+            pdf_pages = pdfium.PdfDocument(state["pdf_path"])
+            return pdf_pages[idx].get_textpage().get_text_range()
+
+        except Exception as e:
+            return {"error": f"Failed to read PDF: {str(e)}"}
+
     def _extract_items_from_images(self, state: CatalogueIngestorState):
         """Extract items from images."""
         idx = state["current_page_idx"]
@@ -59,10 +67,14 @@ class CatalogueIngestor:
         
         # Encode image to base64
         image_base64 = base64.b64encode(image_data).decode('utf-8')
+
+        # Get PDF text
+        pdf_text = self._read_pdf(state)
         
+        # Create message
         message = HumanMessage(
             content=[
-                {"type": "text", "text": self.templates},
+                {"type": "text", "text": self.templates.format(pdf_text=pdf_text)},
                 {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
             ]
         )
@@ -73,6 +85,7 @@ class CatalogueIngestor:
             for item in catalogue_items:
                 item.page = idx
             return {"catalogue_items": catalogue_items, "current_page_idx": idx + 1}
+        
         except Exception as e:
             print(f"Error extracting items from page {idx}: {e}")
             # Continue to next page even if one fails

@@ -14,3 +14,4 @@ class CatalogueIngestorState(TypedDict):
     current_page_idx: int
     catalogue_items: Annotated[list[CatalogueItem], operator.add]
     error: str | None
+    retry_count: int
