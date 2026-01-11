@@ -6,7 +6,6 @@ import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
 import OrdersPage from './pages/MerchantOrdersPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
-import PDFImportPage from './pages/PDFImportPage'
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth()
@@ -74,14 +73,6 @@ function AppRoutes() {
         element={
           isAuthenticated
             ? <BulkImportPage />
-            : <Navigate to="/merchant/login" replace />
-        }
-      />
-      <Route
-        path="/merchant/pdf-import"
-        element={
-          isAuthenticated
-            ? <PDFImportPage />
             : <Navigate to="/merchant/login" replace />
         }
       />
