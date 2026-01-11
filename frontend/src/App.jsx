@@ -1,20 +1,32 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+function AppRoutes() {
+  const { isAuthenticated, loading } = useAuth()
 
-  const handleLogin = () => {
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    setIsAuthenticated(false)
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: '#f8f9fb'
+      }}>
+        <div style={{
+          fontSize: '18px',
+          color: '#718096'
+        }}>
+          Loading...
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -28,14 +40,14 @@ function App() {
         element={
           isAuthenticated
             ? <Navigate to="/merchant" replace />
-            : <LoginPage onLogin={handleLogin} />
+            : <LoginPage />
         }
       />
       <Route
         path="/merchant"
         element={
           isAuthenticated
-            ? <MerchantHomePage onLogout={handleLogout} />
+            ? <MerchantHomePage />
             : <Navigate to="/merchant/login" replace />
         }
       />
@@ -43,7 +55,7 @@ function App() {
         path="/merchant/inventory"
         element={
           isAuthenticated
-            ? <DashboardPage onLogout={handleLogout} />
+            ? <DashboardPage />
             : <Navigate to="/merchant/login" replace />
         }
       />
@@ -51,11 +63,19 @@ function App() {
         path="/merchant/import"
         element={
           isAuthenticated
-            ? <BulkImportPage onLogout={handleLogout} />
+            ? <BulkImportPage />
             : <Navigate to="/merchant/login" replace />
         }
       />
     </Routes>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const initialInventory = [
   { id: '1', name: 'Blue Cotton Shirt', sku: 'SH001', price: 29.99, quantity: 50, tags: ['summer', 'new', 'cotton'], image: null, description: 'A comfortable blue cotton shirt.' },
@@ -22,9 +23,15 @@ const getAllTags = (inventory) => {
   return Array.from(tags).sort()
 }
 
-export default function MerchantDashboardPage({ onLogout }) {
+export default function MerchantDashboardPage() {
   const navigate = useNavigate()
+  const { logout } = useAuth()
   const [inventory, setInventory] = useState(initialInventory)
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/merchant/login')
+  }
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTags, setSelectedTags] = useState([])
   const [tagSearchQuery, setTagSearchQuery] = useState('')
@@ -130,7 +137,7 @@ export default function MerchantDashboardPage({ onLogout }) {
         item={editingItem}
         onClose={() => setEditingItem(null)}
         onSave={handleSaveEdit}
-        onLogout={onLogout}
+        handleLogout={handleLogout}
       />
     )
   }
@@ -191,7 +198,7 @@ export default function MerchantDashboardPage({ onLogout }) {
             </div>
           </div>
           <div style={{ width: '1px', height: '32px', background: '#e2e8f0' }} />
-          <button onClick={onLogout} style={{
+          <button onClick={handleLogout} style={{
             padding: '8px 16px',
             fontSize: '14px',
             fontWeight: '500',
@@ -467,7 +474,7 @@ export default function MerchantDashboardPage({ onLogout }) {
 }
 
 // Edit Panel Component - Full page view instead of modal
-function EditPanel({ item, onClose, onSave, onLogout }) {
+function EditPanel({ item, onClose, onSave, handleLogout }) {
   const [formData, setFormData] = useState({ ...item })
   const [newTag, setNewTag] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -512,7 +519,7 @@ function EditPanel({ item, onClose, onSave, onLogout }) {
             <div style={{ textAlign: 'right' }}><div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>John's Store</div><div style={{ fontSize: '12px', color: '#718096' }}>demo@merchant.com</div></div>
           </div>
           <div style={{ width: '1px', height: '32px', background: '#e2e8f0' }} />
-          <button onClick={onLogout} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', color: '#718096', background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>Logout</button>
+          <button onClick={handleLogout} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', color: '#718096', background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>Logout</button>
         </div>
       </header>
 
