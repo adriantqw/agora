@@ -315,23 +315,14 @@ export default function MerchantOrdersPage() {
       {/* Main Content */}
       <main style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Breadcrumb */}
-        <div style={{ marginBottom: '24px', fontSize: '14px', color: '#718096' }}>
-          <button
-            onClick={() => navigate('/merchant')}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#4299e1',
-              padding: 0,
-              fontSize: '14px'
-            }}
-          >
-            Home
-          </button>
-          <span style={{ margin: '0 8px' }}>/</span>
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '14px' }}>
+          <span onClick={() => navigate('/merchant')} style={{ color: '#4299e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Home
+          </span>
+          <span style={{ color: '#cbd5e0' }}>/</span>
           <span style={{ color: '#1a202c', fontWeight: '500' }}>Orders</span>
-        </div>
+        </nav>
 
         {/* Page Title */}
         <div style={{ marginBottom: '24px' }}>
