@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function MerchantHomePage() {
   const navigate = useNavigate();
@@ -455,49 +457,49 @@ export default function MerchantHomePage() {
 
         {/* Recent Orders */}
         <div style={{
-          background: 'white',
+          background: 'var(--card-background-color)',
           borderRadius: '12px',
-          border: '1px solid #e2e8f0',
+          border: '1px solid var(--border-color)',
           overflow: 'hidden',
           marginBottom: '32px'
         }}>
           <div style={{
             padding: '16px 20px',
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <h2 style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c', margin: 0 }}>
+            <h2 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-color)', margin: 0 }}>
               Recent Orders
             </h2>
             <button
               onClick={() => navigate('/merchant/orders?date=today')}
-              style={{ fontSize: '13px', color: '#4299e1', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              style={{ fontSize: '13px', color: 'var(--primary-color)', fontWeight: '500', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               View All →
             </button>
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#f7fafc' }}>
-                <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Order</th>
-                <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Customer</th>
-                <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Items</th>
-                <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Total</th>
-                <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Status</th>
+              <tr style={{ background: 'var(--card-background-color)' }}>
+                <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: 'var(--secondary-color)', textTransform: 'uppercase' }}>Order</th>
+                <th style={{ padding: '12px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: 'var(--secondary-color)', textTransform: 'uppercase' }}>Customer</th>
+                <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: 'var(--secondary-color)', textTransform: 'uppercase' }}>Items</th>
+                <th style={{ padding: '12px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: 'var(--secondary-color)', textTransform: 'uppercase' }}>Total</th>
+                <th style={{ padding: '12px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: 'var(--secondary-color)', textTransform: 'uppercase' }}>Status</th>
               </tr>
             </thead>
             <tbody>
               {recentOrders.map((order) => (
-                <tr key={order.id} style={{ borderTop: '1px solid #e2e8f0' }}>
+                <tr key={order.id} style={{ borderTop: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '14px 20px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{order.id}</div>
-                    <div style={{ fontSize: '12px', color: '#a0aec0' }}>{order.time}</div>
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>{order.id}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--secondary-color)' }}>{order.time}</div>
                   </td>
-                  <td style={{ padding: '14px 20px', fontSize: '14px', color: '#4a5568' }}>{order.customer}</td>
-                  <td style={{ padding: '14px 20px', fontSize: '14px', color: '#4a5568', textAlign: 'center' }}>{order.items}</td>
-                  <td style={{ padding: '14px 20px', fontSize: '14px', fontWeight: '600', color: '#1a202c', textAlign: 'right' }}>${order.total.toFixed(2)}</td>
+                  <td style={{ padding: '14px 20px', fontSize: '14px', color: 'var(--secondary-color)' }}>{order.customer}</td>
+                  <td style={{ padding: '14px 20px', fontSize: '14px', color: 'var(--secondary-color)', textAlign: 'center' }}>{order.items}</td>
+                  <td style={{ padding: '14px 20px', fontSize: '14px', fontWeight: '600', color: 'var(--text-color)', textAlign: 'right' }}>${order.total.toFixed(2)}</td>
                   <td style={{ padding: '14px 20px', textAlign: 'center' }}>
                     <span style={{
                       padding: '4px 10px',
@@ -506,10 +508,10 @@ export default function MerchantHomePage() {
                       borderRadius: '12px',
                       background: order.status === 'completed' ? '#d1fae5' :
                                  order.status === 'processing' ? '#fef3c7' :
-                                 order.status === 'shipped' ? '#dbeafe' : '#e2e8f0',
+                                 order.status === 'shipped' ? '#dbeafe' : 'var(--border-color)',
                       color: order.status === 'completed' ? '#059669' :
                              order.status === 'processing' ? '#d97706' :
-                             order.status === 'shipped' ? '#2563eb' : '#718096'
+                             order.status === 'shipped' ? '#2563eb' : 'var(--secondary-color)'
                     }}>
                       {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                     </span>
@@ -522,25 +524,25 @@ export default function MerchantHomePage() {
 
         {/* Store Information */}
         <div style={{
-          background: 'white',
+          background: 'var(--card-background-color)',
           borderRadius: '12px',
           padding: '24px',
-          border: '1px solid #e2e8f0'
+          border: '1px solid var(--border-color)'
         }}>
-          <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#1a202c', margin: '0 0 20px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-color)', margin: '0 0 20px' }}>
             Store Information
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Store Name</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{user?.storeName || ''}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--secondary-color)' }}>Store Name</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>{user?.storeName || ''}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Email</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{user?.email || ''}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--secondary-color)' }}>Email</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>{user?.email || ''}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Store ID</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--secondary-color)' }}>Store ID</span>
               <span style={{
                 fontSize: '12px',
                 fontWeight: '600',
@@ -552,9 +554,9 @@ export default function MerchantHomePage() {
                 {user?.storeId || 'N/A'}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f0f0f0' }}>
-              <span style={{ fontSize: '14px', color: '#718096' }}>Member Since</span>
-              <span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--secondary-color)' }}>Member Since</span>
+              <span style={{ fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>
                 {user?.memberSince ? formatMemberSince(user.memberSince) : 'N/A'}
               </span>
             </div>
