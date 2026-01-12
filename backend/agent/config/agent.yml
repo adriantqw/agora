@@ -3,9 +3,9 @@
 ### Catalogue ingestor config
 catalogue_ingestor: &base_agent_recipe
   model: &base_model_recipe
-    name: gemini-3-flash-preview
+    name: gemini-3-pro-preview
     params:
       temperature: 0.7
       max_tokens: 1024
-      thinking_level: medium
+      thinking_level: low
       include_thoughts: true
