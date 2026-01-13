@@ -1,7 +1,7 @@
 import os
 import json
 from src.agents.catalogue_ingestor import CatalogueIngestor
-from src.models.catalogue_item import CatalogueItemList
+from src.agents.schemas import CatalogueItemList
 
 ingestor = CatalogueIngestor()
 
@@ -42,8 +42,8 @@ async def ingest_catalogue_stream(file_path: str):
     Args:
         file_path (str): The absolute path to the PDF file to ingest.
 
-    Returns:
-        AsyncGenerator[str, None]: Async generator of events.
+    Yields:
+        AsyncGenerator[str, None]: Async generator of events. Final event contains the CatalogueItemList.
     """
     if not file_path.endswith('.pdf'):
         raise ValueError("File must be a PDF")
@@ -61,3 +61,15 @@ async def ingest_catalogue_stream(file_path: str):
             yield json.dumps({"error": str(e)}) + "\n"
 
     return event_generator(file_path)
+
+def parse_final_agent_state(state: dict):
+    """
+    Parse the final state of the agent to extract catalogue items with image paths.
+
+    Args:
+        state (dict): The final state dictionary from the agent.
+
+    Returns:
+        list[dict]: A list of catalogue item payloads with image paths.
+    """
+    return ingestor.parse_final_state(state)
