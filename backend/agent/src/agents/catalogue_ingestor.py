@@ -4,6 +4,7 @@ from PIL import Image
 import pypdfium2 as pdfium
 import pytesseract
 import re
+import os
 from dotenv import load_dotenv
 import uuid
 from pathlib import Path
@@ -12,12 +13,13 @@ from langchain_core.messages import HumanMessage
 from src.agents.schemas import CatalogueItemList
 from src.agents.states import CatalogueIngestorState
 from src.models.utils import load_model_from_config
-from src.utils import load_prompt_templates, load_config
-from pydantic import ValidationError
-
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' 
+from backend.agent.src.utils.yaml import load_prompt_templates, load_config
+from src.utils.image import get_pil_box
+from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
+
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
 
 RECURSION_LIMIT = 200
 
@@ -121,10 +123,10 @@ class CatalogueIngestor:
                 "retry_count": 0
             }
         
-        except ValidationError as e:
+        except OutputParserException as e:
             retry_count = state.get("retry_count", 0) + 1
             if retry_count <= 3:
-                print(f"Validation error on page {idx} (attempt {retry_count}): {e}")
+                logging.info(f"Validation error on page {idx} (attempt {retry_count}): {e}")
                 # Feed error back to model
                 messages.append(HumanMessage(content=f"Validation Error: {str(e)}\nPlease correct the output."))
                 return {
@@ -132,7 +134,7 @@ class CatalogueIngestor:
                     "messages": messages
                 } # Do not increment page index, will loop back
             else:
-                print(f"Max retries reached for page {idx}. Moving to next page.")
+                logging.info(f"Max retries reached for page {idx}. Moving to next page.")
                 return {
                     "current_page_idx": idx + 1,
                     "messages": [],
@@ -140,7 +142,7 @@ class CatalogueIngestor:
                 }
 
         except Exception as e:
-            print(f"Error extracting items from page {idx}: {e}")
+            logging.info(f"Error extracting items from page {idx}: {e}")
             # Continue to next page even if one fails
             return {
                 "current_page_idx": idx + 1,
@@ -224,19 +226,25 @@ class CatalogueIngestor:
            if not item.bbox or item.page is None:
                logging.warning(f"Skipping item without bbox or page: {item}")
                continue
-           # Extract image from page and crop to bbox
-           page_img_path = pdf_page_paths[item.page]
-           page_img = Image.open(page_img_path)
-           item_img = page_img.crop((item.bbox.xmin, item.bbox.ymin, item.bbox.xmax, item.bbox.ymax))
+           
+           try:
+            # Extract image from page and crop to bbox
+            page_img_path = pdf_page_paths[item.page]
+            page_img = Image.open(page_img_path)
+            item_img = page_img.crop(get_pil_box(item.bbox, page_img.width, page_img.height))
 
-           # Save item image
-           item_img_path = Path("data/items") / f'item-{uuid.uuid4().hex}.jpeg'
-           item_img_path.parent.mkdir(parents=True, exist_ok=True)
-           item_img.save(item_img_path, format='JPEG', optimize=True)
+            # Save item image
+            item_img_path = Path("data/items") / f'item-{uuid.uuid4().hex}.jpeg'
+            item_img_path.parent.mkdir(parents=True, exist_ok=True)
+            item_img.save(item_img_path, format='JPEG', optimize=True)
 
-           # Prepare payload
-           catalogue_item_payload = item.model_dump(mode="json")
-           catalogue_item_payload["image_path"] = str(item_img_path)
-           catalogue_item_payloads.append(catalogue_item_payload)
+            # Prepare payload
+            catalogue_item_payload = item.model_dump(mode="json")
+            catalogue_item_payload["image_path"] = str(item_img_path)
+            catalogue_item_payloads.append(catalogue_item_payload)
+
+           except:
+               logging.warning(f"Failed to process image for item: {item}")
+               continue
 
         return catalogue_item_payloads

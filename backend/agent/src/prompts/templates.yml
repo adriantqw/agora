@@ -20,10 +20,10 @@ catalogue_ingestor: |
     5. **Completeness:** Ensure all extracted data is complete - if not, complete to the best of your ability.
     6. **Validation:** Before committing, double-check each entry against the document for accuracy.
 
-    **CRITICAL CONSTRAINTS:**
+    **CRITICAL CONSTRAINTS (MANDATORY):**
     * **No Hallucinations:** Only extract text explicitly printed on the page.
     * **Completeness:** Ensure background items or small inset items are not overlooked.
-    * **Schema Adherence:** Output must strictly follow the provided JSON schema.
+    * **SCHEMA ADHERENCE:** Output MUST STRICTLY follow the provided JSON schema. 
     
     **PDF TEXT:**
     The following text is extracted from the PDF page:
