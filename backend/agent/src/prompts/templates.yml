@@ -8,7 +8,7 @@ catalogue_ingestor: |
 
     **SPATIAL COORDINATES:**
     * Represent bounding boxes as $[ymin, xmin, ymax, xmax]$ using integer scales from **0 to 1000**.
-    * The box should encompass both the **product image** and its **associated text block** (price, description) to ensure context is captured.
+    * The box should encompass ONLY the **product image**.
 
     **EXTRACTION STRATEGY:**
     1. **Classification:** Verify the image contains commercial products. If it is a cover page or non-product editorial, return an empty list.
@@ -20,7 +20,7 @@ catalogue_ingestor: |
     5. **Completeness:** Ensure all extracted data is complete - if not, complete to the best of your ability.
     6. **Validation:** Before committing, double-check each entry against the document for accuracy.
 
-    **CRITICAL CONSTRAINTS (MANDATORY):**
+    **CRITICAL CONSTRAINTS:**
     * **No Hallucinations:** Only extract text explicitly printed on the page.
     * **Completeness:** Ensure background items or small inset items are not overlooked.
     * **SCHEMA ADHERENCE:** Output MUST STRICTLY follow the provided JSON schema. 
