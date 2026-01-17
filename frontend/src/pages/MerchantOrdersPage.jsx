@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useThemeColors } from '../hooks/useThemeColors';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function MerchantOrdersPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const colors = useThemeColors();
 
   // State management
   const [statusFilters, setStatusFilters] = useState([]);
@@ -177,20 +180,20 @@ export default function MerchantOrdersPage() {
   const getStatusStyle = (status) => {
     const styles = {
       completed: {
-        background: '#d1fae5',
-        color: '#059669'
+        background: colors.status.success.bg,
+        color: colors.status.success.text
       },
       processing: {
-        background: '#fef3c7',
-        color: '#d97706'
+        background: colors.status.warning.bg,
+        color: colors.status.warning.text
       },
       shipped: {
-        background: '#dbeafe',
-        color: '#2563eb'
+        background: colors.status.info.bg,
+        color: colors.status.info.text
       },
       pending: {
-        background: '#fce7f3',
-        color: '#be185d'
+        background: colors.status.pending.bg,
+        color: colors.status.pending.text
       }
     };
     return styles[status] || styles.pending;
@@ -240,13 +243,13 @@ export default function MerchantOrdersPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#f8f9fb',
+      background: colors.page.background,
       fontFamily: '"Source Sans 3", -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       {/* Header */}
       <header style={{
-        background: 'white',
-        borderBottom: '1px solid #e2e8f0',
+        background: colors.card.background,
+        borderBottom: `1px solid ${colors.border.color}`,
         padding: '0 32px',
         height: '64px',
         display: 'flex',
@@ -257,7 +260,7 @@ export default function MerchantOrdersPage() {
           <div style={{
             width: '36px',
             height: '36px',
-            background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+            background: colors.gradient.blue,
             borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
@@ -269,10 +272,12 @@ export default function MerchantOrdersPage() {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
-          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>Agora</span>
+          <span style={{ fontWeight: '700', fontSize: '18px', color: colors.text.primary }}>Agora MerchantHub</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <ThemeToggle />
+          <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
               width: '40px',
@@ -289,20 +294,20 @@ export default function MerchantOrdersPage() {
               {user?.merchantName?.substring(0, 2).toUpperCase() || 'JS'}
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>{user?.storeName || 'Store'}</div>
-              <div style={{ fontSize: '12px', color: '#718096' }}>{user?.email || ''}</div>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text.primary }}>{user?.storeName || 'Store'}</div>
+              <div style={{ fontSize: '12px', color: colors.text.secondary }}>{user?.email || ''}</div>
             </div>
           </div>
-          <div style={{ width: '1px', height: '32px', background: '#e2e8f0' }} />
+          <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
           <button
             onClick={handleLogout}
             style={{
               padding: '8px 16px',
               fontSize: '14px',
               fontWeight: '500',
-              color: '#718096',
+              color: colors.text.secondary,
               background: 'none',
-              border: '1px solid #e2e8f0',
+              border: `1px solid ${colors.border.color}`,
               borderRadius: '6px',
               cursor: 'pointer'
             }}
@@ -316,20 +321,20 @@ export default function MerchantOrdersPage() {
       <main style={{ padding: '32px', maxWidth: '1400px', margin: '0 auto' }}>
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '14px' }}>
-          <span onClick={() => navigate('/merchant')} style={{ color: '#4299e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span onClick={() => navigate('/merchant')} style={{ color: colors.primary.blue, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
               Home
           </span>
-          <span style={{ color: '#cbd5e0' }}>/</span>
-          <span style={{ color: '#1a202c', fontWeight: '500' }}>Orders</span>
+          <span style={{ color: colors.border.color }}>/</span>
+          <span style={{ color: colors.text.primary, fontWeight: '500' }}>Orders</span>
         </nav>
 
         {/* Page Title */}
         <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 8px' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: '0 0 8px' }}>
             Orders
           </h1>
-          <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>
+          <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>
             Showing {sortedOrders.length} order{sortedOrders.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -338,7 +343,7 @@ export default function MerchantOrdersPage() {
         <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
           {/* Search Input */}
           <div style={{ position: 'relative', flex: '1', minWidth: '250px', maxWidth: '400px' }}>
-            <svg style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#a0aec0' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: colors.text.muted }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/>
               <line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
@@ -347,7 +352,7 @@ export default function MerchantOrdersPage() {
               placeholder="Search by order ID, customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px 10px 40px', fontSize: '14px', border: '1px solid #e2e8f0', borderRadius: '8px', background: 'white', outline: 'none', boxSizing: 'border-box' }}
+              style={{ width: '100%', padding: '10px 12px 10px 40px', fontSize: '14px', border: `1px solid ${colors.border.color}`, borderRadius: '8px', background: colors.card.background, outline: 'none', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -355,16 +360,16 @@ export default function MerchantOrdersPage() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setIsDateDropdownOpen(!isDateDropdownOpen)}
-              style={{ padding: '10px 36px 10px 12px', fontSize: '14px', border: '1px solid #e2e8f0', borderRadius: '8px', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', position: 'relative' }}
+              style={{ padding: '10px 36px 10px 12px', fontSize: '14px', border: `1px solid ${colors.border.color}`, borderRadius: '8px', background: colors.card.background, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px', position: 'relative' }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                 <line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/>
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
-              <span style={{ color: dateFilter !== 'all' ? '#1a202c' : '#718096' }}>{DATE_LABELS[dateFilter]}</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2" style={{ position: 'absolute', right: '10px', transform: isDateDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+              <span style={{ color: dateFilter !== 'all' ? colors.text.primary : colors.text.secondary }}>{DATE_LABELS[dateFilter]}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="2" style={{ position: 'absolute', right: '10px', transform: isDateDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
@@ -372,7 +377,7 @@ export default function MerchantOrdersPage() {
             {isDateDropdownOpen && (
               <>
                 <div onClick={() => setIsDateDropdownOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
-                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', width: '200px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', zIndex: 50, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', width: '200px', background: colors.card.background, borderRadius: '10px', border: `1px solid ${colors.border.color}`, boxShadow: colors.shadow.md, zIndex: 50, overflow: 'hidden' }}>
                   {Object.entries(DATE_LABELS).map(([key, label]) => (
                     <div
                       key={key}
@@ -384,12 +389,12 @@ export default function MerchantOrdersPage() {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
-                        background: dateFilter === key ? '#f0f4ff' : 'white',
-                        color: dateFilter === key ? '#4299e1' : '#4a5568',
+                        background: dateFilter === key ? colors.icon.bgBlue : colors.card.background,
+                        color: dateFilter === key ? colors.primary.blue : colors.text.tertiary,
                         fontWeight: dateFilter === key ? '500' : '400'
                       }}
                     >
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: dateFilter === key ? 'none' : '2px solid #cbd5e0', background: dateFilter === key ? '#4299e1' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: dateFilter === key ? 'none' : `2px solid ${colors.border.color}`, background: dateFilter === key ? colors.primary.blue : colors.card.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {dateFilter === key && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
                       </div>
                       <span>{label}</span>
@@ -404,16 +409,16 @@ export default function MerchantOrdersPage() {
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-              style={{ padding: '10px 36px 10px 12px', fontSize: '14px', border: '1px solid #e2e8f0', borderRadius: '8px', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', minWidth: '180px', position: 'relative' }}
+              style={{ padding: '10px 36px 10px 12px', fontSize: '14px', border: `1px solid ${colors.border.color}`, borderRadius: '8px', background: colors.card.background, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', minWidth: '180px', position: 'relative' }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 6v6l4 2"/>
               </svg>
-              <span style={{ color: statusFilters.length > 0 ? '#1a202c' : '#718096' }}>
+              <span style={{ color: statusFilters.length > 0 ? colors.text.primary : colors.text.secondary }}>
                 {statusFilters.length === 0 ? 'Filter by Status' : `${statusFilters.length} status${statusFilters.length > 1 ? 'es' : ''} selected`}
               </span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2" style={{ position: 'absolute', right: '10px', transform: isStatusDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="2" style={{ position: 'absolute', right: '10px', transform: isStatusDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
                 <polyline points="6 9 12 15 18 9"/>
               </svg>
             </button>
@@ -421,16 +426,16 @@ export default function MerchantOrdersPage() {
             {isStatusDropdownOpen && (
               <>
                 <div onClick={() => setIsStatusDropdownOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 49 }} />
-                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', width: '280px', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', boxShadow: '0 10px 40px rgba(0,0,0,0.12)', zIndex: 50, overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: '4px', width: '280px', background: colors.card.background, borderRadius: '10px', border: `1px solid ${colors.border.color}`, boxShadow: colors.shadow.md, zIndex: 50, overflow: 'hidden' }}>
                   {statusFilters.length > 0 && (
-                    <div style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', background: '#f7fafc' }}>
+                    <div style={{ padding: '10px 12px', borderBottom: `1px solid ${colors.border.color}`, background: colors.card.backgroundAlt }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase' }}>
                           Selected ({statusFilters.length})
                         </span>
                         <button
                           onClick={(e) => { e.stopPropagation(); setStatusFilters([]); updateURLParams([], dateFilter); }}
-                          style={{ fontSize: '12px', color: '#4299e1', background: 'none', border: 'none', cursor: 'pointer' }}
+                          style={{ fontSize: '12px', color: colors.primary.blue, background: 'none', border: 'none', cursor: 'pointer' }}
                         >
                           Clear all
                         </button>
@@ -468,16 +473,16 @@ export default function MerchantOrdersPage() {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            background: isSelected ? '#ebf8ff' : 'white'
+                            background: isSelected ? colors.icon.bgBlue : colors.card.background
                           }}
                         >
-                          <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: isSelected ? 'none' : '2px solid #cbd5e0', background: isSelected ? '#4299e1' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: '18px', height: '18px', borderRadius: '4px', border: isSelected ? 'none' : `2px solid ${colors.border.color}`, background: isSelected ? colors.primary.blue : colors.card.background, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {isSelected && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
                           </div>
-                          <span style={{ color: isSelected ? '#2b6cb0' : '#4a5568', fontWeight: isSelected ? '500' : '400' }}>
+                          <span style={{ color: isSelected ? colors.primary.blueDark : colors.text.tertiary, fontWeight: isSelected ? '500' : '400' }}>
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </span>
-                          <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#a0aec0' }}>{count}</span>
+                          <span style={{ marginLeft: 'auto', fontSize: '12px', color: colors.text.muted }}>{count}</span>
                         </div>
                       );
                     })}
@@ -491,7 +496,7 @@ export default function MerchantOrdersPage() {
           {(searchQuery || statusFilters.length > 0 || dateFilter !== 'all') && (
             <button
               onClick={handleClearFilters}
-              style={{ padding: '10px 16px', fontSize: '14px', color: '#718096', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ padding: '10px 16px', fontSize: '14px', color: colors.text.secondary, background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"/>
@@ -503,53 +508,53 @@ export default function MerchantOrdersPage() {
         </div>
 
         {/* Orders Table */}
-        <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <div style={{ background: colors.card.background, borderRadius: '12px', border: `1px solid ${colors.border.color}`, overflow: 'hidden' }}>
           {sortedOrders.length === 0 ? (
             <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#a0aec0" strokeWidth="2" style={{ margin: '0 auto 16px' }}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={colors.text.muted} strokeWidth="2" style={{ margin: '0 auto 16px' }}>
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
-              <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>No orders found</h3>
-              <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Try adjusting your filters to see more results</p>
+              <h3 style={{ fontSize: '16px', fontWeight: '600', color: colors.text.primary, margin: '0 0 8px' }}>No orders found</h3>
+              <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>Try adjusting your filters to see more results</p>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#f7fafc' }}>
+                <tr style={{ background: colors.card.backgroundAlt }}>
                   <th
                     onClick={() => handleSort('id')}
-                    style={{ padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     Order ID <SortIcon column="id" />
                   </th>
                   <th
                     onClick={() => handleSort('customer')}
-                    style={{ padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
+                    style={{ padding: '14px 20px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none' }}
                   >
                     Customer <SortIcon column="customer" />
                   </th>
                   <th
                     onClick={() => handleSort('items')}
-                    style={{ padding: '14px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '80px' }}
+                    style={{ padding: '14px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '80px' }}
                   >
                     Items <SortIcon column="items" />
                   </th>
                   <th
                     onClick={() => handleSort('total')}
-                    style={{ padding: '14px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '100px' }}
+                    style={{ padding: '14px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '100px' }}
                   >
                     Total <SortIcon column="total" />
                   </th>
                   <th
                     onClick={() => handleSort('status')}
-                    style={{ padding: '14px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '120px' }}
+                    style={{ padding: '14px 20px', textAlign: 'center', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '120px' }}
                   >
                     Status <SortIcon column="status" />
                   </th>
                   <th
                     onClick={() => handleSort('date')}
-                    style={{ padding: '14px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '120px' }}
+                    style={{ padding: '14px 20px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', cursor: 'pointer', userSelect: 'none', width: '120px' }}
                   >
                     Date <SortIcon column="date" />
                   </th>
@@ -557,19 +562,19 @@ export default function MerchantOrdersPage() {
               </thead>
               <tbody>
                 {sortedOrders.map((order) => (
-                  <tr key={order.id} style={{ borderTop: '1px solid #e2e8f0' }}>
+                  <tr key={order.id} style={{ borderTop: `1px solid ${colors.border.color}` }}>
                     <td style={{ padding: '14px 20px' }}>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{order.id}</div>
-                      <div style={{ fontSize: '12px', color: '#a0aec0' }}>{order.time}</div>
+                      <div style={{ fontSize: '14px', fontWeight: '500', color: colors.text.primary }}>{order.id}</div>
+                      <div style={{ fontSize: '12px', color: colors.text.muted }}>{order.time}</div>
                     </td>
                     <td style={{ padding: '14px 20px' }}>
-                      <div style={{ fontSize: '14px', color: '#1a202c' }}>{order.customer}</div>
-                      <div style={{ fontSize: '12px', color: '#a0aec0' }}>{order.email}</div>
+                      <div style={{ fontSize: '14px', color: colors.text.primary }}>{order.customer}</div>
+                      <div style={{ fontSize: '12px', color: colors.text.muted }}>{order.email}</div>
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: '14px', color: '#4a5568', textAlign: 'center' }}>
+                    <td style={{ padding: '14px 20px', fontSize: '14px', color: colors.text.tertiary, textAlign: 'center' }}>
                       {order.items}
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: '14px', fontWeight: '600', color: '#1a202c', textAlign: 'right' }}>
+                    <td style={{ padding: '14px 20px', fontSize: '14px', fontWeight: '600', color: colors.text.primary, textAlign: 'right' }}>
                       ${order.total.toFixed(2)}
                     </td>
                     <td style={{ padding: '14px 20px', textAlign: 'center' }}>
@@ -583,7 +588,7 @@ export default function MerchantOrdersPage() {
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </span>
                     </td>
-                    <td style={{ padding: '14px 20px', fontSize: '14px', color: '#4a5568', textAlign: 'right' }}>
+                    <td style={{ padding: '14px 20px', fontSize: '14px', color: colors.text.tertiary, textAlign: 'right' }}>
                       {formatDate(order.date)}
                     </td>
                   </tr>

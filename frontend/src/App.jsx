@@ -1,12 +1,12 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
 import OrdersPage from './pages/MerchantOrdersPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
-import PDFImportPage from './pages/PDFImportPage'
 
 function AppRoutes() {
   const { isAuthenticated, loading } = useAuth()
@@ -77,23 +77,17 @@ function AppRoutes() {
             : <Navigate to="/merchant/login" replace />
         }
       />
-      <Route
-        path="/merchant/pdf-import"
-        element={
-          isAuthenticated
-            ? <PDFImportPage />
-            : <Navigate to="/merchant/login" replace />
-        }
-      />
     </Routes>
   )
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

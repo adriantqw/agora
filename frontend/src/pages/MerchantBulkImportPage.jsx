@@ -1,5 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
+import { useThemeColors } from '../hooks/useThemeColors'
+import ThemeToggle from '../components/ThemeToggle'
 import productService from '../services/productService'
 
 /**
@@ -135,6 +138,14 @@ const readFileAsText = (file) => {
 
 export default function BulkImportPage() {
   const navigate = useNavigate()
+  const { logout } = useAuth()
+  const colors = useThemeColors()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/merchant/login')
+  }
+
   const [currentStep, setCurrentStep] = useState(1)
   const [uploadedFile, setUploadedFile] = useState(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -326,94 +337,100 @@ export default function BulkImportPage() {
   const steps = [{ number: 1, label: 'Upload' }, { number: 2, label: 'Preview' }, { number: 3, label: 'Confirm' }, { number: 4, label: 'Complete' }]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8f9fb' }}>
+    <div style={{ minHeight: '100vh', background: colors.page.background }}>
       {/* Header */}
-      <header style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '0 32px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <header style={{ background: colors.card.background, borderBottom: `1px solid ${colors.border.color}`, padding: '0 32px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: '36px', height: '36px', background: colors.gradient.blue, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           </div>
-          <span style={{ fontWeight: '700', fontSize: '18px', color: '#1a202c' }}>Agora MerchantHub</span>
+          <span style={{ fontWeight: '700', fontSize: '18px', color: colors.text.primary }}>Agora MerchantHub</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '14px' }}>JS</div>
-          <div><div style={{ fontSize: '14px', fontWeight: '600', color: '#1a202c' }}>John's Store</div><div style={{ fontSize: '12px', color: '#718096' }}>demo@merchant.com</div></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <ThemeToggle />
+          <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: colors.gradient.ai, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '14px' }}>JS</div>
+            <div><div style={{ fontSize: '14px', fontWeight: '600', color: colors.text.primary }}>John's Store</div><div style={{ fontSize: '12px', color: colors.text.secondary }}>demo@merchant.com</div></div>
+          </div>
+          <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
+          <button onClick={handleLogout} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', color: colors.button.text, background: 'none', border: `1px solid ${colors.button.border}`, borderRadius: '6px', cursor: 'pointer' }}>Logout</button>
         </div>
       </header>
 
       <main style={{ padding: '24px 32px', maxWidth: '900px', margin: '0 auto' }}>
         {/* Breadcrumb */}
         <nav style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', fontSize: '14px' }}>
-          <span onClick={() => navigate('/merchant/inventory')} style={{ color: '#4299e1', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span onClick={() => navigate('/merchant/inventory')} style={{ color: colors.primary.blue, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             Home
           </span>
-          <span style={{ color: '#cbd5e0' }}>/</span>
-          <span onClick={() => navigate('/merchant/inventory')} style={{ color: '#4299e1', cursor: 'pointer' }}>Inventory</span>
-          <span style={{ color: '#cbd5e0' }}>/</span>
-          <span style={{ color: '#1a202c', fontWeight: '500' }}>Bulk Import</span>
+          <span style={{ color: colors.text.muted }}>/</span>
+          <span onClick={() => navigate('/merchant/inventory')} style={{ color: colors.primary.blue, cursor: 'pointer' }}>Inventory</span>
+          <span style={{ color: colors.text.muted }}>/</span>
+          <span style={{ color: colors.text.primary, fontWeight: '500' }}>Bulk Import</span>
         </nav>
 
-        <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 32px' }}>Bulk Import Products</h1>
+        <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: '0 0 32px' }}>Bulk Import Products</h1>
 
         {/* Progress Steps */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '20px', left: '60px', right: '60px', height: '2px', background: '#e2e8f0', zIndex: 0 }}>
-            <div style={{ height: '100%', background: '#4299e1', width: `${((currentStep - 1) / 3) * 100}%`, transition: 'width 0.3s ease' }} />
+          <div style={{ position: 'absolute', top: '20px', left: '60px', right: '60px', height: '2px', background: colors.border.color, zIndex: 0 }}>
+            <div style={{ height: '100%', background: colors.primary.blue, width: `${((currentStep - 1) / 3) * 100}%`, transition: 'width 0.3s ease' }} />
           </div>
           {steps.map((step) => (
             <div key={step.number} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 1 }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: currentStep >= step.number ? '#4299e1' : 'white', border: currentStep >= step.number ? 'none' : '2px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentStep >= step.number ? 'white' : '#a0aec0', fontWeight: '600', fontSize: '14px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: currentStep >= step.number ? colors.primary.blue : colors.card.background, border: currentStep >= step.number ? 'none' : `2px solid ${colors.border.color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentStep >= step.number ? 'white' : colors.text.muted, fontWeight: '600', fontSize: '14px' }}>
                 {currentStep > step.number ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : step.number}
               </div>
-              <span style={{ fontSize: '13px', fontWeight: currentStep === step.number ? '600' : '400', color: currentStep >= step.number ? '#1a202c' : '#a0aec0' }}>{step.label}</span>
+              <span style={{ fontSize: '13px', fontWeight: currentStep === step.number ? '600' : '400', color: currentStep >= step.number ? colors.text.primary : colors.text.muted }}>{step.label}</span>
             </div>
           ))}
         </div>
 
         {/* Step Content */}
-        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+        <div style={{ background: colors.card.background, borderRadius: '16px', border: `1px solid ${colors.border.color}`, overflow: 'hidden' }}>
           {/* Step 1: Upload */}
           {currentStep === 1 && (
             <div style={{ padding: '40px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Upload Your File</h2>
-                <p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Upload a CSV file or PDF catalogue - we'll automatically detect the format</p>
+                <h2 style={{ fontSize: '20px', fontWeight: '600', color: colors.text.primary, margin: '0 0 8px' }}>Upload Your File</h2>
+                <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>Upload a CSV file or PDF catalogue - we'll automatically detect the format</p>
               </div>
-              <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed ${isDragging ? '#4299e1' : '#e2e8f0'}`, borderRadius: '12px', padding: '48px', textAlign: 'center', cursor: 'pointer', background: isDragging ? '#ebf8ff' : '#f7fafc' }}>
+              <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} style={{ border: `2px dashed ${isDragging ? colors.primary.blue : colors.border.color}`, borderRadius: '12px', padding: '48px', textAlign: 'center', cursor: 'pointer', background: isDragging ? colors.icon.bgBlue : colors.card.backgroundAlt }}>
                 <input ref={fileInputRef} type="file" accept=".csv,.pdf" onChange={(e) => e.target.files[0] && handleFileSelect(e.target.files[0])} style={{ display: 'none' }} />
                 {!uploadedFile ? (
                   <>
-                    <div style={{ width: '72px', height: '72px', background: 'white', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <div style={{ width: '72px', height: '72px', background: colors.card.background, borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: colors.shadow.sm }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={colors.primary.blue} strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     </div>
-                    <p style={{ fontSize: '16px', fontWeight: '500', color: '#1a202c', margin: '0 0 8px' }}>Drag and drop your file here</p>
-                    <p style={{ fontSize: '14px', color: '#718096', margin: '0 0 16px' }}>or click to browse from your computer</p>
+                    <p style={{ fontSize: '16px', fontWeight: '500', color: colors.text.primary, margin: '0 0 8px' }}>Drag and drop your file here</p>
+                    <p style={{ fontSize: '14px', color: colors.text.secondary, margin: '0 0 16px' }}>or click to browse from your computer</p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>CSV</span>
-                      <span style={{ padding: '6px 12px', fontSize: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '6px', color: '#718096' }}>PDF</span>
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '6px', color: colors.text.secondary }}>CSV</span>
+                      <span style={{ padding: '6px 12px', fontSize: '12px', background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '6px', color: colors.text.secondary }}>PDF</span>
                     </div>
                   </>
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-                    <div style={{ width: '56px', height: '56px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>{getFileIcon(uploadedFile.name)}</div>
-                    <div style={{ textAlign: 'left' }}><p style={{ fontSize: '15px', fontWeight: '500', color: '#1a202c', margin: '0 0 4px' }}>{uploadedFile.name}</p><p style={{ fontSize: '13px', color: '#718096', margin: 0 }}>{formatFileSize(uploadedFile.size)}</p></div>
-                    <button onClick={(e) => { e.stopPropagation(); setUploadedFile(null) }} style={{ width: '36px', height: '36px', border: 'none', background: '#fed7d7', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c53030" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <div style={{ width: '56px', height: '56px', background: colors.card.background, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', boxShadow: colors.shadow.sm }}>{getFileIcon(uploadedFile.name)}</div>
+                    <div style={{ textAlign: 'left' }}><p style={{ fontSize: '15px', fontWeight: '500', color: colors.text.primary, margin: '0 0 4px' }}>{uploadedFile.name}</p><p style={{ fontSize: '13px', color: colors.text.secondary, margin: 0 }}>{formatFileSize(uploadedFile.size)}</p></div>
+                    <button onClick={(e) => { e.stopPropagation(); setUploadedFile(null) }} style={{ width: '36px', height: '36px', border: 'none', background: colors.icon.bgRed, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.status.error.icon} strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
                 )}
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '24px', padding: '16px', background: '#f7fafc', borderRadius: '8px' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#718096" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span style={{ fontSize: '14px', color: '#718096' }}>Download template:</span>
-                <a href="#" style={{ fontSize: '14px', color: '#4299e1', textDecoration: 'none', fontWeight: '500' }}>CSV</a>
-                <span style={{ fontSize: '14px', color: '#cbd5e0', margin: '0 4px' }}>•</span>
-                <span style={{ fontSize: '14px', color: '#718096' }}>PDF: Any product catalogue</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '24px', padding: '16px', background: colors.card.backgroundAlt, borderRadius: '8px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.text.secondary} strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span style={{ fontSize: '14px', color: colors.text.secondary }}>Download template:</span>
+                <a href="#" style={{ fontSize: '14px', color: colors.primary.blue, textDecoration: 'none', fontWeight: '500' }}>CSV</a>
+                <span style={{ fontSize: '14px', color: colors.text.muted, margin: '0 4px' }}>•</span>
+                <span style={{ fontSize: '14px', color: colors.text.secondary }}>PDF: Any product catalogue</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={handleContinueToPreview} disabled={!uploadedFile || isProcessing} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: uploadedFile ? 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)' : '#cbd5e0', border: 'none', borderRadius: '8px', cursor: uploadedFile ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '32px', paddingTop: '24px', borderTop: `1px solid ${colors.border.color}` }}>
+                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: colors.text.tertiary, background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={handleContinueToPreview} disabled={!uploadedFile || isProcessing} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: uploadedFile ? colors.gradient.blue : colors.text.muted, border: 'none', borderRadius: '8px', cursor: uploadedFile ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {isProcessing ? <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Processing...</> : <>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></>}
                 </button>
               </div>
@@ -429,23 +446,23 @@ export default function BulkImportPage() {
                   <div style={{
                     width: '60px',
                     height: '60px',
-                    border: '4px solid #f0f0f0',
-                    borderTopColor: '#667eea',
+                    border: `4px solid ${colors.border.light}`,
+                    borderTopColor: colors.primary.purple,
                     borderRadius: '50%',
                     margin: '0 auto 24px',
                     animation: 'spin 1s linear infinite'
                   }} />
-                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1a202c', marginBottom: '8px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: colors.text.primary, marginBottom: '8px' }}>
                     {extractionStatus?.message || 'Extracting products from PDF...'}
                   </h3>
-                  <p style={{ fontSize: '14px', color: '#718096', marginBottom: '24px' }}>
+                  <p style={{ fontSize: '14px', color: colors.text.secondary, marginBottom: '24px' }}>
                     Progress: {extractionStatus?.progress || 0}%
                   </p>
                   <div style={{
                     width: '100%',
                     maxWidth: '400px',
                     height: '8px',
-                    background: '#f0f0f0',
+                    background: colors.border.light,
                     borderRadius: '4px',
                     overflow: 'hidden',
                     margin: '0 auto'
@@ -453,48 +470,48 @@ export default function BulkImportPage() {
                     <div style={{
                       width: `${extractionStatus?.progress || 0}%`,
                       height: '100%',
-                      background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                      background: colors.gradient.ai,
                       transition: 'width 0.3s ease'
                     }} />
                   </div>
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: '#718096', margin: 0 }}>Review the data before importing</p></div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#f7fafc', borderRadius: '8px', marginBottom: '20px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ fontSize: '20px' }}>{getFileIcon(uploadedFile?.name || 'file.csv')}</span><span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{uploadedFile?.name || 'products.csv'}</span></div>
-                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ fontSize: '13px', color: '#4299e1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Change File</button>
+                  <div style={{ marginBottom: '24px' }}><h2 style={{ fontSize: '20px', fontWeight: '600', color: colors.text.primary, margin: '0 0 8px' }}>Preview & Validate</h2><p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>Review the data before importing</p></div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: colors.card.backgroundAlt, borderRadius: '8px', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><span style={{ fontSize: '20px' }}>{getFileIcon(uploadedFile?.name || 'file.csv')}</span><span style={{ fontSize: '14px', fontWeight: '500', color: colors.text.primary }}>{uploadedFile?.name || 'products.csv'}</span></div>
+                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]) }} style={{ fontSize: '13px', color: colors.primary.blue, background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}>Change File</button>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
-                <div style={{ padding: '16px', background: '#f0fff4', borderRadius: '10px', border: '1px solid #c6f6d5' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38a169" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: '#276749' }}>Ready</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: '#22543d' }}>{validCount}</span></div>
-                <div style={{ padding: '16px', background: '#fffaf0', borderRadius: '10px', border: '1px solid #fbd38d' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d69e2e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: '#975a16' }}>Warnings</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: '#744210' }}>{warningCount}</span></div>
-                <div style={{ padding: '16px', background: '#fff5f5', borderRadius: '10px', border: '1px solid #feb2b2' }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: '#c53030' }}>Errors</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: '#742a2a' }}>{errorCount}</span></div>
+                <div style={{ padding: '16px', background: colors.status.success.bg, borderRadius: '10px', border: `1px solid ${colors.status.success.text}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.status.success.icon} strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: colors.status.success.text }}>Ready</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: colors.status.success.text }}>{validCount}</span></div>
+                <div style={{ padding: '16px', background: colors.status.warning.bg, borderRadius: '10px', border: `1px solid ${colors.status.warning.text}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.status.warning.text} strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: colors.status.warning.text }}>Warnings</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: colors.status.warning.text }}>{warningCount}</span></div>
+                <div style={{ padding: '16px', background: colors.status.error.bg, borderRadius: '10px', border: `1px solid ${colors.status.error.text}` }}><div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.status.error.text} strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span style={{ fontSize: '13px', fontWeight: '500', color: colors.status.error.text }}>Errors</span></div><span style={{ fontSize: '28px', fontWeight: '700', color: colors.status.error.text }}>{errorCount}</span></div>
               </div>
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
+              <div style={{ border: `1px solid ${colors.border.color}`, borderRadius: '10px', overflow: 'hidden', marginBottom: '20px' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr style={{ background: '#f7fafc' }}><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', width: '60px' }}>Row</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase' }}>Name</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', width: '100px' }}>SKU</th><th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', width: '80px' }}>Price</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', width: '180px' }}>Status</th></tr></thead>
+                  <thead><tr style={{ background: colors.card.backgroundAlt }}><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', width: '60px' }}>Row</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase' }}>Name</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', width: '100px' }}>SKU</th><th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', width: '80px' }}>Price</th><th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', width: '180px' }}>Status</th></tr></thead>
                   <tbody>
                     {parsedData.map((row) => (
-                      <tr key={row.row} style={{ borderTop: '1px solid #e2e8f0' }}>
-                        <td style={{ padding: '12px 16px', fontSize: '13px', color: '#718096' }}>{row.row}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>{row.name}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: 'monospace', color: '#718096' }}>{row.sku || <span style={{ color: '#e53e3e' }}>—</span>}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', color: row.price < 0 ? '#e53e3e' : '#1a202c' }}>${row.price.toFixed(2)}</td>
-                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: row.status === 'valid' ? '#f0fff4' : row.status === 'warning' || row.status === 'duplicate' ? '#fffaf0' : '#fff5f5', color: row.status === 'valid' ? '#276749' : row.status === 'warning' || row.status === 'duplicate' ? '#975a16' : '#c53030' }}>{row.status === 'valid' && '✓'}{(row.status === 'warning' || row.status === 'duplicate') && '⚠'}{row.status === 'error' && '✕'}{row.statusText}</div></td>
+                      <tr key={row.row} style={{ borderTop: `1px solid ${colors.border.color}` }}>
+                        <td style={{ padding: '12px 16px', fontSize: '13px', color: colors.text.secondary }}>{row.row}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: colors.text.primary }}>{row.name}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '13px', fontFamily: 'monospace', color: colors.text.secondary }}>{row.sku || <span style={{ color: colors.status.error.text }}>—</span>}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', color: row.price < 0 ? colors.status.error.text : colors.text.primary }}>${row.price.toFixed(2)}</td>
+                        <td style={{ padding: '12px 16px' }}><div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', background: row.status === 'valid' ? colors.status.success.bg : row.status === 'warning' || row.status === 'duplicate' ? colors.status.warning.bg : colors.status.error.bg, color: row.status === 'valid' ? colors.status.success.text : row.status === 'warning' || row.status === 'duplicate' ? colors.status.warning.text : colors.status.error.text }}>{row.status === 'valid' && '✓'}{(row.status === 'warning' || row.status === 'duplicate') && '⚠'}{row.status === 'error' && '✕'}{row.statusText}</div></td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
               {errorCount > 0 && (
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', background: '#fff5f5', borderRadius: '8px', cursor: 'pointer', marginBottom: '24px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', background: colors.status.error.bg, borderRadius: '8px', cursor: 'pointer', marginBottom: '24px' }}>
                   <input type="checkbox" checked={skipErrors} onChange={(e) => setSkipErrors(e.target.checked)} style={{ width: '18px', height: '18px' }} />
-                  <div><span style={{ fontSize: '14px', fontWeight: '500', color: '#1a202c' }}>Skip rows with errors</span><p style={{ fontSize: '13px', color: '#718096', margin: '2px 0 0' }}>Import only valid rows ({importableCount} of {parsedData.length} items)</p></div>
+                  <div><span style={{ fontSize: '14px', fontWeight: '500', color: colors.text.primary }}>Skip rows with errors</span><p style={{ fontSize: '13px', color: colors.text.secondary, margin: '2px 0 0' }}>Import only valid rows ({importableCount} of {parsedData.length} items)</p></div>
                 </label>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => setCurrentStep(1)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
-                <button onClick={() => setCurrentStep(3)} disabled={importableCount === 0} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: importableCount > 0 ? 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)' : '#cbd5e0', border: 'none', borderRadius: '8px', cursor: importableCount > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: `1px solid ${colors.border.color}` }}>
+                <button onClick={() => setCurrentStep(1)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: colors.text.tertiary, background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
+                <button onClick={() => setCurrentStep(3)} disabled={importableCount === 0} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: importableCount > 0 ? colors.gradient.blue : colors.text.muted, border: 'none', borderRadius: '8px', cursor: importableCount > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '8px' }}>Continue<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
                 </>
               )}
@@ -505,29 +522,29 @@ export default function BulkImportPage() {
           {currentStep === 3 && (
             <div style={{ padding: '40px' }}>
               <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                <div style={{ width: '72px', height: '72px', background: '#ebf8ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#4299e1" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
-                <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#1a202c', margin: '0 0 8px' }}>Ready to Import</h2>
-                <p style={{ fontSize: '15px', color: '#718096', margin: 0 }}>Review the summary and confirm your import</p>
+                <div style={{ width: '72px', height: '72px', background: colors.icon.bgBlue, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke={colors.primary.blue} strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+                <h2 style={{ fontSize: '24px', fontWeight: '600', color: colors.text.primary, margin: '0 0 8px' }}>Ready to Import</h2>
+                <p style={{ fontSize: '15px', color: colors.text.secondary, margin: 0 }}>Review the summary and confirm your import</p>
               </div>
-              <div style={{ background: '#f7fafc', borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 16px' }}>Import Summary</h3>
+              <div style={{ background: colors.card.backgroundAlt, borderRadius: '12px', padding: '24px', marginBottom: '32px' }}>
+                <h3 style={{ fontSize: '14px', fontWeight: '600', color: colors.text.tertiary, textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0 0 16px' }}>Import Summary</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: '#c6f6d5', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#276749" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span style={{ fontSize: '15px', color: '#1a202c' }}><strong>{validCount}</strong> new products will be added</span></div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: '#bee3f8', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2b6cb0" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><span style={{ fontSize: '15px', color: '#1a202c' }}><strong>{parsedData.filter(r => r.status === 'duplicate').length}</strong> existing products will be updated</span></div>
-                  {errorCount > 0 && skipErrors && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: '#fed7d7', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c53030" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><span style={{ fontSize: '15px', color: '#1a202c' }}><strong>{errorCount}</strong> rows will be skipped (errors)</span></div>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: colors.icon.bgGreen, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.status.success.text} strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><span style={{ fontSize: '15px', color: colors.text.primary }}><strong>{validCount}</strong> new products will be added</span></div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: colors.icon.bgBlue, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.primary.blueDark} strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><span style={{ fontSize: '15px', color: colors.text.primary }}><strong>{parsedData.filter(r => r.status === 'duplicate').length}</strong> existing products will be updated</span></div>
+                  {errorCount > 0 && skipErrors && <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}><div style={{ width: '32px', height: '32px', background: colors.icon.bgRed, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={colors.status.error.icon} strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div><span style={{ fontSize: '15px', color: colors.text.primary }}><strong>{errorCount}</strong> rows will be skipped (errors)</span></div>}
                 </div>
               </div>
               {importError && (
-                <div style={{ padding: '16px', background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: '8px', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#c53030' }}>
+                <div style={{ padding: '16px', background: colors.status.error.bg, border: `1px solid ${colors.status.error.text}`, borderRadius: '8px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: colors.status.error.text }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                     <span style={{ fontWeight: '500' }}>Import failed: {importError}</span>
                   </div>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => setCurrentStep(2)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
-                <button onClick={handleConfirmImport} disabled={isProcessing} style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(72, 187, 120, 0.3)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '24px', borderTop: `1px solid ${colors.border.color}` }}>
+                <button onClick={() => setCurrentStep(2)} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: colors.text.tertiary, background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Back</button>
+                <button onClick={handleConfirmImport} disabled={isProcessing} style={{ padding: '12px 28px', fontSize: '14px', fontWeight: '600', color: 'white', background: colors.gradient.purple, border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: colors.shadow.purple }}>
                   {isProcessing ? <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Importing...</> : <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>Import Now</>}
                 </button>
               </div>
@@ -537,50 +554,50 @@ export default function BulkImportPage() {
           {/* Step 4: Complete */}
           {currentStep === 4 && (
             <div style={{ padding: '60px 40px', textAlign: 'center' }}>
-              <div style={{ width: '88px', height: '88px', background: 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px', boxShadow: '0 8px 24px rgba(72, 187, 120, 0.3)' }}><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-              <h2 style={{ fontSize: '28px', fontWeight: '700', color: '#1a202c', margin: '0 0 12px' }}>Import Successful!</h2>
-              <p style={{ fontSize: '16px', color: '#718096', margin: '0 0 36px' }}>Your products have been imported to your inventory</p>
-              <div style={{ display: 'inline-flex', gap: '32px', padding: '24px 40px', background: '#f7fafc', borderRadius: '12px', marginBottom: '36px' }}>
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#38a169' }}>{importResult?.created || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Added</div></div>
-                <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#4299e1' }}>{importResult?.updated || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Updated</div></div>
-                <div style={{ width: '1px', background: '#e2e8f0' }} />
-                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: '#a0aec0' }}>{importResult?.skipped || 0}</div><div style={{ fontSize: '13px', color: '#718096', marginTop: '4px' }}>Skipped</div></div>
+              <div style={{ width: '88px', height: '88px', background: colors.gradient.purple, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px', boxShadow: colors.shadow.purple }}><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <h2 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: '0 0 12px' }}>Import Successful!</h2>
+              <p style={{ fontSize: '16px', color: colors.text.secondary, margin: '0 0 36px' }}>Your products have been imported to your inventory</p>
+              <div style={{ display: 'inline-flex', gap: '32px', padding: '24px 40px', background: colors.card.backgroundAlt, borderRadius: '12px', marginBottom: '36px' }}>
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: colors.status.success.icon }}>{importResult?.created || 0}</div><div style={{ fontSize: '13px', color: colors.text.secondary, marginTop: '4px' }}>Added</div></div>
+                <div style={{ width: '1px', background: colors.border.color }} />
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: colors.primary.blue }}>{importResult?.updated || 0}</div><div style={{ fontSize: '13px', color: colors.text.secondary, marginTop: '4px' }}>Updated</div></div>
+                <div style={{ width: '1px', background: colors.border.color }} />
+                <div style={{ textAlign: 'center' }}><div style={{ fontSize: '32px', fontWeight: '700', color: colors.text.muted }}>{importResult?.skipped || 0}</div><div style={{ fontSize: '13px', color: colors.text.secondary, marginTop: '4px' }}>Skipped</div></div>
               </div>
 
               {/* AI Tagging Section */}
               {importedProducts.length > 0 && (
                 <div style={{ maxWidth: '500px', margin: '0 auto 36px', textAlign: 'left' }}>
                   {!taggingResult ? (
-                    <div style={{ padding: '24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
+                    <div style={{ padding: '24px', background: colors.gradient.ai, borderRadius: '12px', color: 'white' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                         <span style={{ fontSize: '16px', fontWeight: '600' }}>AI-Powered Tagging</span>
                       </div>
                       <p style={{ fontSize: '14px', opacity: 0.9, margin: '0 0 16px' }}>Automatically generate relevant tags for your {importedProducts.length} imported products using AI</p>
-                      <button onClick={handleAITagging} disabled={isTagging} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: '#667eea', background: 'white', border: 'none', borderRadius: '8px', cursor: isTagging ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <button onClick={handleAITagging} disabled={isTagging} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: colors.primary.purple, background: 'white', border: 'none', borderRadius: '8px', cursor: isTagging ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {isTagging ? (
-                          <><div style={{ width: '16px', height: '16px', border: '2px solid rgba(102, 126, 234, 0.3)', borderTopColor: '#667eea', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Generating Tags...</>
+                          <><div style={{ width: '16px', height: '16px', border: `2px solid ${colors.icon.bgPurple}`, borderTopColor: colors.primary.purple, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />Generating Tags...</>
                         ) : (
                           <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Generate AI Tags</>
                         )}
                       </button>
                     </div>
                   ) : (
-                    <div style={{ padding: '24px', background: '#f0fff4', borderRadius: '12px', border: '1px solid #c6f6d5' }}>
+                    <div style={{ padding: '24px', background: colors.status.success.bg, borderRadius: '12px', border: `1px solid ${colors.status.success.text}` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38a169" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#276749' }}>AI Tags Generated for {taggingResult.processed} Products</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.status.success.icon} strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: colors.status.success.text }}>AI Tags Generated for {taggingResult.processed} Products</span>
                       </div>
                       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         {taggingResult.results.map((result, idx) => {
                           const product = importedProducts.find(p => p.id === result.productId)
                           return (
-                            <div key={result.productId} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: idx < taggingResult.results.length - 1 ? '1px solid #c6f6d5' : 'none' }}>
-                              <span style={{ fontSize: '13px', color: '#4a5568', minWidth: '140px', fontWeight: '500' }}>{product?.name?.slice(0, 20) || 'Product'}...</span>
+                            <div key={result.productId} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 0', borderBottom: idx < taggingResult.results.length - 1 ? `1px solid ${colors.status.success.text}` : 'none' }}>
+                              <span style={{ fontSize: '13px', color: colors.text.tertiary, minWidth: '140px', fontWeight: '500' }}>{product?.name?.slice(0, 20) || 'Product'}...</span>
                               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                 {result.suggestedTags.map(tag => (
-                                  <span key={tag} style={{ padding: '4px 10px', fontSize: '11px', background: '#c6f6d5', color: '#276749', borderRadius: '12px' }}>{tag}</span>
+                                  <span key={tag} style={{ padding: '4px 10px', fontSize: '11px', background: colors.icon.bgGreen, color: colors.status.success.text, borderRadius: '12px' }}>{tag}</span>
                                 ))}
                               </div>
                             </div>
@@ -592,9 +609,9 @@ export default function BulkImportPage() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null); setTaggingResult(null); setImportedProducts([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: '#4a5568', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
-                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', paddingTop: '24px', borderTop: `1px solid ${colors.border.color}` }}>
+                <button onClick={() => { setCurrentStep(1); setUploadedFile(null); setParsedData([]); setImportResult(null); setTaggingResult(null); setImportedProducts([]) }} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '500', color: colors.text.tertiary, background: colors.card.background, border: `1px solid ${colors.border.color}`, borderRadius: '8px', cursor: 'pointer' }}>Import More</button>
+                <button onClick={() => navigate('/merchant/inventory')} style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600', color: 'white', background: colors.gradient.blue, border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>Go to Inventory<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
               </div>
             </div>
           )}

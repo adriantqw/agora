@@ -106,29 +106,8 @@ export default function LoginPage() {
             maxWidth: '280px',
             lineHeight: '1.6'
           }}>
-            Manage your inventory with ease. Simple, fast, reliable.
+            Manage your inventory &amp; sales with ease. Simple, fast, reliable.
           </p>
-
-          {/* Feature highlights */}
-          <div style={{ textAlign: 'left' }}>
-            {[
-              { icon: '\u{1F4E6}', text: 'Real-time inventory tracking' },
-              { icon: '\u{1F4CA}', text: 'Bulk import & export' },
-              { icon: '\u{1F512}', text: 'Secure & reliable' }
-            ].map((feature, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                marginBottom: '16px',
-                color: 'rgba(255,255,255,0.8)',
-                fontSize: '14px'
-              }}>
-                <span style={{ fontSize: '18px' }}>{feature.icon}</span>
-                <span>{feature.text}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
