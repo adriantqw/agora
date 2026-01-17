@@ -7,6 +7,30 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#4299e1" />
+
+    <!-- Initialize theme BEFORE React loads -->
+    <script>
+      (function() {
+        try {
+          var savedTheme = localStorage.getItem('agora-theme');
+          var theme = 'light';
+
+          if (savedTheme === 'light' || savedTheme === 'dark') {
+            theme = savedTheme;
+          } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            theme = 'dark';
+          }
+
+          // Remove both possible theme classes first
+          document.documentElement.classList.remove('light-theme', 'dark-theme');
+          // Add the correct theme class
+          document.documentElement.classList.add(theme + '-theme');
+        } catch (e) {
+          // Silently fail if localStorage is blocked
+        }
+      })();
+    </script>
+
     <title>Agora MerchantHub - Inventory Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
