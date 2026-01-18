@@ -1,0 +1,610 @@
+/**
+ * Shopping Concierge Service
+ *
+ * This service handles AI-powered question generation and product matching
+ * for the shopping concierge feature.
+ *
+ * Current Implementation: Dummy version with keyword-based question selection
+ * Future: Will integrate with real AI backend API
+ */
+
+import STYLE_GUIDE from '../config/styleGuide.js';
+
+const { constraints } = STYLE_GUIDE;
+
+/**
+ * Fallback Questions Database
+ * Pre-defined question sets for different product categories
+ */
+const FALLBACK_QUESTIONS = {
+  DRESS_QUESTIONS: [
+    {
+      id: 'dress-q1',
+      type: 'image-choice',
+      question: 'What style appeals to you for this wedding?',
+      layout: 'grid',
+      columns: 2,
+      required: true,
+      options: [
+        {
+          id: 'opt1',
+          label: 'Classic & Elegant',
+          description: 'Timeless, sophisticated styles',
+          imageUrl: null,
+          imagePrompt: 'elegant formal dress',
+          metadata: { tags: ['elegant', 'formal', 'classic'] }
+        },
+        {
+          id: 'opt2',
+          label: 'Bohemian & Flowy',
+          description: 'Relaxed, romantic vibes',
+          imageUrl: null,
+          imagePrompt: 'bohemian flowy dress',
+          metadata: { tags: ['bohemian', 'casual', 'romantic'] }
+        },
+        {
+          id: 'opt3',
+          label: 'Modern & Chic',
+          description: 'Contemporary, fashion-forward',
+          imageUrl: null,
+          imagePrompt: 'modern chic dress',
+          metadata: { tags: ['modern', 'trendy', 'chic'] }
+        },
+        {
+          id: 'opt4',
+          label: 'Vintage Inspired',
+          description: 'Retro charm with modern updates',
+          imageUrl: null,
+          imagePrompt: 'vintage inspired dress',
+          metadata: { tags: ['vintage', 'retro', 'classic'] }
+        }
+      ]
+    },
+    {
+      id: 'dress-q2',
+      type: 'color-palette',
+      question: 'Which color palette do you prefer?',
+      layout: 'grid',
+      columns: 2,
+      required: true,
+      options: [
+        {
+          id: 'palette1',
+          label: 'Warm Tones',
+          description: 'Reds, oranges, yellows',
+          colors: ['#E53E3E', '#ED8936', '#F6E05E'],
+          metadata: { tags: ['warm', 'bold', 'vibrant'] }
+        },
+        {
+          id: 'palette2',
+          label: 'Cool Tones',
+          description: 'Blues, greens, purples',
+          colors: ['#4299E1', '#48BB78', '#9F7AEA'],
+          metadata: { tags: ['cool', 'calm', 'elegant'] }
+        },
+        {
+          id: 'palette3',
+          label: 'Neutrals',
+          description: 'Beige, cream, taupe',
+          colors: ['#CBD5E0', '#D6BCFA', '#FEB2B2'],
+          metadata: { tags: ['neutral', 'soft', 'classic'] }
+        },
+        {
+          id: 'palette4',
+          label: 'Pastels',
+          description: 'Soft, muted colors',
+          colors: ['#FED7D7', '#C6F6D5', '#E9D8FD'],
+          metadata: { tags: ['pastel', 'soft', 'romantic'] }
+        }
+      ]
+    },
+    {
+      id: 'dress-q3',
+      type: 'single-choice',
+      question: 'What length are you looking for?',
+      required: true,
+      options: [
+        {
+          id: 'length1',
+          label: 'Floor Length',
+          description: 'Full, formal gown',
+          metadata: { tags: ['long', 'formal'] }
+        },
+        {
+          id: 'length2',
+          label: 'Midi',
+          description: 'Mid-calf length',
+          metadata: { tags: ['midi', 'versatile'] }
+        },
+        {
+          id: 'length3',
+          label: 'Knee Length',
+          description: 'Classic cocktail length',
+          metadata: { tags: ['short', 'cocktail'] }
+        },
+        {
+          id: 'length4',
+          label: 'Mini',
+          description: 'Above the knee',
+          metadata: { tags: ['short', 'playful'] }
+        }
+      ]
+    },
+    {
+      id: 'dress-q4',
+      type: 'multi-select',
+      question: 'What features are important to you?',
+      required: false,
+      options: [
+        { id: 'feat1', label: 'Sleeves', metadata: { tags: ['sleeved'] } },
+        { id: 'feat2', label: 'Pockets', metadata: { tags: ['pockets'] } },
+        { id: 'feat3', label: 'Adjustable Straps', metadata: { tags: ['adjustable'] } },
+        { id: 'feat4', label: 'Lined Interior', metadata: { tags: ['lined'] } },
+        { id: 'feat5', label: 'Zipper Back', metadata: { tags: ['zipper'] } }
+      ]
+    },
+    {
+      id: 'dress-q5',
+      type: 'scale-rating',
+      question: 'What is your budget comfort level?',
+      min: 0,
+      max: 5,
+      minLabel: 'Budget-Friendly',
+      maxLabel: 'Premium',
+      required: true
+    }
+  ],
+
+  SHOES_QUESTIONS: [
+    {
+      id: 'shoes-q1',
+      type: 'image-choice',
+      question: 'What type of shoes are you looking for?',
+      layout: 'grid',
+      columns: 3,
+      required: true,
+      options: [
+        {
+          id: 'opt1',
+          label: 'Sneakers',
+          description: 'Casual, comfortable',
+          imageUrl: null,
+          imagePrompt: 'stylish sneakers',
+          metadata: { tags: ['sneakers', 'casual', 'comfortable'] }
+        },
+        {
+          id: 'opt2',
+          label: 'Boots',
+          description: 'Stylish, versatile',
+          imageUrl: null,
+          imagePrompt: 'fashion boots',
+          metadata: { tags: ['boots', 'versatile'] }
+        },
+        {
+          id: 'opt3',
+          label: 'Sandals',
+          description: 'Light, breathable',
+          imageUrl: null,
+          imagePrompt: 'summer sandals',
+          metadata: { tags: ['sandals', 'summer'] }
+        },
+        {
+          id: 'opt4',
+          label: 'Formal Shoes',
+          description: 'Elegant, professional',
+          imageUrl: null,
+          imagePrompt: 'formal dress shoes',
+          metadata: { tags: ['formal', 'elegant'] }
+        }
+      ]
+    },
+    {
+      id: 'shoes-q2',
+      type: 'multi-select',
+      question: 'What activities will you use these shoes for?',
+      required: true,
+      options: [
+        { id: 'act1', label: 'Daily Wear', metadata: { tags: ['daily', 'casual'] } },
+        { id: 'act2', label: 'Running/Sports', metadata: { tags: ['athletic', 'sports'] } },
+        { id: 'act3', label: 'Work/Office', metadata: { tags: ['professional', 'work'] } },
+        { id: 'act4', label: 'Special Occasions', metadata: { tags: ['formal', 'special'] } },
+        { id: 'act5', label: 'Outdoor Activities', metadata: { tags: ['outdoor', 'active'] } }
+      ]
+    },
+    {
+      id: 'shoes-q3',
+      type: 'color-palette',
+      question: 'What color scheme do you prefer?',
+      layout: 'grid',
+      columns: 2,
+      required: true,
+      options: [
+        {
+          id: 'palette1',
+          label: 'Classic Neutrals',
+          description: 'Black, white, brown',
+          colors: ['#1A202C', '#FFFFFF', '#744210'],
+          metadata: { tags: ['neutral', 'classic'] }
+        },
+        {
+          id: 'palette2',
+          label: 'Bold Colors',
+          description: 'Red, blue, green',
+          colors: ['#E53E3E', '#4299E1', '#48BB78'],
+          metadata: { tags: ['bold', 'colorful'] }
+        }
+      ]
+    },
+    {
+      id: 'shoes-q4',
+      type: 'scale-rating',
+      question: 'How important is comfort vs. style?',
+      min: 0,
+      max: 5,
+      minLabel: 'Comfort First',
+      maxLabel: 'Style First',
+      required: true
+    },
+    {
+      id: 'shoes-q5',
+      type: 'free-text',
+      question: 'Any specific brands or features you prefer?',
+      multiline: false,
+      maxLength: 200,
+      placeholder: 'e.g., Nike, cushioned sole, waterproof',
+      required: false
+    }
+  ],
+
+  GIFT_QUESTIONS: [
+    {
+      id: 'gift-q1',
+      type: 'single-choice',
+      question: 'Who is this gift for?',
+      required: true,
+      options: [
+        { id: 'who1', label: 'Partner/Spouse', metadata: { tags: ['romantic', 'personal'] } },
+        { id: 'who2', label: 'Family Member', metadata: { tags: ['family', 'traditional'] } },
+        { id: 'who3', label: 'Friend', metadata: { tags: ['friendship', 'fun'] } },
+        { id: 'who4', label: 'Colleague', metadata: { tags: ['professional', 'appropriate'] } },
+        { id: 'who5', label: 'Child', metadata: { tags: ['playful', 'young'] } }
+      ]
+    },
+    {
+      id: 'gift-q2',
+      type: 'multi-select',
+      question: 'What are their interests?',
+      required: true,
+      options: [
+        { id: 'int1', label: 'Fashion & Style', metadata: { tags: ['fashion', 'clothing'] } },
+        { id: 'int2', label: 'Tech & Gadgets', metadata: { tags: ['tech', 'electronics'] } },
+        { id: 'int3', label: 'Home & Decor', metadata: { tags: ['home', 'decor'] } },
+        { id: 'int4', label: 'Sports & Fitness', metadata: { tags: ['sports', 'fitness'] } },
+        { id: 'int5', label: 'Books & Learning', metadata: { tags: ['books', 'education'] } },
+        { id: 'int6', label: 'Art & Crafts', metadata: { tags: ['art', 'creative'] } }
+      ]
+    },
+    {
+      id: 'gift-q3',
+      type: 'scale-rating',
+      question: 'What is your budget range?',
+      min: 0,
+      max: 5,
+      minLabel: 'Under $25',
+      maxLabel: '$100+',
+      required: true
+    },
+    {
+      id: 'gift-q4',
+      type: 'single-choice',
+      question: 'What is the occasion?',
+      required: true,
+      options: [
+        { id: 'occ1', label: 'Birthday', metadata: { tags: ['birthday'] } },
+        { id: 'occ2', label: 'Holiday', metadata: { tags: ['holiday'] } },
+        { id: 'occ3', label: 'Anniversary', metadata: { tags: ['anniversary'] } },
+        { id: 'occ4', label: 'Just Because', metadata: { tags: ['thoughtful'] } }
+      ]
+    },
+    {
+      id: 'gift-q5',
+      type: 'free-text',
+      question: 'Anything else we should know?',
+      multiline: true,
+      maxLength: 300,
+      placeholder: 'Any specific preferences, allergies, or additional details...',
+      required: false
+    }
+  ],
+
+  DEFAULT_QUESTIONS: [
+    {
+      id: 'default-q1',
+      type: 'image-choice',
+      question: 'What type of product are you looking for?',
+      layout: 'grid',
+      columns: 4,
+      required: true,
+      options: [
+        {
+          id: 'cat1',
+          label: 'Clothing',
+          description: 'Shirts, pants, dresses',
+          imageUrl: null,
+          imagePrompt: 'clothing items',
+          metadata: { tags: ['clothing'] }
+        },
+        {
+          id: 'cat2',
+          label: 'Footwear',
+          description: 'Shoes, boots, sandals',
+          imageUrl: null,
+          imagePrompt: 'footwear collection',
+          metadata: { tags: ['footwear'] }
+        },
+        {
+          id: 'cat3',
+          label: 'Accessories',
+          description: 'Bags, jewelry, watches',
+          imageUrl: null,
+          imagePrompt: 'fashion accessories',
+          metadata: { tags: ['accessories'] }
+        },
+        {
+          id: 'cat4',
+          label: 'Home Goods',
+          description: 'Decor, furniture, textiles',
+          imageUrl: null,
+          imagePrompt: 'home goods',
+          metadata: { tags: ['home'] }
+        }
+      ]
+    },
+    {
+      id: 'default-q2',
+      type: 'single-choice',
+      question: 'What is your style preference?',
+      required: true,
+      options: [
+        { id: 'style1', label: 'Classic', metadata: { tags: ['classic', 'timeless'] } },
+        { id: 'style2', label: 'Modern', metadata: { tags: ['modern', 'contemporary'] } },
+        { id: 'style3', label: 'Bohemian', metadata: { tags: ['bohemian', 'eclectic'] } },
+        { id: 'style4', label: 'Minimalist', metadata: { tags: ['minimalist', 'simple'] } }
+      ]
+    },
+    {
+      id: 'default-q3',
+      type: 'multi-select',
+      question: 'What features are most important to you?',
+      required: false,
+      options: [
+        { id: 'feat1', label: 'Quality Materials', metadata: { tags: ['quality'] } },
+        { id: 'feat2', label: 'Sustainable', metadata: { tags: ['sustainable', 'eco-friendly'] } },
+        { id: 'feat3', label: 'Affordable', metadata: { tags: ['budget', 'affordable'] } },
+        { id: 'feat4', label: 'Brand Name', metadata: { tags: ['brand', 'designer'] } },
+        { id: 'feat5', label: 'Unique Design', metadata: { tags: ['unique', 'distinctive'] } }
+      ]
+    },
+    {
+      id: 'default-q4',
+      type: 'color-palette',
+      question: 'What color scheme appeals to you?',
+      layout: 'grid',
+      columns: 2,
+      required: true,
+      options: [
+        {
+          id: 'pal1',
+          label: 'Warm',
+          description: 'Reds, oranges, yellows',
+          colors: ['#E53E3E', '#ED8936', '#F6E05E'],
+          metadata: { tags: ['warm', 'bold'] }
+        },
+        {
+          id: 'pal2',
+          label: 'Cool',
+          description: 'Blues, greens, purples',
+          colors: ['#4299E1', '#48BB78', '#9F7AEA'],
+          metadata: { tags: ['cool', 'calm'] }
+        },
+        {
+          id: 'pal3',
+          label: 'Neutrals',
+          description: 'Grays, beiges, whites',
+          colors: ['#4A5568', '#CBD5E0', '#FFFFFF'],
+          metadata: { tags: ['neutral', 'versatile'] }
+        }
+      ]
+    },
+    {
+      id: 'default-q5',
+      type: 'scale-rating',
+      question: 'What is your budget comfort level?',
+      min: 0,
+      max: 5,
+      minLabel: 'Budget Conscious',
+      maxLabel: 'Premium Quality',
+      required: true
+    }
+  ]
+};
+
+/**
+ * Keyword to Question Set Mapping
+ */
+const KEYWORD_QUESTION_MAP = {
+  dress: 'DRESS_QUESTIONS',
+  dresses: 'DRESS_QUESTIONS',
+  gown: 'DRESS_QUESTIONS',
+  wedding: 'DRESS_QUESTIONS',
+  formal: 'DRESS_QUESTIONS',
+
+  shoe: 'SHOES_QUESTIONS',
+  shoes: 'SHOES_QUESTIONS',
+  sneaker: 'SHOES_QUESTIONS',
+  sneakers: 'SHOES_QUESTIONS',
+  boot: 'SHOES_QUESTIONS',
+  boots: 'SHOES_QUESTIONS',
+  sandal: 'SHOES_QUESTIONS',
+  sandals: 'SHOES_QUESTIONS',
+  footwear: 'SHOES_QUESTIONS',
+
+  gift: 'GIFT_QUESTIONS',
+  present: 'GIFT_QUESTIONS',
+  birthday: 'GIFT_QUESTIONS',
+  anniversary: 'GIFT_QUESTIONS'
+};
+
+/**
+ * Validate question structure
+ *
+ * @param {Object} question - Question object to validate
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+export const validateQuestion = (question) => {
+  const errors = [];
+
+  // Required fields
+  if (!question.id) errors.push('Missing question ID');
+  if (!question.type) errors.push('Missing question type');
+  if (!question.question) errors.push('Missing question text');
+
+  // Type validation
+  if (!STYLE_GUIDE.componentTypes.includes(question.type)) {
+    errors.push(`Invalid question type: ${question.type}`);
+  }
+
+  // Component-specific validation
+  if (['image-choice', 'multi-select', 'single-choice', 'color-palette'].includes(question.type)) {
+    if (!question.options || !Array.isArray(question.options)) {
+      errors.push('Missing or invalid options array');
+    } else {
+      const minOptions = constraints[question.type]?.minOptions || 2;
+      if (question.options.length < minOptions) {
+        errors.push(`Insufficient options (minimum ${minOptions})`);
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+};
+
+/**
+ * Generate personalized questions based on user input
+ *
+ * @param {string} userInput - User's search query
+ * @returns {Promise<Array>} Array of question objects
+ */
+export const generateQuestions = async (userInput) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  // Keyword detection
+  const keywords = userInput.toLowerCase().split(' ');
+  let questionSet = 'DEFAULT_QUESTIONS';
+
+  for (const keyword of keywords) {
+    if (KEYWORD_QUESTION_MAP[keyword]) {
+      questionSet = KEYWORD_QUESTION_MAP[keyword];
+      break;
+    }
+  }
+
+  // Return the selected question set
+  const questions = FALLBACK_QUESTIONS[questionSet];
+
+  // Validate all questions
+  questions.forEach(question => {
+    const validation = validateQuestion(question);
+    if (!validation.valid) {
+      console.warn('Invalid question:', question.id, validation.errors);
+    }
+  });
+
+  return questions;
+};
+
+/**
+ * Submit answers and get product recommendations
+ *
+ * @param {Array} answers - Array of user answers
+ * @returns {Promise<Object>} Object with products array and metadata
+ */
+export const submitAnswers = async (answers) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // Extract tags from all answers
+  const allTags = [];
+  answers.forEach(answer => {
+    if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
+      // For multi-select and single-choice
+      answer.selectedOptions.forEach(optionId => {
+        const question = FALLBACK_QUESTIONS.DEFAULT_QUESTIONS.find(q => q.id === answer.questionId);
+        if (question?.options) {
+          const option = question.options.find(opt => opt.id === optionId);
+          if (option?.metadata?.tags) {
+            allTags.push(...option.metadata.tags);
+          }
+        }
+      });
+    }
+  });
+
+  // Mock product matching (in real implementation, this would query backend)
+  const mockProducts = [
+    { id: 1, name: 'Blue Cotton Shirt', price: 29.99, image: null, tag: 'New', category: 'Clothing', tags: ['classic', 'casual'] },
+    { id: 2, name: 'Black Slim Pants', price: 49.99, image: null, tag: 'Bestseller', category: 'Clothing', tags: ['modern', 'formal'] },
+    { id: 3, name: 'Red Summer Dress', price: 79.99, image: null, tag: 'Sale', category: 'Clothing', tags: ['romantic', 'summer'] },
+    { id: 4, name: 'Leather Wallet', price: 34.99, image: null, tag: null, category: 'Accessories', tags: ['classic', 'quality'] },
+    { id: 5, name: 'Canvas Backpack', price: 59.99, image: null, tag: 'New', category: 'Bags', tags: ['casual', 'sustainable'] },
+    { id: 6, name: 'Running Shoes', price: 89.99, image: null, tag: null, category: 'Footwear', tags: ['athletic', 'comfortable'] },
+    { id: 7, name: 'Denim Jacket', price: 89.99, image: null, tag: 'Popular', category: 'Clothing', tags: ['casual', 'classic'] },
+    { id: 8, name: 'Silk Scarf', price: 54.99, image: null, tag: null, category: 'Accessories', tags: ['elegant', 'unique'] }
+  ];
+
+  // Simple tag matching (in real implementation, would use AI-powered similarity)
+  const rankedProducts = mockProducts.map(product => {
+    const matchingTags = product.tags.filter(tag => allTags.includes(tag));
+    return {
+      ...product,
+      matchScore: matchingTags.length
+    };
+  }).sort((a, b) => b.matchScore - a.matchScore);
+
+  return {
+    products: rankedProducts.slice(0, 8), // Top 8 matches
+    totalMatches: rankedProducts.length,
+    metadata: {
+      answersProcessed: answers.length,
+      tagsExtracted: allTags.length,
+      matchingAlgorithm: 'tag-based-dummy'
+    }
+  };
+};
+
+/**
+ * Get suggestion chips for the input screen
+ *
+ * @returns {Array<string>} Array of suggestion strings
+ */
+export const getSuggestionChips = () => {
+  return [
+    'Summer dress for wedding',
+    'Running shoes for daily wear',
+    'Gift for tech-loving friend',
+    'Minimalist home decor',
+    'Casual work outfit',
+    'Sustainable accessories'
+  ];
+};
+
+export default {
+  generateQuestions,
+  submitAnswers,
+  validateQuestion,
+  getSuggestionChips
+};

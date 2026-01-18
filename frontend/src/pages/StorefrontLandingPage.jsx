@@ -339,38 +339,76 @@ export default function StorefrontLandingPage() {
           padding: '0 48px',
           display: 'flex',
           gap: '8px',
-          borderTop: '1px solid #e2e8f0'
+          borderTop: '1px solid #e2e8f0',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}>
-          {['All Products', 'New Arrivals', 'Clothing', 'Footwear', 'Accessories', 'Bags', 'Sale'].map((cat, i) => (
-            <a
-              key={cat}
-              href="#"
-              style={{
-                padding: '16px 20px',
-                fontSize: '14px',
-                fontWeight: '500',
-                color: i === 0 ? '#4299e1' : '#4a5568',
-                textDecoration: 'none',
-                borderBottom: i === 0 ? '2px solid #4299e1' : '2px solid transparent',
-                transition: 'all 0.2s'
-              }}
-            >
-              {cat}
-              {cat === 'Sale' && (
-                <span style={{
-                  marginLeft: '6px',
-                  padding: '2px 8px',
-                  fontSize: '11px',
-                  fontWeight: '600',
-                  background: '#fed7d7',
-                  color: '#c53030',
-                  borderRadius: '10px'
-                }}>
-                  HOT
-                </span>
-              )}
-            </a>
-          ))}
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {['All Products', 'New Arrivals', 'Clothing', 'Footwear', 'Accessories', 'Bags', 'Sale'].map((cat, i) => (
+              <a
+                key={cat}
+                href="#"
+                style={{
+                  padding: '16px 20px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: i === 0 ? '#4299e1' : '#4a5568',
+                  textDecoration: 'none',
+                  borderBottom: i === 0 ? '2px solid #4299e1' : '2px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {cat}
+                {cat === 'Sale' && (
+                  <span style={{
+                    marginLeft: '6px',
+                    padding: '2px 8px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    background: '#fed7d7',
+                    color: '#c53030',
+                    borderRadius: '10px'
+                  }}>
+                    HOT
+                  </span>
+                )}
+              </a>
+            ))}
+          </div>
+
+          {/* Shopping Assistant Button */}
+          <button
+            onClick={() => navigate('/concierge')}
+            style={{
+              padding: '12px 20px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: 'white',
+              background: 'linear-gradient(135deg, #4299e1 0%, #3182ce 100%)',
+              border: 'none',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 12px rgba(66, 153, 225, 0.25)',
+              transition: 'all 0.2s',
+              margin: '8px 0'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(66, 153, 225, 0.35)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 153, 225, 0.25)';
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            Shopping Assistant
+          </button>
         </nav>
       </header>
 
@@ -427,17 +465,26 @@ export default function StorefrontLandingPage() {
             }}>
               Shop Now
             </button>
-            <button style={{
-              padding: '16px 32px',
-              fontSize: '16px',
-              fontWeight: '600',
-              color: 'white',
-              background: 'transparent',
-              border: '2px solid rgba(255,255,255,0.3)',
-              borderRadius: '12px',
-              cursor: 'pointer'
-            }}>
-              View Lookbook
+            <button
+              onClick={() => navigate('/concierge')}
+              style={{
+                padding: '16px 32px',
+                fontSize: '16px',
+                fontWeight: '600',
+                color: 'white',
+                background: 'transparent',
+                border: '2px solid rgba(255,255,255,0.3)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              Get Personal Help
             </button>
           </div>
         </div>

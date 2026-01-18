@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
+import ShoppingConciergePage from './pages/ShoppingConciergePage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -33,8 +34,9 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Route */}
+      {/* Public Routes */}
       <Route path="/" element={<StorefrontLandingPage />} />
+      <Route path="/concierge" element={<ShoppingConciergePage />} />
 
       {/* Merchant Routes */}
       <Route
