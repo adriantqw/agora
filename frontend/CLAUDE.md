@@ -16,6 +16,7 @@ This is the **Agora MerchantHub** - a merchant inventory management platform bui
 - ✅ Docker configuration complete (development & production)
 - ✅ Nginx with basic authentication configured
 - ✅ Production deployment scripts ready
+- 🔄 **Catalogue ingestion backend API available** (frontend UI not yet implemented)
 - `merchant-frontend-overview.md` - Complete design specification (source of truth)
 - `BACKEND_INTEGRATION.md` - Backend API integration guide
 - `README.docker.md` - Docker setup and deployment guide
@@ -290,6 +291,34 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - Structured message protocol for different event types (INVENTORY_UPDATE, IMPORT_PROGRESS, NOTIFICATION)
 - React hooks pattern for managing streaming connections
 
+### Available Backend APIs (Not Yet Implemented in Frontend)
+
+**Catalogue Ingestion API** (Added January 18, 2026):
+The backend now provides AI-powered PDF catalogue extraction via 6 new endpoints:
+
+1. `POST /api/catalogues/upload` - Upload PDF, extract items automatically
+2. `GET /api/catalogues` - List uploaded catalogues with pagination
+3. `GET /api/catalogues/{id}` - Get single catalogue details
+4. `GET /api/catalogues/{id}/items` - Get extracted items (database staging area)
+5. `POST /api/catalogues/{id}/create-products` - Convert selected items to products
+6. `DELETE /api/catalogues/{id}` - Delete catalogue and cleanup storage
+
+**Workflow:**
+- Merchant uploads PDF catalogue → AI extracts items (name, description, sizes, colours, images)
+- Items stored in database staging area for review (CSV-like structure)
+- Merchant reviews items via API, selects which to convert
+- Products created with merged tags from sizes + colours
+- Items marked as converted after product creation
+
+**Frontend Implementation TODO:**
+- Add Catalogue Import page with PDF upload
+- Display extracted items in table/grid for review
+- Allow item selection and bulk product creation with price/quantity input
+- Show extraction progress and status
+- Display cropped item images from R2 storage
+
+See backend CLAUDE.md for complete API specification and response formats.
+
 ## Demo Credentials
 
 - **Email:** demo@merchant.com
@@ -349,7 +378,45 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - Maximum 100 products per AI tagging request
 - Loading spinners and success/error toast notifications
 
+### January 18, 2026
+
+**Backend: Catalogue Ingestion API Available**
+- ✅ Backend implemented AI-powered PDF catalogue extraction
+- ✅ 6 new API endpoints available for catalogue management
+- ✅ Database staging area for item review (CSV-like structure)
+- ✅ Automatic extraction of names, descriptions, sizes, colours, images
+- ✅ Selective product creation from extracted items
+- ✅ Tags automatically merged from sizes + colours
+- 📝 Frontend UI not yet implemented
+
+**Available for Frontend Integration:**
+```javascript
+// Example API usage (not yet implemented in frontend)
+POST /api/catalogues/upload - Upload PDF
+GET /api/catalogues/{id}/items - Get extracted items for review
+POST /api/catalogues/{id}/create-products - Convert items to products
+```
+
+**Frontend Implementation Needed:**
+- Catalogue import page with PDF upload UI
+- Item review interface (table/grid view)
+- Item selection and bulk product creation flow
+- Price/quantity input for batch product creation
+- Cropped item image display from R2 storage
+- Extraction progress indicators
+
 ### Next Steps
+
+**Catalogue Ingestion UI (HIGH PRIORITY):**
+Backend API is ready - frontend implementation needed:
+- Create `src/pages/MerchantCatalogueImportPage.jsx`
+- Add PDF file upload with drag-and-drop
+- Display extraction progress/status
+- Show extracted items in table with images
+- Add item selection and bulk product creation form
+- Integrate with catalogue API endpoints
+- Add catalogue service to `src/services/catalogueService.js`
+- Update navigation to include catalogue import link
 
 **AI Product Tagging - Production Implementation:**
 - Replace dummy implementation with actual AI service integration

@@ -13,7 +13,7 @@ from langchain_core.messages import HumanMessage
 from src.agents.schemas import CatalogueItemList
 from src.agents.states import CatalogueIngestorState
 from src.models.utils import load_model_from_config
-from backend.agent.src.utils.yaml import load_prompt_templates, load_config
+from src.utils.yaml import load_prompt_templates, load_config
 from src.utils.image import get_pil_box
 from langchain_core.exceptions import OutputParserException
 
