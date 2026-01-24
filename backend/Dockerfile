@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for FastAPI backend optimized for Cloud Run
 
-# Stage 1: Builder - Install dependencies
+# Stage 1: Builder - Install dependencies with uv
 FROM python:3.11-slim AS builder
 
 # Set working directory
@@ -9,25 +9,33 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create virtual environment
-RUN python -m venv /opt/venv
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:$PATH"
 
-# Activate virtual environment
-ENV PATH="/opt/venv/bin:$PATH"
+# Copy dependency files
+COPY agent/pyproject.toml agent/pyproject.toml
+COPY agent/uv.lock agent/uv.lock 2>/dev/null || true
 
-# Copy requirements file
-COPY requirements.txt .
+# Create virtual environment and install dependencies
+WORKDIR /app/agent
+RUN uv venv /opt/venv
+RUN uv sync --frozen 2>/dev/null || uv sync
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Stage 2: Runtime - Minimal production image
+# Stage 2: Runtime - Minimal production image with Tesseract
 FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
+
+# Install Tesseract OCR and runtime dependencies
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
@@ -35,7 +43,8 @@ COPY --from=builder /opt/venv /opt/venv
 # Set environment variables
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1
+    PYTHONDONTWRITEBYTECODE=1 \
+    TESSERACT_PATH=/usr/bin/tesseract
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && \
@@ -43,6 +52,7 @@ RUN useradd -m -u 1000 appuser && \
 
 # Copy application code
 COPY --chown=appuser:appuser app ./app
+COPY --chown=appuser:appuser agent ./agent
 COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser run.py .
 # Copy pre-seeded database file from repository
