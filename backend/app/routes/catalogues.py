@@ -124,7 +124,11 @@ async def stream_catalogue_processing(
         StreamingResponse with text/event-stream
     """
     # Verify catalogue ownership
-    catalogue = catalogue_service.get_catalogue_by_id(db, catalogue_id, current_user.id)
+    catalogue = catalogue_service.get_catalogue_by_id(
+        db=db,
+        merchant_id=current_user.id,
+        catalogue_id=catalogue_id
+    )
     if not catalogue:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

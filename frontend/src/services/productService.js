@@ -316,7 +316,13 @@ const productService = {
         signal: abortController.signal
       })
 
+      console.log('[Stream] Response status:', response.status)
+      console.log('[Stream] Response headers:', Object.fromEntries(response.headers.entries()))
+      console.log('[Stream] Response ok:', response.ok)
+
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('[Stream] Error response body:', errorText)
         throw new Error(`Stream failed: ${response.status}`)
       }
 
@@ -333,6 +339,7 @@ const productService = {
             if (done) break
 
             buffer += decoder.decode(value, { stream: true })
+            console.log('[Stream] Received chunk, buffer length:', buffer.length)
 
             // Split by double newline (SSE format)
             const events = buffer.split('\n\n')
@@ -341,12 +348,18 @@ const productService = {
             for (const event of events) {
               if (!event.trim()) continue
 
+              console.log('[Stream] Processing event:', event)
+
               // Parse SSE event (format: "data: {...}")
               const dataMatch = event.match(/^data: (.*)$/m)
-              if (!dataMatch) continue
+              if (!dataMatch) {
+                console.warn('[Stream] Event did not match SSE format:', event)
+                continue
+              }
 
               try {
                 const data = JSON.parse(dataMatch[1])
+                console.log('[Stream] Parsed data:', data)
 
                 switch (data.type) {
                   case 'progress':

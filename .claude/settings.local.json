@@ -19,7 +19,10 @@
       "Bash(findstr:*)",
       "Bash(python -m py_compile:*)",
       "Bash(python add_streaming_columns.py:*)",
-      "Bash(python init_or_migrate_db.py:*)"
+      "Bash(python init_or_migrate_db.py:*)",
+      "Bash(python -m app.routes.catalogues:*)",
+      "Bash(netstat:*)",
+      "Bash(python:*)"
     ]
   }
 }
