@@ -51,7 +51,14 @@ async def process_catalogue_background(
         filename: Original filename
     """
     from app.database import SessionLocal
-    from backend.agent.main import ingest_catalogue_stream
+
+    # Import agent stream function from sibling agent directory
+    import sys
+    from pathlib import Path
+    agent_main_path = Path(__file__).parent.parent.parent / "agent"
+    if str(agent_main_path) not in sys.path:
+        sys.path.insert(0, str(agent_main_path))
+    from main import ingest_catalogue_stream
 
     db = SessionLocal()
     temp_pdf_path = None

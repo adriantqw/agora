@@ -17,7 +17,9 @@
       "Bash(set UV_LINK_MODE=copy:*)",
       "Bash(dir /s /b)",
       "Bash(findstr:*)",
-      "Bash(python -m py_compile:*)"
+      "Bash(python -m py_compile:*)",
+      "Bash(python add_streaming_columns.py:*)",
+      "Bash(python init_or_migrate_db.py:*)"
     ]
   }
 }
