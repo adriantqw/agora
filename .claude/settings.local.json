@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv:*)",
+      "Bash(cmd.exe /c setup.bat)",
+      "Bash(backend/agent/.venv/Scripts/python.exe:*)",
+      "Bash(agent/.venv/Scripts/python.exe scripts/seed_database.py)",
+      "Bash(timeout 10 agent/.venv/Scripts/python.exe:*)",
+      "Bash(agent/.venv/Scripts/python.exe:*)"
+    ]
+  }
+}
