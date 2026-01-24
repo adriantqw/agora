@@ -66,6 +66,10 @@
   --color-primary-pink-light: #FDD5DD;
   --color-secondary-pink: #FFB6C1;
 
+  /* Egg Pink Palette for Journey Homepage */
+  --color-egg-pink: #ffb7c5;
+  --color-egg-pink-light: #ff9fb0;
+
   /* Gradients for Fashion Experience (Consumer) */
   --gradient-pink: linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%);
   --gradient-fitting-room: linear-gradient(180deg, #FFB6C1 0%, #FFA07A 100%);
@@ -142,6 +146,10 @@ html.dark-theme {
   --color-primary-pink-dark: #E8879C;
   --color-primary-pink-light: #FDD5DD;
   --color-secondary-pink: #FFB6C1;
+
+  /* Egg Pink Palette for Journey Homepage - Keep vibrant in dark mode */
+  --color-egg-pink: #ffb7c5;
+  --color-egg-pink-light: #ff9fb0;
 
   /* Gradients for Fashion Experience (Consumer) - Keep vibrant in dark mode */
   --gradient-pink: linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%);

@@ -51,6 +51,9 @@ export const useThemeColors = () => {
         pinkDark: getColor('--color-primary-pink-dark'),
         pinkLight: getColor('--color-primary-pink-light'),
         pinkSecondary: getColor('--color-secondary-pink'),
+        // Egg pink colors for journey homepage
+        eggPink: getColor('--color-egg-pink'),
+        eggPinkLight: getColor('--color-egg-pink-light'),
       },
       status: {
         success: {

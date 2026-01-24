@@ -39,7 +39,7 @@ interface Product {
 ```
 
 **Implemented Screens:**
-1. ✅ `src/pages/StorefrontLandingPage.jsx` - Customer-facing storefront (public)
+1. ✅ `src/pages/ConsumerLandingPage.jsx` - Journey-based consumer homepage with AI stylist (public)
 2. ✅ `src/pages/MerchantLoginPage.jsx` - Login with demo credentials
 3. ✅ `src/pages/MerchantHomePage.jsx` - Dashboard home with metrics and quick actions
 4. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
@@ -76,6 +76,34 @@ From `merchant-login-page.jsx`, the established design system uses:
 - Inputs: 2px border, `#e2e8f0` default, `#63b3ed` on focus
 - Buttons: Gradient backgrounds, box-shadow on enabled state
 - Inline styles (no CSS framework currently)
+
+**Consumer Homepage Colors (Journey-Based Design):**
+- Egg pink: `#ffb7c5`, `#ff9fb0` (primary accent for AI features and CTAs)
+- Pink gradients for hero sections and interactive elements
+- Inter font family for consumer-facing pages
+- Icons from lucide-react package
+
+## Consumer Homepage Design
+
+**Journey-Based Architecture:**
+The consumer homepage follows a journey-centric design pattern:
+- **Hero Section**: AI-powered search with typewriter placeholder effect
+- **Journey Sections**: Three pre-curated journeys (Valentine's Day, Office Edit, Girls' Night Out)
+- **Outfit Cards**: 4 cards per journey with 3:4 aspect ratio, hover effects
+- **AI Integration**: FAB (floating action button) for future AI chat functionality
+
+**Key Components:**
+- `JourneyHero`: Search bar with animated typewriter placeholders, status pills
+- `JourneySection`: Grid of outfit cards with journey title and status badge
+- `OutfitCard`: Product card with icon placeholder, AI Pick badge, price, add button
+- `Footer`: 4-column responsive footer with navigation links
+- `Header` (journey variant): Navigation buttons (Journeys, My Closets, Account) with Lucide icons
+- `Mascot` (fab variant): Simple 60px circular button with Sparkles icon
+
+**Responsive Breakpoints:**
+- Desktop (>1280px): 4-column outfit grid
+- Tablet (768-1024px): 2-column outfit grid
+- Mobile (<768px): 1-column outfit grid, icon-only navigation
 
 ## Navigation Pattern
 
@@ -170,14 +198,25 @@ See `README.docker.md` for comprehensive Docker documentation.
 ```
 src/
   pages/
-    StorefrontLandingPage.jsx  # Customer storefront
+    ConsumerLandingPage.jsx    # Journey-based consumer homepage with AI stylist
     MerchantHomePage.jsx       # Merchant dashboard home with metrics
     MerchantLoginPage.jsx      # Merchant login page
     MerchantDashboardPage.jsx  # Inventory dashboard with full-page edit view
     MerchantBulkImportPage.jsx # Bulk import wizard
+  components/
+    consumer/
+      JourneyHero/             # Hero section with AI search and typewriter effect
+      JourneySection/          # Journey section with outfit cards grid
+      OutfitCard/              # Individual outfit card component
+      Footer/                  # Consumer footer with links
+    common/
+      Header/                  # Header with journey/full/compact variants
+      Mascot/                  # Mascot with default/fab variants
+  data/
+    mockJourneys.js            # Mock journey and outfit data
   App.jsx                      # Main app with routing & auth
   main.jsx                     # App entry point
-  index.css                    # Global styles
+  index.css                    # Global styles with egg pink palette
 wireframe/                     # Original wireframe components (reference)
 public/                        # Static assets
   favicon.svg                  # SVG favicon (primary)
@@ -213,7 +252,11 @@ To regenerate PNG favicons:
 ## Routes
 
 **Public Routes:**
-- `/` - Customer storefront landing page (public)
+- `/` - Journey-based consumer homepage with AI stylist (public)
+- `/quiz` - Shopping quiz for outfit curation
+- `/fitting-room` - Virtual fitting room
+- `/browse` - Browse products by category
+- `/search` - Search results page
 
 **Merchant Routes:**
 - `/merchant/login` - Merchant login (redirects to home if authenticated)

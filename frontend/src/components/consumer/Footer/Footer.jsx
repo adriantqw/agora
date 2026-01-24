@@ -1,0 +1,335 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useThemeColors } from '../../../hooks/useThemeColors';
+
+/**
+ * Footer Component
+ *
+ * Site footer with:
+ * - 4-column grid: Brand, My Activity, Experience, Support
+ * - Agora branding with tagline
+ * - Footer bottom bar with merchant portal link
+ * - Privacy/Terms links
+ * - Responsive: 4 cols → 2 cols on tablet → 1 col on mobile
+ */
+const Footer = () => {
+  const colors = useThemeColors();
+  const navigate = useNavigate();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
+
+  return (
+    <footer
+      style={{
+        background: colors.text.primary,
+        color: '#ffffff',
+        padding: '60px 6% 0',
+        marginTop: '80px',
+      }}
+    >
+      {/* Footer Grid */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '40px',
+          marginBottom: '48px',
+        }}
+        className="footer-grid"
+      >
+        {/* Brand Column */}
+        <div>
+          <h3
+            style={{
+              fontSize: '24px',
+              fontWeight: '700',
+              marginBottom: '12px',
+              color: 'var(--color-primary-pink)',
+            }}
+          >
+            Agora
+          </h3>
+          <p
+            style={{
+              fontSize: '14px',
+              color: 'rgba(255, 255, 255, 0.7)',
+              lineHeight: '1.6',
+              maxWidth: '280px',
+            }}
+          >
+            Your personal AI stylist for every occasion. Curate, discover, and express your unique style journey.
+          </p>
+        </div>
+
+        {/* My Activity Column */}
+        <div>
+          <h4
+            style={{
+              fontSize: '14px',
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: '16px',
+              color: '#ffffff',
+            }}
+          >
+            My Activity
+          </h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {[
+              { label: 'Journeys', path: '/' },
+              { label: 'My Closets', path: '/browse' },
+              { label: 'Saved Items', path: '/browse' },
+              { label: 'Orders', path: '/browse' },
+            ].map((item) => (
+              <li key={item.label} style={{ marginBottom: '12px' }}>
+                <button
+                  onClick={() => handleNavigate(item.path)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: 0,
+                    textAlign: 'left',
+                    transition: 'color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#F5A5B8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                  }}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Experience Column */}
+        <div>
+          <h4
+            style={{
+              fontSize: '14px',
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: '16px',
+              color: '#ffffff',
+            }}
+          >
+            Experience
+          </h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {[
+              { label: 'Start a Journey', path: '/quiz' },
+              { label: 'Browse Styles', path: '/browse' },
+              { label: 'Virtual Fitting Room', path: '/fitting-room' },
+              { label: 'AI Stylist', path: '/quiz' },
+            ].map((item) => (
+              <li key={item.label} style={{ marginBottom: '12px' }}>
+                <button
+                  onClick={() => handleNavigate(item.path)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: 0,
+                    textAlign: 'left',
+                    transition: 'color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#F5A5B8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                  }}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Support Column */}
+        <div>
+          <h4
+            style={{
+              fontSize: '14px',
+              fontWeight: '700',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginBottom: '16px',
+              color: '#ffffff',
+            }}
+          >
+            Support
+          </h4>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {[
+              { label: 'Help Center', path: '/' },
+              { label: 'Contact Us', path: '/' },
+              { label: 'Size Guide', path: '/' },
+              { label: 'Returns', path: '/' },
+            ].map((item) => (
+              <li key={item.label} style={{ marginBottom: '12px' }}>
+                <button
+                  onClick={() => handleNavigate(item.path)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: 0,
+                    textAlign: 'left',
+                    transition: 'color 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#F5A5B8';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                  }}
+                >
+                  {item.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Footer Bottom Bar */}
+      <div
+        style={{
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          padding: '24px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}
+      >
+        {/* Copyright and Legal Links */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '24px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: '13px',
+              color: 'rgba(255, 255, 255, 0.5)',
+            }}
+          >
+            © 2026 Agora. All rights reserved.
+          </p>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <button
+              onClick={() => handleNavigate('/')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              }}
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => handleNavigate('/')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+              }}
+            >
+              Terms of Service
+            </button>
+          </div>
+        </div>
+
+        {/* Merchant Portal Link */}
+        <button
+          onClick={() => handleNavigate('/merchant/login')}
+          style={{
+            background: colors.primary.blue,
+            border: 'none',
+            color: '#ffffff',
+            padding: '8px 20px',
+            borderRadius: '20px',
+            fontSize: '13px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(66, 153, 225, 0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = colors.primary.blueDark;
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 153, 225, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = colors.primary.blue;
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(66, 153, 225, 0.3)';
+          }}
+        >
+          Merchant Portal
+        </button>
+      </div>
+
+      {/* Responsive Grid Styles */}
+      <style>
+        {`
+          @media (max-width: 768px) {
+            .footer-grid {
+              grid-template-columns: repeat(2, 1fr);
+            }
+          }
+
+          @media (max-width: 480px) {
+            .footer-grid {
+              grid-template-columns: 1fr;
+            }
+          }
+        `}
+      </style>
+    </footer>
+  );
+};
+
+export default Footer;

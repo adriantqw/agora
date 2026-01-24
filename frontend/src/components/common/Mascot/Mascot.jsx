@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 
 export default function Mascot({
+  variant = 'default',
   message = '',
   isSearching = false,
-  position = 'bottom-right'
+  position = 'bottom-right',
+  onClick,
 }) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
@@ -27,6 +30,53 @@ export default function Mascot({
         display: 'inline-block',
       };
 
+  // FAB variant - Simple floating action button
+  if (variant === 'fab') {
+    return (
+      <button
+        onClick={onClick}
+        className="mascot-fab"
+        style={{
+          ...containerStyle,
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: '#ffb7c5',
+          border: 'none',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(255, 183, 197, 0.4)',
+          transition: 'all 0.3s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.1) rotate(5deg)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 183, 197, 0.5)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+          e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 183, 197, 0.4)';
+        }}
+      >
+        <Sparkles size={28} strokeWidth={2} style={{ color: '#ffffff' }} />
+
+        <style>{`
+          /* Mobile: Smaller FAB */
+          @media (max-width: 768px) {
+            .mascot-fab {
+              width: 48px !important;
+              height: 48px !important;
+              bottom: 16px !important;
+              right: 16px !important;
+            }
+          }
+        `}</style>
+      </button>
+    );
+  }
+
+  // Default mascot variant
   return (
     <div className="mascot-container" style={containerStyle}>
       {/* Speech Bubble */}

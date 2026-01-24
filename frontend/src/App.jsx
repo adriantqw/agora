@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { SearchProvider } from './contexts/SearchContext'
 import { FittingRoomProvider } from './contexts/FittingRoomContext'
-import StorefrontLandingPage from './pages/StorefrontLandingPage'
+import ConsumerLandingPage from './pages/ConsumerLandingPage'
 import ShoppingConciergePage from './pages/ShoppingConciergePage'
 import QuizPage from './pages/QuizPage'
 import SearchResultsPage from './pages/SearchResultsPage'
@@ -41,7 +41,7 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<StorefrontLandingPage />} />
+      <Route path="/" element={<ConsumerLandingPage />} />
       <Route path="/concierge" element={<ShoppingConciergePage />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
