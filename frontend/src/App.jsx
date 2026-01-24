@@ -5,7 +5,6 @@ import { SearchProvider } from './contexts/SearchContext'
 import { FittingRoomProvider } from './contexts/FittingRoomContext'
 import ConsumerLandingPage from './pages/ConsumerLandingPage'
 import ShoppingConciergePage from './pages/ShoppingConciergePage'
-import QuizPage from './pages/QuizPage'
 import SearchResultsPage from './pages/SearchResultsPage'
 import FittingRoomPage from './pages/FittingRoomPage'
 import BrowsePage from './pages/BrowsePage'
@@ -42,8 +41,7 @@ function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<ConsumerLandingPage />} />
-      <Route path="/concierge" element={<ShoppingConciergePage />} />
-      <Route path="/quiz" element={<QuizPage />} />
+      <Route path="/quiz" element={<ShoppingConciergePage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/fitting-room" element={<FittingRoomPage />} />
       <Route path="/browse" element={<BrowsePage />} />

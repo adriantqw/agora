@@ -602,9 +602,170 @@ export const getSuggestionChips = () => {
   ];
 };
 
+/**
+ * Get aesthetic options for chat-based journey flow
+ *
+ * @returns {Array<Object>} Array of aesthetic option objects
+ */
+export const getAestheticOptions = () => [
+  {
+    id: 'romantic',
+    label: 'Romantic & Soft',
+    icon: 'Heart',
+    iconColor: '#ffb7c5',
+    bgColor: '#fff0f3'
+  },
+  {
+    id: 'chic',
+    label: 'Chic & Modern',
+    icon: 'Gem',
+    iconColor: '#94a3b8',
+    bgColor: '#f8fafc'
+  },
+  {
+    id: 'edgy',
+    label: 'Edgy & Bold',
+    icon: 'Flame',
+    iconColor: '#1a1a1a',
+    bgColor: '#fafafa'
+  },
+  {
+    id: 'boho',
+    label: 'Boho & Relaxed',
+    icon: 'Sun',
+    iconColor: '#fb923c',
+    bgColor: '#fff7ed'
+  }
+];
+
+/**
+ * Extract occasion from user query using keyword matching
+ *
+ * @param {string} query - User's search query
+ * @returns {string|null} Extracted occasion or null
+ */
+export const extractOccasion = (query) => {
+  const lowerQuery = query.toLowerCase();
+
+  // Occasion keyword mapping
+  const occasionMap = {
+    'valentine': 'Valentine\'s Day Dinner Date',
+    'date': 'Dinner Date',
+    'dinner': 'Dinner Date',
+    'wedding': 'Wedding Guest',
+    'office': 'Office Event',
+    'work': 'Work Event',
+    'party': 'Party',
+    'girls night': 'Girls\' Night Out',
+    'casual': 'Casual Outing',
+    'beach': 'Beach Day',
+    'brunch': 'Brunch',
+    'interview': 'Job Interview',
+    'meeting': 'Professional Meeting'
+  };
+
+  for (const [keyword, occasion] of Object.entries(occasionMap)) {
+    if (lowerQuery.includes(keyword)) {
+      return occasion;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Extract location/weather from user query
+ *
+ * @param {string} query - User's search query
+ * @returns {string|null} Extracted location or null
+ */
+export const extractLocation = (query) => {
+  const lowerQuery = query.toLowerCase();
+
+  // Simple location detection (can be enhanced with geocoding API)
+  const locationMap = {
+    'london': 'London, 8°C',
+    'paris': 'Paris, 10°C',
+    'new york': 'New York, 5°C',
+    'los angeles': 'Los Angeles, 18°C',
+    'tokyo': 'Tokyo, 12°C',
+    'sydney': 'Sydney, 22°C'
+  };
+
+  for (const [keyword, location] of Object.entries(locationMap)) {
+    if (lowerQuery.includes(keyword)) {
+      return location;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Generate conversational AI response based on conversation step
+ *
+ * @param {string} step - Current conversation step
+ * @param {Object} previousAnswer - Previous answer from user (optional)
+ * @returns {Object} AI response with title, description, questionType, options
+ */
+export const generateConversationResponse = (step, previousAnswer = null) => {
+  const responses = {
+    aesthetic: {
+      title: 'Perfect choice. Let\'s set the vibe.',
+      description: 'Since it\'s a special occasion, which of these aesthetics resonates most with how you want to feel? I\'ll use this to filter our curated merchant catalog.',
+      questionType: 'aesthetic',
+      options: getAestheticOptions()
+    },
+    occasion: {
+      title: 'Tell me about the occasion',
+      description: 'What type of event are you attending? This helps me understand the dress code and context.',
+      questionType: 'occasion',
+      options: [
+        { id: 'dinner-date', label: 'Dinner Date', icon: 'CalendarHeart' },
+        { id: 'wedding', label: 'Wedding Guest', icon: 'Users' },
+        { id: 'office', label: 'Office Event', icon: 'Briefcase' },
+        { id: 'party', label: 'Party/Night Out', icon: 'Music' },
+        { id: 'casual', label: 'Casual Outing', icon: 'Coffee' }
+      ]
+    },
+    weather: {
+      title: 'What\'s the weather like?',
+      description: 'Where and when is this happening? I\'ll make sure you\'re dressed appropriately for the climate.',
+      questionType: 'weather',
+      options: [
+        { id: 'cold', label: 'Cold (< 10°C)', icon: 'CloudSnow' },
+        { id: 'mild', label: 'Mild (10-20°C)', icon: 'Cloud' },
+        { id: 'warm', label: 'Warm (> 20°C)', icon: 'Sun' }
+      ]
+    },
+    budget: {
+      title: 'What\'s your budget?',
+      description: 'This helps me show you options within your price range.',
+      questionType: 'budget',
+      options: [
+        { id: 'budget', label: 'Under $100', icon: 'DollarSign' },
+        { id: 'moderate', label: '$100 - $250', icon: 'DollarSign' },
+        { id: 'premium', label: '$250+', icon: 'DollarSign' }
+      ]
+    },
+    keyPieces: {
+      title: 'Any must-have pieces?',
+      description: 'Are there specific items you\'d like to include in your outfit? (e.g., dress, heels, jacket)',
+      questionType: 'keyPieces',
+      options: [] // Free text or multi-select
+    }
+  };
+
+  return responses[step] || responses.aesthetic;
+};
+
 export default {
   generateQuestions,
   submitAnswers,
   validateQuestion,
-  getSuggestionChips
+  getSuggestionChips,
+  getAestheticOptions,
+  extractOccasion,
+  extractLocation,
+  generateConversationResponse
 };
