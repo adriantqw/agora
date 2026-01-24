@@ -138,40 +138,51 @@ async def stream_catalogue_processing(
     async def event_generator():
         try:
             while True:
-                # Force a fresh query by expiring the current session
-                db.expire_all()
-                
-                # Refresh catalogue state from database
-                db.refresh(catalogue)
+                # Query fresh catalogue state from database each iteration
+                current_catalogue = catalogue_service.get_catalogue_by_id(
+                    db=db,
+                    merchant_id=current_user.id,
+                    catalogue_id=catalogue_id
+                )
+
+                if not current_catalogue:
+                    # Catalogue was deleted during streaming
+                    error_event = {
+                        "type": "error",
+                        "message": "Catalogue no longer exists",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                    yield f"data: {json.dumps(error_event)}\n\n"
+                    break
 
                 # Send progress update
                 event = {
                     "type": "progress",
-                    "status": catalogue.status,
-                    "currentPage": catalogue.current_page or 0,
-                    "totalPages": catalogue.total_pages or 0,
-                    "itemsFound": catalogue.items_extracted or 0,
-                    "thinkingMessage": catalogue.thinking_message or "",
+                    "status": current_catalogue.status,
+                    "currentPage": current_catalogue.current_page or 0,
+                    "totalPages": current_catalogue.total_pages or 0,
+                    "itemsFound": current_catalogue.items_extracted or 0,
+                    "thinkingMessage": current_catalogue.thinking_message or "",
                     "timestamp": datetime.utcnow().isoformat()
                 }
 
                 yield f"data: {json.dumps(event)}\n\n"
 
                 # Check if completed
-                if catalogue.status == "completed":
+                if current_catalogue.status == "completed":
                     final_event = {
                         "type": "complete",
-                        "itemsFound": catalogue.items_extracted or 0,
+                        "itemsFound": current_catalogue.items_extracted or 0,
                         "timestamp": datetime.utcnow().isoformat()
                     }
                     yield f"data: {json.dumps(final_event)}\n\n"
                     break
 
                 # Check if failed
-                if catalogue.status == "failed":
+                if current_catalogue.status == "failed":
                     error_event = {
                         "type": "error",
-                        "message": catalogue.error_message or "Processing failed",
+                        "message": current_catalogue.error_message or "Processing failed",
                         "timestamp": datetime.utcnow().isoformat()
                     }
                     yield f"data: {json.dumps(error_event)}\n\n"
