@@ -69,7 +69,7 @@ const FittingRoomPage = () => {
   };
 
   const handleUpdateSearch = () => {
-    navigate('/quiz');
+    navigate('/journey');
   };
 
   const pageStyle = {

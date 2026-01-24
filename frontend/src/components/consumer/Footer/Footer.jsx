@@ -127,10 +127,10 @@ const Footer = () => {
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
-              { label: 'Start a Journey', path: '/quiz' },
+              { label: 'Start a Journey', path: '/journey' },
               { label: 'Browse Styles', path: '/browse' },
               { label: 'Virtual Fitting Room', path: '/fitting-room' },
-              { label: 'AI Stylist', path: '/quiz' },
+              { label: 'AI Stylist', path: '/journey' },
             ].map((item) => (
               <li key={item.label} style={{ marginBottom: '12px' }}>
                 <button

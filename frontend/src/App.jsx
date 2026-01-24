@@ -41,7 +41,7 @@ function AppRoutes() {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<ConsumerLandingPage />} />
-      <Route path="/quiz" element={<ShoppingConciergePage />} />
+      <Route path="/journey" element={<ShoppingConciergePage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/fitting-room" element={<FittingRoomPage />} />
       <Route path="/browse" element={<BrowsePage />} />

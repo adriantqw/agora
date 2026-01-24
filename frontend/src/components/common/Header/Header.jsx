@@ -19,7 +19,7 @@ export default function Header({
       zIndex: 100,
     }}>
       <div className="header-container" style={{
-        padding: '20px 48px',
+        padding: variant === 'journey' ? '12px 4%' : '20px 48px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -75,11 +75,11 @@ export default function Header({
           </span>
         </div>
 
-        {/* Compact Search Bar (center) - Hide for journey variant */}
-        {variant === 'full' && onSearch && (
+        {/* Compact Search Bar (center) - Show for full and journey variants */}
+        {(variant === 'full' || variant === 'journey') && onSearch && (
           <div className="header-search" style={{
             flex: 1,
-            maxWidth: '500px',
+            maxWidth: variant === 'journey' ? '400px' : '500px',
             margin: '0 auto',
           }}>
             <div style={{
@@ -102,10 +102,10 @@ export default function Header({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => onSearchChange?.(e.target.value)}
+                onChange={(e) => onSearchChange?.(e)}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    onSearch?.();
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    onSearch?.(searchQuery);
                   }
                 }}
                 placeholder="What are you looking for?"
@@ -120,24 +120,27 @@ export default function Header({
                 }}
               />
               <button
-                onClick={onSearch}
+                onClick={() => searchQuery.trim() && onSearch?.(searchQuery)}
                 style={{
                   width: '36px',
                   height: '36px',
                   background: 'linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%)',
                   border: 'none',
                   borderRadius: '50%',
-                  cursor: 'pointer',
+                  cursor: searchQuery.trim() ? 'pointer' : 'default',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   flexShrink: 0,
                   transition: 'all 0.2s ease',
                   boxShadow: '0 2px 8px rgba(245, 165, 184, 0.3)',
+                  opacity: searchQuery.trim() ? 1 : 0.5,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 165, 184, 0.4)';
+                  if (searchQuery.trim()) {
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 165, 184, 0.4)';
+                  }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'scale(1)';
@@ -169,22 +172,21 @@ export default function Header({
           gap: '12px',
         }}>
           {variant === 'journey' ? (
-            /* Journey variant navigation */
+            /* Journey variant navigation - Icon only */
             <>
               <button
                 onClick={() => navigate('/')}
                 style={{
+                  width: '36px',
+                  height: '36px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
+                  justifyContent: 'center',
                   border: 'none',
                   background: 'transparent',
-                  borderRadius: '8px',
+                  borderRadius: '50%',
                   cursor: 'pointer',
                   color: '#718096',
-                  fontSize: '14px',
-                  fontWeight: '500',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
@@ -197,23 +199,21 @@ export default function Header({
                 }}
               >
                 <Compass size={18} strokeWidth={2} />
-                <span className="nav-label">Journeys</span>
               </button>
 
               <button
                 onClick={() => navigate('/browse')}
                 style={{
+                  width: '36px',
+                  height: '36px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
+                  justifyContent: 'center',
                   border: 'none',
                   background: 'transparent',
-                  borderRadius: '8px',
+                  borderRadius: '50%',
                   cursor: 'pointer',
                   color: '#718096',
-                  fontSize: '14px',
-                  fontWeight: '500',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
@@ -226,22 +226,20 @@ export default function Header({
                 }}
               >
                 <LayoutGrid size={18} strokeWidth={2} />
-                <span className="nav-label">My Closets</span>
               </button>
 
               <button
                 style={{
+                  width: '36px',
+                  height: '36px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
+                  justifyContent: 'center',
                   border: 'none',
                   background: 'transparent',
-                  borderRadius: '8px',
+                  borderRadius: '50%',
                   cursor: 'pointer',
                   color: '#718096',
-                  fontSize: '14px',
-                  fontWeight: '500',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
@@ -254,7 +252,6 @@ export default function Header({
                 }}
               >
                 <UserCircle size={18} strokeWidth={2} />
-                <span className="nav-label">Account</span>
               </button>
             </>
           ) : (
@@ -379,11 +376,6 @@ export default function Header({
           .merchant-link {
             font-size: 11px !important;
             padding: 4px 6px !important;
-          }
-
-          /* Hide nav labels on mobile for journey variant */
-          .nav-label {
-            display: none !important;
           }
         }
       `}</style>

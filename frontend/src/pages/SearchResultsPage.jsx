@@ -15,7 +15,7 @@ export default function SearchResultsPage() {
   const hasFilters = filterCount > 0 || useExistingPreferences;
 
   const handleRefineSearch = () => {
-    navigate('/quiz');
+    navigate('/journey');
   };
 
   const handleRemoveFilter = (category, label) => {
@@ -34,7 +34,7 @@ export default function SearchResultsPage() {
       <Header
         variant="full"
         showNav={true}
-        onQuizClick={() => navigate('/quiz')}
+        onQuizClick={() => navigate('/journey')}
       />
 
       <div style={{

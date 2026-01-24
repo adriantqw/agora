@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useThemeColors } from '../hooks/useThemeColors';
 import Header from '../components/common/Header/Header';
 import ChatFeed from '../components/consumer/Chat/ChatFeed/ChatFeed';
@@ -16,6 +16,7 @@ import conciergeService from '../services/conciergeService';
 
 export default function ShoppingConciergePage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const colors = useThemeColors();
 
   // Get initial query from navigation state (from landing page search)
@@ -23,6 +24,9 @@ export default function ShoppingConciergePage() {
 
   // Track if conversation has been initialized (prevents double-init in Strict Mode)
   const hasInitialized = useRef(false);
+
+  // Header search state
+  const [headerSearchQuery, setHeaderSearchQuery] = useState('');
 
   // Message feed state
   const [messages, setMessages] = useState([]);
@@ -154,22 +158,66 @@ export default function ShoppingConciergePage() {
     }, 1000);
   };
 
+  // Handle header search
+  const handleHeaderSearch = (query) => {
+    if (!query || !query.trim()) return;
+
+    // Add new user message to chat feed
+    addUserMessage(query);
+
+    // Extract context and generate AI response
+    const extractedOccasion = conciergeService.extractOccasion(query);
+    const extractedLocation = conciergeService.extractLocation(query);
+
+    setJourneyContext(prev => ({
+      ...prev,
+      occasion: extractedOccasion || prev.occasion,
+      weather: extractedLocation || prev.weather,
+      title: extractedOccasion || prev.title || 'New Journey',
+    }));
+
+    // Generate follow-up AI response
+    const response = conciergeService.generateConversationResponse('aesthetic');
+    addAIMessage(response);
+
+    // Clear search input
+    setHeaderSearchQuery('');
+  };
+
   // Handle edit actions from summary panel
   const handleEditContext = (field) => {
     console.log('Edit field:', field);
     // Future: Allow re-asking questions or editing context
   };
 
+  // Handle Save Journey button
+  const handleSaveJourney = () => {
+    // Future: Save to backend/localStorage
+    console.log('Saving journey:', journeyContext);
+    alert('Journey saved! (Feature coming soon)');
+  };
+
+  // Handle Return to Home button
+  const handleReturnHome = () => {
+    navigate('/');
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: colors.surface.light }}>
       {/* Header with journey variant */}
-      <Header variant="journey" showNav={true} />
+      <Header
+        variant="journey"
+        showNav={true}
+        searchQuery={headerSearchQuery}
+        onSearchChange={(e) => setHeaderSearchQuery(e.target.value)}
+        onSearch={handleHeaderSearch}
+      />
 
       {/* Split Layout: Chat Feed + Summary Panel */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 340px',
+          gridTemplateColumns: '2fr 1fr',
           height: 'calc(100vh - 65px)',
           overflow: 'hidden',
         }}
@@ -184,7 +232,12 @@ export default function ShoppingConciergePage() {
         />
 
         {/* RIGHT: Summary Panel */}
-        <SummaryPanel journey={journeyContext} onEdit={handleEditContext} />
+        <SummaryPanel
+          journey={journeyContext}
+          onEdit={handleEditContext}
+          onSaveJourney={handleSaveJourney}
+          onReturnHome={handleReturnHome}
+        />
       </div>
 
       {/* CSS Animations */}

@@ -1,7 +1,7 @@
-import { Map, CalendarHeart, CloudRain, Banknote, Edit2, Plus } from 'lucide-react';
+import { Map, CalendarHeart, CloudRain, Banknote, Edit2, Plus, Save, Home } from 'lucide-react';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
 
-export default function SummaryPanel({ journey, onEdit }) {
+export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnHome }) {
   const colors = useThemeColors();
 
   const SummaryItem = ({ label, value, icon: Icon, onEditClick }) => (
@@ -46,15 +46,26 @@ export default function SummaryPanel({ journey, onEdit }) {
       style={{
         background: 'white',
         borderLeft: `1px solid ${colors.border.subtle}`,
-        padding: '30px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '32px',
-        overflowY: 'auto',
+        height: '100%',
+        overflow: 'hidden',
       }}
     >
-      {/* Journey Header */}
-      <div>
+      {/* Scrollable Content Area */}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          padding: '30px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '32px',
+        }}
+      >
+        {/* Journey Header */}
+        <div>
         <div
           style={{
             fontSize: '12px',
@@ -215,6 +226,82 @@ export default function SummaryPanel({ journey, onEdit }) {
             </div>
           </div>
         </div>
+      </div>
+      </div>
+
+      {/* Action Buttons - Fixed at bottom */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        padding: '20px 30px',
+        borderTop: `1px solid ${colors.border.subtle}`,
+        background: 'white',
+      }}>
+        {/* Save Journey Button */}
+        <button
+          onClick={onSaveJourney}
+          style={{
+            background: colors.primary.eggPink,
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontSize: '14px',
+            fontWeight: '700',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s',
+            boxShadow: '0 4px 12px rgba(255, 183, 197, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)';
+            e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.3)';
+          }}
+        >
+          <Save size={16} />
+          Save Journey
+        </button>
+
+        {/* Return to Home Button */}
+        <button
+          onClick={onReturnHome}
+          style={{
+            background: 'transparent',
+            color: colors.text.secondary,
+            border: `1px solid ${colors.border.subtle}`,
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            transition: 'all 0.2s'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = colors.surface.light;
+            e.currentTarget.style.borderColor = colors.primary.eggPink;
+            e.currentTarget.style.color = colors.primary.eggPink;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = colors.border.subtle;
+            e.currentTarget.style.color = colors.text.secondary;
+          }}
+        >
+          <Home size={16} />
+          Return to Home
+        </button>
       </div>
     </aside>
   );

@@ -24,8 +24,8 @@ const ConsumerLandingPage = () => {
   const [notification, setNotification] = useState(null);
 
   const handleSearch = (query) => {
-    // Navigate to quiz page with search query
-    navigate('/quiz', { state: { searchQuery: query } });
+    // Navigate to journey page with search query
+    navigate('/journey', { state: { searchQuery: query } });
   };
 
   const handleOutfitAdd = (outfit, journey) => {
