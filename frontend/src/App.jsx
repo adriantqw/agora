@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { SearchProvider } from './contexts/SearchContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import ShoppingConciergePage from './pages/ShoppingConciergePage'
 import QuizPage from './pages/QuizPage'
@@ -94,7 +95,9 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppRoutes />
+        <SearchProvider>
+          <AppRoutes />
+        </SearchProvider>
       </AuthProvider>
     </ThemeProvider>
   )
