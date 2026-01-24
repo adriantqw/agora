@@ -14,17 +14,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Add agent to Python path
-agent_path = Path(__file__).parent.parent.parent / "agent"
-sys.path.insert(0, str(agent_path))
-
-from src.agents.catalogue_ingestor import CatalogueIngestor
+from agent.src.agents.catalogue_ingestor import CatalogueIngestor
+from agent.src.utils.stream import extract_catalogue_ingestor_metadata
 from app.models.catalogue import Catalogue, CatalogueItem
-from app.models.product import Product
 from app.schemas.product import ProductCreate
 from app.schemas.catalogue import CreateProductsItem
 from app.services.storage_service import storage_service
 from app.services import product_service
+from app.database import SessionLocal
 import json
 import pypdfium2 as pdfium
 
@@ -50,15 +47,6 @@ async def process_catalogue_background(
         pdf_content: Raw PDF file content
         filename: Original filename
     """
-    from app.database import SessionLocal
-
-    # Import agent stream function from sibling agent directory
-    import sys
-    from pathlib import Path
-    agent_main_path = Path(__file__).parent.parent.parent / "agent"
-    if str(agent_main_path) not in sys.path:
-        sys.path.insert(0, str(agent_main_path))
-    from main import ingest_catalogue_stream
 
     db = SessionLocal()
     temp_pdf_path = None
@@ -88,42 +76,54 @@ async def process_catalogue_background(
         # Use streaming ingest to capture real-time events
         current_page = 0
         items_count = 0
+        final_state = None
 
-        async for event_json in await ingest_catalogue_stream(temp_pdf_path):
-            event = json.loads(event_json)
-
-            # Extract thinking message from AI response
-            if 'input' in event and isinstance(event['input'], dict):
-                content = event['input'].get('content', [])
-                if isinstance(content, list):
-                    for item in content:
-                        if isinstance(item, dict) and item.get('type') == 'thinking':
-                            thinking_text = item.get('thinking', '')
-                            # Truncate to first 60 characters
-                            if len(thinking_text) > 60:
-                                thinking_text = thinking_text[:60] + '...'
-                            catalogue.thinking_message = thinking_text
-                            db.commit()
-                            break
-
-            # Track page progress from state updates
-            if 'data' in event and 'current_page_idx' in event['data']:
-                new_page = event['data']['current_page_idx']
-                if new_page > current_page:
-                    current_page = new_page
-                    catalogue.current_page = current_page
-                    db.commit()
+        async for event in await catalogue_ingestor.stream_ingest(temp_pdf_path):
+            # Extract metadata from the event
+            metadata = extract_catalogue_ingestor_metadata(event)
+            
+            # Debug: log what metadata was extracted
+            if metadata["current_page"] is not None or metadata["item_count"] is not None:
+                logger.info(f"Extracted metadata: current_page={metadata['current_page']}, item_count={metadata['item_count']}")
+                logger.info(f"Extracted thinking messages: {metadata['thinking_messages']}")
+            
+            # Track page progress
+            if metadata["current_page"] is not None and metadata["current_page"] > current_page:
+                current_page = metadata["current_page"]
+                catalogue.current_page = current_page
+                db.commit()
+                logger.info(f"Updated current_page to {current_page}")
 
             # Track items extracted
-            if 'data' in event and 'catalogue_items' in event['data']:
-                items = event['data']['catalogue_items']
-                if isinstance(items, list):
-                    items_count = len(items)
-                    catalogue.items_extracted = items_count
-                    db.commit()
+            if metadata["item_count"] is not None:
+                items_count = metadata["item_count"]
+                catalogue.items_extracted = items_count
+                db.commit()
+                logger.info(f"Updated items_extracted to {items_count}")
+            
+            # Update thinking message (truncate to first 100 characters)
+            if metadata["thinking_messages"]:
+                latest_thinking = metadata["thinking_messages"][-1]  # Get the last thinking message
+                # Truncate to first 100 characters or first sentence
+                truncated = latest_thinking[:100]
+                if len(latest_thinking) > 100:
+                    truncated += "..."
+                catalogue.thinking_message = truncated
+                db.commit()
+                logger.info(f"Updated thinking_message: {truncated}")
+            
+            # Capture the final complete state from on_chain_end event
+            if event.get('event') == 'on_chain_end' and event.get('name') == 'LangGraph':
+                final_state = event.get('data', {}).get('output', {})
+                logger.info(f"Captured final state with {len(final_state.get('catalogue_items', []))} items")
 
-        # After streaming completes, parse final state
-        final_state = catalogue_ingestor.ingest(temp_pdf_path)
+        # Verify we got a final state
+        if not final_state:
+            logger.error("No final state captured from streaming")
+            catalogue.status = "failed"
+            catalogue.error_message = "Failed to capture final state from ingestion"
+            db.commit()
+            return
 
         # Check for errors
         if "error" in final_state and final_state["error"]:
@@ -188,8 +188,8 @@ async def process_catalogue_background(
                 # Clean up temp image
                 try:
                     os.remove(image_path)
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to remove temp image {image_path}: {e}")
 
             except Exception as e:
                 logger.error(f"Error processing item for catalogue {catalogue_id}: {e}", exc_info=True)
@@ -219,8 +219,8 @@ async def process_catalogue_background(
                 page_dir = Path(page_path).parent
                 if page_dir.exists() and not any(page_dir.iterdir()):
                     page_dir.rmdir()
-            except:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to clean up page images/directories: {e}")
 
     except Exception as e:
         # Log the full error
@@ -240,8 +240,8 @@ async def process_catalogue_background(
         if temp_pdf_path and os.path.exists(temp_pdf_path):
             try:
                 os.remove(temp_pdf_path)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to remove temp PDF during error handling: {e}")
     finally:
         db.close()
 
@@ -544,20 +544,23 @@ def delete_catalogue(
     # Delete item images from R2
     for item in items:
         try:
+            if not item.image_url:
+                continue
             # Extract filename from URL
             filename = item.image_url.split('/')[-1]
             key = f"catalogue-items/{filename}"
             storage_service.delete_image(key)
-        except:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to delete item image. Url: {item.image_url}. Error: {e}")
 
     # Delete PDF from R2
     try:
-        filename = catalogue.file_url.split('/')[-1]
-        key = f"catalogues/{filename}"
-        storage_service.delete_image(key)
-    except:
-        pass
+        if catalogue.file_url:
+            filename = catalogue.file_url.split('/')[-1]
+            key = f"catalogues/{filename}"
+            storage_service.delete_image(key)
+    except Exception as e:
+        logger.warning(f"Failed to delete catalogue PDF. Url: {catalogue.file_url}. Error: {e}")
 
     # Delete from database (cascade will handle items)
     db.delete(catalogue)

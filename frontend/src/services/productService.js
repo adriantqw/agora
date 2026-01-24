@@ -1,5 +1,7 @@
 import { get, post, put, del, uploadFile } from './api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 const productService = {
   /**
    * List products with pagination and filters
@@ -286,11 +288,22 @@ const productService = {
    * @param {Function} callbacks.onProgress - Called on progress updates with {currentPage, totalPages, itemsFound, thinkingMessage}
    * @param {Function} callbacks.onComplete - Called when processing completes with {itemsFound}
    * @param {Function} callbacks.onError - Called on errors with error message string
+   * @param {Function} callbacks.onErrors - Called on errors with error message string
    * @returns {Promise<Function>} Cleanup function to abort the stream
    */
   async streamCatalogueProcessing(catalogueId, callbacks) {
-    const token = localStorage.getItem('token')
+    // Import authService at the top of the file if not already imported
+    const authService = (await import('./authService')).default;
+
+    // Ensure token is valid before starting stream
+    await authService.ensureValidToken();
+    const token = authService.getToken();
+
     const url = `${API_BASE_URL}/api/catalogues/${catalogueId}/stream`
+
+    console.log('[Stream] Catalogue ID:', catalogueId)
+    console.log('[Stream] Stream URL:', url)
+    console.log('[Stream] API_BASE_URL:', API_BASE_URL)
 
     const abortController = new AbortController()
 
@@ -369,7 +382,7 @@ const productService = {
 
     } catch (err) {
       callbacks.onError?.(err.message)
-      return () => {} // Return no-op cleanup
+      return () => { } // Return no-op cleanup
     }
   }
 };

@@ -134,6 +134,9 @@ async def stream_catalogue_processing(
     async def event_generator():
         try:
             while True:
+                # Force a fresh query by expiring the current session
+                db.expire_all()
+                
                 # Refresh catalogue state from database
                 db.refresh(catalogue)
 

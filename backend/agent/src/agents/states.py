@@ -4,7 +4,7 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from src.agents.schemas import CatalogueItem
+from .schemas import CatalogueItem
 
 class CatalogueIngestorState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
