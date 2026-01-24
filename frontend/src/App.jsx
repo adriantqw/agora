@@ -2,10 +2,12 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { SearchProvider } from './contexts/SearchContext'
+import { FittingRoomProvider } from './contexts/FittingRoomContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import ShoppingConciergePage from './pages/ShoppingConciergePage'
 import QuizPage from './pages/QuizPage'
 import SearchResultsPage from './pages/SearchResultsPage'
+import FittingRoomPage from './pages/FittingRoomPage'
 import BrowsePage from './pages/BrowsePage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
@@ -43,6 +45,7 @@ function AppRoutes() {
       <Route path="/concierge" element={<ShoppingConciergePage />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/search" element={<SearchResultsPage />} />
+      <Route path="/fitting-room" element={<FittingRoomPage />} />
       <Route path="/browse" element={<BrowsePage />} />
       <Route path="/browse/:category" element={<BrowsePage />} />
 
@@ -96,7 +99,9 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SearchProvider>
-          <AppRoutes />
+          <FittingRoomProvider>
+            <AppRoutes />
+          </FittingRoomProvider>
         </SearchProvider>
       </AuthProvider>
     </ThemeProvider>
