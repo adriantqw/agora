@@ -138,6 +138,10 @@ async def stream_catalogue_processing(
     async def event_generator():
         try:
             while True:
+                # Rollback to clear transaction and get fresh data from database
+                # This ensures we see the latest committed changes from background agent
+                db.rollback()
+
                 # Query fresh catalogue state from database each iteration
                 current_catalogue = catalogue_service.get_catalogue_by_id(
                     db=db,
