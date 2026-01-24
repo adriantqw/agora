@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora | AI Fashion Concierge</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --egg-pink: #ffb7c5;
+            --egg-pink-hover: #ff9fb0;
+            --text-main: #1a1a1a;
+            --text-light: #666666;
+            --text-muted: #999999;
+            --bg-gray: #fafafa;
+            --white: #ffffff;
+            --border-color: #f0f0f0;
+            --merchant-blue: #63b3ed;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--white);
+            padding: 15px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .logo-blob {
+            width: 28px;
+            height: 34px;
+            background: var(--egg-pink);
+            border-radius: 50% 50% 45% 45%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: var(--egg-pink);
+        }
+
+        /* --- HERO JOURNEY SECTION --- */
+        .hero-section {
+            background: var(--white);
+            padding: 60px 6%;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-container h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .hero-container p {
+            color: var(--text-light);
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+
+        .search-box-wrapper {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .journey-bar {
+            width: 100%;
+            background: #f8f8f8;
+            border: 2px solid transparent;
+            padding: 18px 25px;
+            padding-right: 60px;
+            border-radius: 16px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .journey-bar:focus {
+            background: var(--white);
+            border-color: var(--egg-pink);
+            box-shadow: 0 8px 30px rgba(255, 183, 197, 0.2);
+        }
+
+        .ai-submit-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--egg-pink);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(255, 183, 197, 0.3);
+        }
+
+        .ai-submit-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            background: var(--egg-pink-hover);
+            box-shadow: 0 6px 15px rgba(255, 183, 197, 0.5);
+        }
+
+        .journey-status {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .status-pill {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* --- CONTENT ROWS --- */
+        main {
+            padding: 40px 6%;
+        }
+
+        section {
+            margin-bottom: 60px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--egg-pink);
+            border-radius: 50%;
+        }
+
+        .see-all {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .see-all:hover {
+            color: var(--egg-pink);
+        }
+
+        /* --- OUTFIT GRID --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .outfit-card {
+            background: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .outfit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border-color: var(--border-color);
+        }
+
+        .img-placeholder {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: #f4f4f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .curated-tag {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .outfit-label {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .outfit-subtext {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .add-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1.5px solid #eee;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            background: var(--egg-pink);
+            border-color: var(--egg-pink);
+            color: white;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background: var(--white);
+            padding: 60px 6% 40px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-col h4 {
+            margin-bottom: 20px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col li {
+            margin-bottom: 12px;
+        }
+
+        .footer-col a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover {
+            color: var(--egg-pink);
+        }
+
+        .footer-bottom {
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .merchant-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            color: var(--merchant-blue) !important;
+            border: 1px solid var(--merchant-blue);
+            padding: 4px 10px;
+            border-radius: 6px;
+            transition: all 0.2s !important;
+            text-decoration: none;
+        }
+
+        .merchant-link:hover {
+            background: #60a5fa;
+            border-color: #60a5fa;
+            color: #ffffff !important;
+            text-decoration: underline;
+        }
+
+        /* Floating AI Trigger */
+        .ai-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--egg-pink);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(255, 183, 197, 0.4);
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ai-fab:hover {
+            background: var(--egg-pink-hover);
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 15px 35px rgba(255, 183, 197, 0.6);
+        }
+
+        @media (max-width: 850px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="#" class="brand">
+        <div class="logo-blob"></div>
+        Agora
+    </a>
+
+    <div class="nav-actions">
+        <button class="action-btn"><i data-lucide="compass" size="18"></i> Journeys</button>
+        <button class="action-btn"><i data-lucide="layout-grid" size="18"></i> My Closets</button>
+        <button class="action-btn"><i data-lucide="user-circle" size="18"></i> Account</button>
+    </div>
+</header>
+
+<div class="hero-section">
+    <div class="hero-container">
+        <h1>Personal AI Stylist</h1>
+        <p>Your active shopping journeys & curated ideation boards.</p>
+        
+        <div class="search-box-wrapper">
+            <input type="text" id="ai-search" class="journey-bar" placeholder="Resume journey: Style me for...">
+            <button class="ai-submit-btn">
+                <i data-lucide="arrow-right" size="20"></i>
+            </button>
+        </div>
+
+        <div class="journey-status">
+            <span class="status-pill"><span class="status-dot"></span> 3 Active Journeys</span>
+            <span class="status-pill" style="color: var(--text-light);">•</span>
+            <span class="status-pill">12 Saved Concepts</span>
+        </div>
+    </div>
+</div>
+
+<main>
+    <!-- ROW 1: VALENTINE'S -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title"><div class="title-dot"></div> Valentine's Day Date <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 10px;">Ongoing Journey</span></h2>
+            <a href="#" class="see-all">View Closet →</a>
+        </div>
+        <div class="grid">
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fff5f7;">
+                    <i data-lucide="heart" size="40" color="#ffb7c5"></i>
+                    <div class="curated-tag"><i data-lucide="zap" size="10"></i> AI Pick</div>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Candlelight Elegance</div>
+                    <div class="outfit-subtext">Satin wrap dress with gold accents.</div>
+                    <div class="card-footer">
+                        <span class="price">$145.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fafafa;">
+                    <i data-lucide="glass-water" size="40" color="#ddd"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Gallery Night Out</div>
+                    <div class="outfit-subtext">Velvet blazer and tailored trousers.</div>
+                    <div class="card-footer">
+                        <span class="price">$210.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fafafa;">
+                    <i data-lucide="flower" size="40" color="#ddd"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Soft Romance</div>
+                    <div class="outfit-subtext">Floral chiffon midi and kitten heels.</div>
+                    <div class="card-footer">
+                        <span class="price">$120.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fafafa;">
+                    <i data-lucide="moon" size="40" color="#ddd"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Modern Minimalist</div>
+                    <div class="outfit-subtext">Sculptural knit top and silk skirt.</div>
+                    <div class="card-footer">
+                        <span class="price">$165.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROW 2: OFFICE EDIT -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title"><div class="title-dot" style="background: #6366f1;"></div> The Office Edit <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 10px;">In Progress</span></h2>
+            <a href="#" class="see-all">View Closet →</a>
+        </div>
+        <div class="grid">
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #f8fafc;">
+                    <i data-lucide="briefcase" size="40" color="#94a3b8"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">The Power Suit</div>
+                    <div class="outfit-subtext">Double-breasted wool-blend blazer.</div>
+                    <div class="card-footer">
+                        <span class="price">$285.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #f8fafc;">
+                    <i data-lucide="pen-tool" size="40" color="#94a3b8"></i>
+                    <div class="curated-tag"><i data-lucide="zap" size="10"></i> AI Pick</div>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Creative Agency Look</div>
+                    <div class="outfit-subtext">Oversized linen shirt and wide-leg denim.</div>
+                    <div class="card-footer">
+                        <span class="price">$110.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #f8fafc;">
+                    <i data-lucide="shirt" size="40" color="#94a3b8"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Polished Essential</div>
+                    <div class="outfit-subtext">Silk pussy-bow blouse and pencil skirt.</div>
+                    <div class="card-footer">
+                        <span class="price">$150.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #f8fafc;">
+                    <i data-lucide="calendar" size="40" color="#94a3b8"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Business Casual Midi</div>
+                    <div class="outfit-subtext">Pleated skirt and fine-gauge turtleneck.</div>
+                    <div class="card-footer">
+                        <span class="price">$195.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROW 3: GIRLS NIGHT -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title"><div class="title-dot" style="background: #ec4899;"></div> Girls' Night Out <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 10px;">Ideation Stage</span></h2>
+            <a href="#" class="see-all">View Closet →</a>
+        </div>
+        <div class="grid">
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fdf2f8;">
+                    <i data-lucide="music" size="40" color="#f472b6"></i>
+                    <div class="curated-tag"><i data-lucide="zap" size="10"></i> AI Pick</div>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Cocktail Hour Sparkle</div>
+                    <div class="outfit-subtext">Sequined mini and platform boots.</div>
+                    <div class="card-footer">
+                        <span class="price">$175.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fdf2f8;">
+                    <i data-lucide="party-popper" size="40" color="#f472b6"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">Urban Edge Set</div>
+                    <div class="outfit-subtext">Leather-look corset top and cargo pants.</div>
+                    <div class="card-footer">
+                        <span class="price">$130.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fdf2f8;">
+                    <i data-lucide="stars" size="40" color="#f472b6"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">The 'It' Girl Midi</div>
+                    <div class="outfit-subtext">Bodycon mesh dress in sunset hues.</div>
+                    <div class="card-footer">
+                        <span class="price">$95.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="outfit-card">
+                <div class="img-placeholder" style="background: #fdf2f8;">
+                    <i data-lucide="martini" size="40" color="#f472b6"></i>
+                </div>
+                <div class="card-body">
+                    <div class="outfit-label">After-Hours Chic</div>
+                    <div class="outfit-subtext">Feather-trim top and straight-leg denim.</div>
+                    <div class="card-footer">
+                        <span class="price">$155.00</span>
+                        <button class="add-btn"><i data-lucide="plus" size="16"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-content">
+        <div class="footer-col">
+            <a href="#" class="brand" style="font-size: 20px; margin-bottom: 20px;">Agora</a>
+            <p style="font-size: 14px; color: var(--text-light); line-height: 1.6; max-width: 250px;">Collaborative AI-curated fashion journeys for your life's best moments.</p>
+        </div>
+        <div class="footer-col">
+            <h4>My Activity</h4>
+            <ul>
+                <li><a href="#">Active Journeys</a></li>
+                <li><a href="#">Saved Closets</a></li>
+                <li><a href="#">Stylist Feedback</a></li>
+                <li><a href="#">Order History</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Experience</h4>
+            <ul>
+                <li><a href="#">AI Stylist</a></li>
+                <li><a href="#">Style Profile</a></li>
+                <li><a href="#">Virtual Closet</a></li>
+                <li><a href="#">Community Journeys</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Support</h4>
+            <ul>
+                <li><a href="#">Shipping</a></li>
+                <li><a href="#">Returns</a></li>
+                <li><a href="#">Size Guide</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 Agora Fashion Concierge.</span>
+        <div class="footer-links">
+            <a href="#" class="merchant-link"><i data-lucide="store" size="12"></i> Merchant Portal</a>
+            <a href="#" style="color: var(--text-muted); text-decoration: none;">Privacy</a>
+            <a href="#" style="color: var(--text-muted); text-decoration: none;">Terms</a>
+        </div>
+    </div>
+</footer>
+
+<div class="ai-fab">
+    <i data-lucide="sparkles"></i>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const input = document.getElementById('ai-search');
+    const placeholders = [
+        "Valentine's Day date night...",
+        "tech job interview wardrobe...",
+        "summer wedding in Italy board...",
+        "airport chic outfit journey...",
+        "high-stakes board meeting edit...",
+        "Girls' Night Out ideation..."
+    ];
+
+    let currentPhraseIndex = 0;
+    let currentCharIndex = 0;
+    let isDeleting = false;
+    let typingSpeed = 100;
+
+    function handleTypewriter() {
+        const currentPhrase = placeholders[currentPhraseIndex];
+        const prefix = "Resume journey: ";
+        
+        if (isDeleting) {
+            input.placeholder = prefix + currentPhrase.substring(0, currentCharIndex--);
+            typingSpeed = 30;
+        } else {
+            input.placeholder = prefix + currentPhrase.substring(0, currentCharIndex++);
+            typingSpeed = 80;
+        }
+
+        if (!isDeleting && currentCharIndex === currentPhrase.length + 1) {
+            isDeleting = true;
+            typingSpeed = 2500; 
+        } else if (isDeleting && currentCharIndex === 0) {
+            isDeleting = false;
+            currentPhraseIndex = (currentPhraseIndex + 1) % placeholders.length;
+            typingSpeed = 500;
+        }
+
+        setTimeout(handleTypewriter, typingSpeed);
+    }
+
+    document.addEventListener('DOMContentLoaded', handleTypewriter);
+</script>
+
+</body>
+</html>
