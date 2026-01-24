@@ -275,6 +275,102 @@ const productService = {
     // const response = await del(`/api/products/pdf-extract/${jobId}`);
     // return response.data;
     return mockPDFService.cancelPDFExtraction(jobId);
+  },
+
+  /**
+   * Stream catalogue processing updates via Server-Sent Events.
+   * Uses fetch with ReadableStream to support Authorization headers.
+   *
+   * @param {string} catalogueId - Catalogue ID
+   * @param {Object} callbacks - Event callbacks
+   * @param {Function} callbacks.onProgress - Called on progress updates with {currentPage, totalPages, itemsFound, thinkingMessage}
+   * @param {Function} callbacks.onComplete - Called when processing completes with {itemsFound}
+   * @param {Function} callbacks.onError - Called on errors with error message string
+   * @returns {Promise<Function>} Cleanup function to abort the stream
+   */
+  async streamCatalogueProcessing(catalogueId, callbacks) {
+    const token = localStorage.getItem('token')
+    const url = `${API_BASE_URL}/api/catalogues/${catalogueId}/stream`
+
+    const abortController = new AbortController()
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'text/event-stream'
+        },
+        signal: abortController.signal
+      })
+
+      if (!response.ok) {
+        throw new Error(`Stream failed: ${response.status}`)
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      // Read stream in background
+      const readStream = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+
+            // Split by double newline (SSE format)
+            const events = buffer.split('\n\n')
+            buffer = events.pop() || '' // Keep incomplete event in buffer
+
+            for (const event of events) {
+              if (!event.trim()) continue
+
+              // Parse SSE event (format: "data: {...}")
+              const dataMatch = event.match(/^data: (.*)$/m)
+              if (!dataMatch) continue
+
+              try {
+                const data = JSON.parse(dataMatch[1])
+
+                switch (data.type) {
+                  case 'progress':
+                    callbacks.onProgress?.(data)
+                    break
+                  case 'complete':
+                    callbacks.onComplete?.(data)
+                    return // Exit stream
+                  case 'error':
+                    callbacks.onError?.(data.message)
+                    return
+                }
+              } catch (err) {
+                console.error('Failed to parse SSE event:', err)
+              }
+            }
+          }
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            callbacks.onError?.(err.message)
+          }
+        }
+      }
+
+      // Start reading in background
+      readStream()
+
+      // Return cleanup function
+      return () => {
+        abortController.abort()
+        reader.cancel()
+      }
+
+    } catch (err) {
+      callbacks.onError?.(err.message)
+      return () => {} // Return no-op cleanup
+    }
   }
 };
 

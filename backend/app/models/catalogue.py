@@ -17,6 +17,12 @@ class Catalogue(Base):
     items_extracted = Column(Integer, nullable=False, default=0)
     processing_time = Column(Float, nullable=True)  # Time in seconds
     error_message = Column(Text, nullable=True)
+
+    # Progress tracking fields
+    current_page = Column(Integer, nullable=False, default=0)
+    total_pages = Column(Integer, nullable=False, default=0)
+    thinking_message = Column(Text, nullable=True)  # Latest AI thinking message (truncated)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

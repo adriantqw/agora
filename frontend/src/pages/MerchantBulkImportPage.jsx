@@ -162,29 +162,51 @@ export default function BulkImportPage() {
   // PDF-specific state
   const [uploadType, setUploadType] = useState('csv') // 'csv' | 'pdf'
   const [jobId, setJobId] = useState(null) // PDF extraction job ID
-  const [extractionStatus, setExtractionStatus] = useState(null) // PDF progress
-  const [isPolling, setIsPolling] = useState(false) // PDF polling flag
+  const [extractionStatus, setExtractionStatus] = useState(null) // PDF progress (deprecated, kept for compatibility)
+  const [isPolling, setIsPolling] = useState(false) // PDF polling flag (deprecated)
+
+  // Streaming state
+  const [streamingStatus, setStreamingStatus] = useState({
+    currentPage: 0,
+    totalPages: 0,
+    itemsFound: 0,
+    thinkingMessage: '',
+    isStreaming: false
+  })
 
   const validCount = parsedData.filter(r => r.status === 'valid').length
   const warningCount = parsedData.filter(r => r.status === 'warning' || r.status === 'duplicate').length
   const errorCount = parsedData.filter(r => r.status === 'error').length
   const importableCount = validCount + warningCount
 
-  // Poll for PDF extraction status
+  // Stream PDF extraction progress (replaces polling)
   useEffect(() => {
-    if (!isPolling || !jobId || uploadType !== 'pdf') return
+    if (!jobId || uploadType !== 'pdf') return
 
-    const pollInterval = setInterval(async () => {
-      try {
-        const status = await productService.getPDFExtractionStatus(jobId)
-        setExtractionStatus(status)
+    setStreamingStatus(prev => ({ ...prev, isStreaming: true }))
 
-        if (status.status === 'completed') {
-          setIsPolling(false)
+    let cleanup = null
 
-          // Transform PDF products to same format as CSV parsed data
+    const startStreaming = async () => {
+      cleanup = await productService.streamCatalogueProcessing(jobId, {
+        onProgress: (data) => {
+          setStreamingStatus({
+            currentPage: data.currentPage,
+            totalPages: data.totalPages,
+            itemsFound: data.itemsFound,
+            thinkingMessage: data.thinkingMessage || '',
+            isStreaming: true
+          })
+        },
+
+        onComplete: async (data) => {
+          setStreamingStatus(prev => ({ ...prev, isStreaming: false }))
+
+          // Fetch final items
+          const status = await productService.getPDFExtractionStatus(jobId)
+
           const transformedProducts = status.products.map((product, index) => ({
-            ...product, // Preserve original fields (_catalogueItemId, etc)
+            ...product,
             row: index + 1,
             name: product.name,
             sku: product.sku,
@@ -199,18 +221,21 @@ export default function BulkImportPage() {
           }))
 
           setParsedData(transformedProducts)
-        } else if (status.status === 'failed') {
-          setIsPolling(false)
-          alert('PDF extraction failed: ' + status.message)
-        }
-      } catch (error) {
-        setIsPolling(false)
-        alert('Failed to check extraction status: ' + error.message)
-      }
-    }, 2000) // Poll every 2 seconds
+        },
 
-    return () => clearInterval(pollInterval)
-  }, [isPolling, jobId, uploadType])
+        onError: (message) => {
+          setStreamingStatus(prev => ({ ...prev, isStreaming: false }))
+          alert('PDF extraction failed: ' + message)
+        }
+      })
+    }
+
+    startStreaming()
+
+    return () => {
+      if (cleanup) cleanup()
+    }
+  }, [jobId, uploadType])
 
   const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true) }
   const handleDragLeave = () => setIsDragging(false)
@@ -468,9 +493,10 @@ export default function BulkImportPage() {
           {/* Step 2: Preview */}
           {currentStep === 2 && (
             <div style={{ padding: '32px' }}>
-              {/* Show polling UI for PDF */}
-              {uploadType === 'pdf' && isPolling ? (
+              {/* Show streaming UI for PDF */}
+              {uploadType === 'pdf' && streamingStatus.isStreaming ? (
                 <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  {/* Spinner */}
                   <div style={{
                     width: '60px',
                     height: '60px',
@@ -480,28 +506,68 @@ export default function BulkImportPage() {
                     margin: '0 auto 24px',
                     animation: 'spin 1s linear infinite'
                   }} />
-                  <h3 style={{ fontSize: '18px', fontWeight: 600, color: colors.text.primary, marginBottom: '8px' }}>
-                    {extractionStatus?.message || 'Extracting products from PDF...'}
-                  </h3>
-                  <p style={{ fontSize: '14px', color: colors.text.secondary, marginBottom: '24px' }}>
-                    Progress: {extractionStatus?.progress || 0}%
-                  </p>
-                  <div style={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    height: '8px',
-                    background: colors.border.light,
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    margin: '0 auto'
-                  }}>
+
+                  {/* Thinking Message */}
+                  {streamingStatus.thinkingMessage && (
                     <div style={{
-                      width: `${extractionStatus?.progress || 0}%`,
-                      height: '100%',
-                      background: colors.gradient.ai,
-                      transition: 'width 0.3s ease'
-                    }} />
-                  </div>
+                      padding: '12px 20px',
+                      background: colors.card.backgroundAlt,
+                      borderRadius: '8px',
+                      marginBottom: '16px',
+                      maxWidth: '500px',
+                      margin: '0 auto 16px'
+                    }}>
+                      <p style={{
+                        fontSize: '13px',
+                        color: colors.text.secondary,
+                        fontStyle: 'italic',
+                        margin: 0
+                      }}>
+                        💭 {streamingStatus.thinkingMessage}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Progress Message */}
+                  <h3 style={{
+                    fontSize: '18px',
+                    fontWeight: 600,
+                    color: colors.text.primary,
+                    marginBottom: '8px'
+                  }}>
+                    {streamingStatus.totalPages > 0
+                      ? `Processing page ${streamingStatus.currentPage} of ${streamingStatus.totalPages}`
+                      : 'Starting extraction...'}
+                  </h3>
+
+                  {/* Items Found */}
+                  <p style={{
+                    fontSize: '14px',
+                    color: colors.text.secondary,
+                    marginBottom: '24px'
+                  }}>
+                    {streamingStatus.itemsFound} items found so far
+                  </p>
+
+                  {/* Progress Bar */}
+                  {streamingStatus.totalPages > 0 && (
+                    <div style={{
+                      width: '100%',
+                      maxWidth: '400px',
+                      height: '8px',
+                      background: colors.border.light,
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      margin: '0 auto'
+                    }}>
+                      <div style={{
+                        width: `${(streamingStatus.currentPage / streamingStatus.totalPages) * 100}%`,
+                        height: '100%',
+                        background: colors.gradient.purple,
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>

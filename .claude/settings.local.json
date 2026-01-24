@@ -12,7 +12,12 @@
       "Bash(test:*)",
       "Bash(.venv/Scripts/python.exe -c \"from app.main import app; print\\(''Server imports successfully!''\\)\")",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(alembic revision:*)",
+      "Bash(set UV_LINK_MODE=copy:*)",
+      "Bash(dir /s /b)",
+      "Bash(findstr:*)",
+      "Bash(python -m py_compile:*)"
     ]
   }
 }

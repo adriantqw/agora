@@ -25,6 +25,8 @@ from app.schemas.product import ProductCreate
 from app.schemas.catalogue import CreateProductsItem
 from app.services.storage_service import storage_service
 from app.services import product_service
+import json
+import pypdfium2 as pdfium
 
 
 # Initialize agent
@@ -39,7 +41,7 @@ async def process_catalogue_background(
     filename: str
 ):
     """
-    Background task to process catalogue with AI agent.
+    Background task to process catalogue with AI agent using real-time streaming.
 
     Args:
         catalogue_id: The catalogue's ID
@@ -49,9 +51,11 @@ async def process_catalogue_background(
         filename: Original filename
     """
     from app.database import SessionLocal
+    from backend.agent.main import ingest_catalogue_stream
 
     db = SessionLocal()
     temp_pdf_path = None
+    start_time = time.time()
 
     try:
         # Get catalogue record
@@ -64,7 +68,54 @@ async def process_catalogue_background(
             temp_pdf.write(pdf_content)
             temp_pdf_path = temp_pdf.name
 
-        # Process with AI agent
+        # Get total pages
+        pdf_doc = pdfium.PdfDocument(temp_pdf_path)
+        total_pages = len(pdf_doc)
+        pdf_doc.close()
+
+        catalogue.total_pages = total_pages
+        catalogue.status = "processing"
+        catalogue.current_page = 0
+        db.commit()
+
+        # Use streaming ingest to capture real-time events
+        current_page = 0
+        items_count = 0
+
+        async for event_json in await ingest_catalogue_stream(temp_pdf_path):
+            event = json.loads(event_json)
+
+            # Extract thinking message from AI response
+            if 'input' in event and isinstance(event['input'], dict):
+                content = event['input'].get('content', [])
+                if isinstance(content, list):
+                    for item in content:
+                        if isinstance(item, dict) and item.get('type') == 'thinking':
+                            thinking_text = item.get('thinking', '')
+                            # Truncate to first 60 characters
+                            if len(thinking_text) > 60:
+                                thinking_text = thinking_text[:60] + '...'
+                            catalogue.thinking_message = thinking_text
+                            db.commit()
+                            break
+
+            # Track page progress from state updates
+            if 'data' in event and 'current_page_idx' in event['data']:
+                new_page = event['data']['current_page_idx']
+                if new_page > current_page:
+                    current_page = new_page
+                    catalogue.current_page = current_page
+                    db.commit()
+
+            # Track items extracted
+            if 'data' in event and 'catalogue_items' in event['data']:
+                items = event['data']['catalogue_items']
+                if isinstance(items, list):
+                    items_count = len(items)
+                    catalogue.items_extracted = items_count
+                    db.commit()
+
+        # After streaming completes, parse final state
         final_state = catalogue_ingestor.ingest(temp_pdf_path)
 
         # Check for errors
@@ -140,7 +191,9 @@ async def process_catalogue_background(
         # Update catalogue status
         catalogue.status = "completed"
         catalogue.items_extracted = items_created
-        catalogue.processing_time = time.time() - catalogue.created_at.timestamp()
+        catalogue.current_page = total_pages
+        catalogue.thinking_message = "Processing complete"
+        catalogue.processing_time = time.time() - start_time
         db.commit()
 
         # Cleanup

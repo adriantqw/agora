@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.merchant import Merchant
+import json
+import asyncio
+from datetime import datetime
 from app.schemas.catalogue import (
     CatalogueResponse,
     CatalogueListResponse,
@@ -95,6 +99,97 @@ async def upload_catalogue(
                 }
             }
         )
+
+
+@router.get("/{catalogue_id}/stream")
+async def stream_catalogue_processing(
+    catalogue_id: str,
+    current_user: Merchant = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Stream real-time processing updates via Server-Sent Events (SSE).
+
+    Events sent:
+    - progress: Current page, total pages, items found, thinking message
+    - complete: Processing finished successfully
+    - error: Processing failed
+
+    Args:
+        catalogue_id: Catalogue ID to stream
+        current_user: Current authenticated merchant
+        db: Database session
+
+    Returns:
+        StreamingResponse with text/event-stream
+    """
+    # Verify catalogue ownership
+    catalogue = catalogue_service.get_catalogue_by_id(db, catalogue_id, current_user.id)
+    if not catalogue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Catalogue not found"
+        )
+
+    async def event_generator():
+        try:
+            while True:
+                # Refresh catalogue state from database
+                db.refresh(catalogue)
+
+                # Send progress update
+                event = {
+                    "type": "progress",
+                    "status": catalogue.status,
+                    "currentPage": catalogue.current_page or 0,
+                    "totalPages": catalogue.total_pages or 0,
+                    "itemsFound": catalogue.items_extracted or 0,
+                    "thinkingMessage": catalogue.thinking_message or "",
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+
+                yield f"data: {json.dumps(event)}\n\n"
+
+                # Check if completed
+                if catalogue.status == "completed":
+                    final_event = {
+                        "type": "complete",
+                        "itemsFound": catalogue.items_extracted or 0,
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                    yield f"data: {json.dumps(final_event)}\n\n"
+                    break
+
+                # Check if failed
+                if catalogue.status == "failed":
+                    error_event = {
+                        "type": "error",
+                        "message": catalogue.error_message or "Processing failed",
+                        "timestamp": datetime.utcnow().isoformat()
+                    }
+                    yield f"data: {json.dumps(error_event)}\n\n"
+                    break
+
+                # Poll every 500ms
+                await asyncio.sleep(0.5)
+
+        except Exception as e:
+            error_event = {
+                "type": "error",
+                "message": str(e),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            yield f"data: {json.dumps(error_event)}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
 
 
 @router.get("", response_model=CatalogueListResponse)
