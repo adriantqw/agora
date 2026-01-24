@@ -1,8 +1,11 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function Header({
   variant = 'full',
   showNav = true,
   onQuizClick,
 }) {
+  const navigate = useNavigate();
   const navItems = ['Wardrobe', 'Kitchen', 'Office', 'Bedroom'];
 
   return (
@@ -108,6 +111,41 @@ export default function Header({
           alignItems: 'center',
           gap: '16px',
         }}>
+          {/* Merchant Portal Link */}
+          <button
+            onClick={() => navigate('/merchant/login')}
+            className="merchant-link"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#718096',
+              fontSize: '13px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              transition: 'all 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#F7FAFC';
+              e.currentTarget.style.color = '#4a5568';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'none';
+              e.currentTarget.style.color = '#718096';
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Merchant
+          </button>
+
           {/* Take the quiz link */}
           <button
             onClick={onQuizClick}
@@ -221,6 +259,15 @@ export default function Header({
 
           .header-container .quiz-button {
             display: none !important;
+          }
+
+          .merchant-link {
+            font-size: 0 !important;
+            padding: 6px !important;
+          }
+
+          .merchant-link svg {
+            margin: 0 !important;
           }
         }
       `}</style>
