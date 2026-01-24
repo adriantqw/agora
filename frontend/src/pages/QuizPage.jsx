@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/common/Header/Header';
 import QuestionRenderer from '../components/dynamic-forms/QuestionRenderer';
 import QuizProgress from '../components/quiz/QuizProgress/QuizProgress';
@@ -9,6 +9,7 @@ import quizService from '../services/quizService';
 
 export default function QuizPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     currentStep,
     totalSteps,
@@ -55,6 +56,16 @@ export default function QuizPage() {
       }
     };
   }, []);
+
+  // Handle initial prompt from search (e.g., when navigating from storefront search)
+  useEffect(() => {
+    if (location.state?.initialPrompt && questions.length > 0 && currentStep === 0 && !answers[questions[0]?.id]) {
+      const firstQuestion = questions[0];
+      handleAnswer(location.state.initialPrompt);
+      // Clear the state to prevent re-triggering on navigation
+      window.history.replaceState({}, document.title);
+    }
+  }, [questions, location.state?.initialPrompt, currentStep, answers]);
 
   const currentQuestion = questions[currentStep];
   const isLastStep = currentStep === totalSteps - 1;

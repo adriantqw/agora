@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useThemeColors } from '../hooks/useThemeColors';
 import Header from '../components/common/Header/Header';
-import SearchBar from '../components/common/SearchBar/SearchBar';
 import EventDatePicker from '../components/home/EventDatePicker/EventDatePicker';
 import RecommendationSection from '../components/home/RecommendationSection/RecommendationSection';
 import Mascot from '../components/common/Mascot/Mascot';
@@ -36,15 +35,11 @@ export default function StorefrontLandingPage() {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
-    // Navigate to search page after animation
+    // Navigate to quiz page with search query as initial prompt
     setTimeout(() => {
-      navigate('/search', { state: { query: searchQuery } });
+      navigate('/quiz', { state: { initialPrompt: searchQuery } });
       setIsSearching(false);
     }, 1500);
-  };
-
-  const handleQuizClick = () => {
-    navigate('/quiz');
   };
 
   const handleJustBrowsing = () => {
@@ -61,25 +56,10 @@ export default function StorefrontLandingPage() {
       <Header
         variant="full"
         showNav={true}
-        onQuizClick={handleQuizClick}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onSearch={handleSearch}
       />
-
-      {/* Search Section */}
-      <section className="search-section" style={{
-        padding: '48px 48px 32px',
-        textAlign: 'center',
-      }}>
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSearch={handleSearch}
-          placeholder="What are you looking for?"
-          showMenuButton={true}
-          showJustBrowsing={true}
-          onMenuClick={() => console.log('Menu clicked')}
-          onJustBrowsingClick={handleJustBrowsing}
-        />
-      </section>
 
       {/* Event Picker */}
       <section className="event-section" style={{
@@ -120,10 +100,6 @@ export default function StorefrontLandingPage() {
 
         /* Tablet */
         @media (max-width: 1024px) {
-          .search-section {
-            padding: 32px 24px 24px !important;
-          }
-
           .event-section {
             padding: 0 24px 32px !important;
           }
@@ -131,10 +107,6 @@ export default function StorefrontLandingPage() {
 
         /* Mobile */
         @media (max-width: 768px) {
-          .search-section {
-            padding: 24px 16px 16px !important;
-          }
-
           .event-section {
             padding: 0 16px 24px !important;
           }

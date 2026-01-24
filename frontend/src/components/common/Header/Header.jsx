@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 export default function Header({
   variant = 'full',
   showNav = true,
-  onQuizClick,
+  searchQuery = '',
+  onSearchChange,
+  onSearch,
 }) {
   const navigate = useNavigate();
-  const navItems = ['Wardrobe', 'Kitchen', 'Office', 'Bedroom'];
 
   return (
     <header style={{
@@ -73,106 +74,99 @@ export default function Header({
           </span>
         </div>
 
-        {/* Navigation Items (center) */}
-        {showNav && variant === 'full' && (
-          <nav style={{
-            display: 'flex',
-            gap: '32px',
+        {/* Compact Search Bar (center) */}
+        {variant === 'full' && onSearch && (
+          <div className="header-search" style={{
             flex: 1,
-            justifyContent: 'center',
+            maxWidth: '500px',
+            margin: '0 auto',
           }}>
-            {navItems.map((item) => (
-              <a
-                key={item}
-                href="#"
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              background: 'white',
+              border: '2px solid #E2E8F0',
+              borderRadius: '20px',
+              padding: '4px',
+              transition: 'all 0.2s ease',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#F5A5B8';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#E2E8F0';
+            }}
+            >
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    onSearch?.();
+                  }
+                }}
+                placeholder="What are you looking for?"
                 style={{
+                  flex: 1,
+                  border: 'none',
+                  outline: 'none',
+                  padding: '6px 12px',
                   fontSize: '15px',
-                  fontWeight: '500',
-                  color: '#4a5568',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s',
+                  fontFamily: 'inherit',
+                  background: 'transparent',
+                }}
+              />
+              <button
+                onClick={onSearch}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  background: 'linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(245, 165, 184, 0.3)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.transform = 'scale(1.05)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(245, 165, 184, 0.4)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#4a5568';
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(245, 165, 184, 0.3)';
                 }}
               >
-                {item}
-              </a>
-            ))}
-          </nav>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Right side icons */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '16px',
+          gap: '12px',
         }}>
-          {/* Merchant Portal Link */}
-          <button
-            onClick={() => navigate('/merchant/login')}
-            className="merchant-link"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#718096',
-              fontSize: '13px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              fontFamily: 'inherit',
-              padding: '6px 12px',
-              borderRadius: '6px',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#F7FAFC';
-              e.currentTarget.style.color = '#4a5568';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
-              e.currentTarget.style.color = '#718096';
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-            Merchant
-          </button>
-
-          {/* Take the quiz link */}
-          <button
-            onClick={onQuizClick}
-            className="quiz-button"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#F5A5B8',
-              fontSize: '15px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              textDecoration: 'none',
-              fontFamily: 'inherit',
-              padding: '8px 16px',
-              borderRadius: '8px',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#FFF5F7';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'none';
-            }}
-          >
-            Take the quiz
-          </button>
-
           {/* Calendar icon */}
           <button
             style={{
@@ -234,6 +228,32 @@ export default function Header({
               <circle cx="12" cy="7" r="4" />
             </svg>
           </button>
+
+          {/* Merchant Portal Link - Subtle, at the end */}
+          <button
+            onClick={() => navigate('/merchant/login')}
+            className="merchant-link"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#a0aec0',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              padding: '6px 8px',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#718096';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#a0aec0';
+            }}
+          >
+            Merchant
+          </button>
         </div>
       </div>
 
@@ -245,8 +265,8 @@ export default function Header({
             gap: 16px !important;
           }
 
-          .header-container nav {
-            display: none !important;
+          .header-search {
+            max-width: 400px !important;
           }
         }
 
@@ -254,20 +274,16 @@ export default function Header({
         @media (max-width: 768px) {
           .header-container {
             padding: 12px 16px !important;
-            gap: 12px !important;
+            gap: 8px !important;
           }
 
-          .header-container .quiz-button {
+          .header-search {
             display: none !important;
           }
 
           .merchant-link {
-            font-size: 0 !important;
-            padding: 6px !important;
-          }
-
-          .merchant-link svg {
-            margin: 0 !important;
+            font-size: 11px !important;
+            padding: 4px 6px !important;
           }
         }
       `}</style>
