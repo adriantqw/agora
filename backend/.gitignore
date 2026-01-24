@@ -41,6 +41,11 @@ venv.bak/
 .DS_Store
 Thumbs.db
 
+.env
+*.db
+
+/data/
+
 # Testing
 .pytest_cache/
 .coverage

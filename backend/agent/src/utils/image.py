@@ -1,4 +1,4 @@
-from src.agents.schemas import BBox
+from ..agents.schemas import BBox
 
 def get_pil_box(bbox: BBox, img_width: float, img_height: float):
     """Convert a BBox in 0-1000 scale to a PIL-compatible box tuple."""
