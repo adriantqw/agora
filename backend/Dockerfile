@@ -16,12 +16,11 @@ RUN apt-get update && apt-get install -y \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:$PATH"
 
-# Copy dependency files
-COPY agent/pyproject.toml agent/pyproject.toml
-COPY agent/uv.lock agent/uv.lock 2>/dev/null || true
+# Copy dependency files from backend root
+COPY pyproject.toml pyproject.toml
+COPY uv.lock uv.lock 2>/dev/null || true
 
 # Create virtual environment and install dependencies
-WORKDIR /app/agent
 RUN uv venv /opt/venv
 RUN uv sync --frozen 2>/dev/null || uv sync
 

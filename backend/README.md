@@ -74,7 +74,7 @@ pipx install uv
 2. **Create virtual environment and install dependencies:**
 
 ```bash
-cd backend/agent
+cd backend
 uv venv
 uv sync
 ```
@@ -83,16 +83,15 @@ uv sync
 
 ```bash
 # On macOS/Linux:
-source agent/.venv/bin/activate
+source .venv/bin/activate
 
 # On Windows:
-agent\.venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 4. **Configure environment variables:**
 
 ```bash
-cd ..
 cp .env.example .env
 ```
 
@@ -148,10 +147,10 @@ The server will start at `http://localhost:8000` with auto-reload enabled.
 
 ```bash
 # macOS/Linux
-source agent/.venv/bin/activate
+source .venv/bin/activate
 
 # Windows
-agent\.venv\Scripts\activate
+.venv\Scripts\activate
 ```
 
 ## API Documentation

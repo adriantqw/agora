@@ -35,20 +35,17 @@ fi
 echo "✓ Python $python_version detected"
 echo ""
 
-# Create virtual environment
+# Create virtual environment at backend root
 echo "Creating virtual environment..."
-cd agent
 uv venv
-echo "✓ Virtual environment created at agent/.venv"
+echo "✓ Virtual environment created at .venv"
 echo ""
 
-# Activate virtual environment
+# Install dependencies
 echo "Installing dependencies..."
 uv sync
 echo "✓ Dependencies installed"
 echo ""
-
-cd ..
 
 # Setup environment variables
 if [ ! -f .env ]; then
@@ -67,7 +64,7 @@ fi
 
 # Seed database
 echo "Seeding database..."
-source agent/.venv/bin/activate
+source .venv/bin/activate
 python scripts/seed_database.py
 echo "✓ Database seeded with demo account"
 echo ""
@@ -91,7 +88,7 @@ echo "   - Get it from: https://makersuite.google.com/app/apikey"
 echo ""
 echo "4. Start the development server:"
 echo "   cd backend"
-echo "   source agent/.venv/bin/activate"
+echo "   source .venv/bin/activate"
 echo "   python run.py"
 echo ""
 echo "5. Access the API at http://localhost:8000/docs"

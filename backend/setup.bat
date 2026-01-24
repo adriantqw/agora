@@ -28,15 +28,14 @@ for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
 echo + Python %PYTHON_VERSION% detected
 echo.
 
-REM Create virtual environment
+REM Create virtual environment at backend root
 echo Creating virtual environment...
-cd agent
 uv venv
 if %ERRORLEVEL% NEQ 0 (
     echo X Failed to create virtual environment
     exit /b 1
 )
-echo + Virtual environment created at agent\.venv
+echo + Virtual environment created at .venv
 echo.
 
 REM Install dependencies (use copy mode on Windows to avoid hardlink issues)
@@ -48,8 +47,6 @@ if %ERRORLEVEL% NEQ 0 (
 )
 echo + Dependencies installed
 echo.
-
-cd ..
 
 REM Setup environment variables
 if not exist .env (
@@ -69,7 +66,7 @@ if not exist .env (
 
 REM Seed database
 echo Seeding database...
-call agent\.venv\Scripts\activate.bat
+call .venv\Scripts\activate.bat
 python scripts\seed_database.py
 if %ERRORLEVEL% NEQ 0 (
     echo X Failed to seed database
@@ -96,7 +93,7 @@ echo    - Get it from: https://makersuite.google.com/app/apikey
 echo.
 echo 4. Start the development server:
 echo    cd backend
-echo    agent\.venv\Scripts\activate.bat
+echo    .venv\Scripts\activate.bat
 echo    python run.py
 echo.
 echo 5. Access the API at http://localhost:8000/docs
