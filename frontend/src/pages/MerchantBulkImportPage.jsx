@@ -279,23 +279,50 @@ export default function BulkImportPage() {
         return true
       })
 
-      const productsToImport = rowsToImport.map(row => ({
-        name: row.name,
-        sku: row.sku,
-        price: row.price,
-        quantity: row.quantity,
-        tags: row.tags || [],
-        image: row.image || null,
-        description: row.description || null
-      }))
+      let result
 
-      const result = await productService.bulkImport(productsToImport, false)
+      if (uploadType === 'pdf') {
+        // PDF: Convert catalogue items to products
+        // Validate that price and quantity are set
+        const invalidRows = rowsToImport.filter(
+          row => !row.price || row.price <= 0 || !row.quantity || row.quantity < 0
+        )
+
+        if (invalidRows.length > 0) {
+          throw new Error(
+            `Please set valid price and quantity for all items. ${invalidRows.length} items missing price/quantity.`
+          )
+        }
+
+        // Call PDF import (converts catalogue items to products)
+        result = await productService.importPDFProducts(
+          jobId,  // catalogueId
+          rowsToImport,
+          false  // skipDuplicates
+        )
+      } else {
+        // CSV: Bulk import products
+        const productsToImport = rowsToImport.map(row => ({
+          name: row.name,
+          sku: row.sku,
+          price: row.price,
+          quantity: row.quantity,
+          tags: row.tags || [],
+          image: row.image || null,
+          description: row.description || null
+        }))
+
+        result = await productService.bulkImport(productsToImport, false)
+      }
+
       setImportResult(result)
 
       // Fetch products to get their IDs for AI tagging
-      const importedSkus = rowsToImport.map(r => r.sku)
+      const importedSkus = rowsToImport.map(r => r.sku).filter(sku => sku) // Filter out empty SKUs from PDF
       const productsResponse = await productService.list({ limit: 100 })
-      const imported = productsResponse.items.filter(p => importedSkus.includes(p.sku))
+      const imported = productsResponse.items.filter(p =>
+        importedSkus.includes(p.sku) || (uploadType === 'pdf' && p.sku.startsWith('CAT-'))
+      )
       setImportedProducts(imported)
 
       setCurrentStep(4)
