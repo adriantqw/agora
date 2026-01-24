@@ -1,5 +1,4 @@
 import { get, post, put, del, uploadFile } from './api';
-import mockPDFService from './mockPDFService';
 
 const productService = {
   /**
@@ -110,43 +109,153 @@ const productService = {
   /**
    * Upload PDF catalogue and start extraction
    * @param {File} file - PDF file to upload
-   * @returns {Promise<{jobId: string, status: string, message: string}>}
+   * @returns {Promise<{jobId: string, catalogueId: string, status: string, message: string}>}
    */
   async uploadPDF(file) {
-    // TODO: Replace with real API call when backend is implemented
-    // const response = await uploadFile('/api/products/pdf-extract', file);
-    // return response.data;
-    return mockPDFService.uploadPDF(file);
+    try {
+      // Upload PDF to backend (returns immediately, processing happens in background)
+      const response = await uploadFile('/api/catalogues/upload', file);
+
+      if (!response.data.success) {
+        throw new Error(response.data.error?.message || 'Upload failed');
+      }
+
+      const catalogue = response.data.data;
+
+      // Return job-like response for polling UI
+      return {
+        jobId: catalogue.id,  // Use catalogue ID as jobId
+        catalogueId: catalogue.id,
+        status: catalogue.status,  // Will be 'processing'
+        message: 'Upload successful, processing started...'
+      };
+    } catch (error) {
+      throw new Error(error.response?.data?.error?.message || error.message);
+    }
   },
 
   /**
    * Get PDF extraction status and results
-   * @param {string} jobId - Job ID to check
+   * @param {string} jobId - Job ID to check (actually catalogueId)
    * @returns {Promise<{jobId: string, status: string, progress?: number, products?: Array, metadata?: Object}>}
    */
   async getPDFExtractionStatus(jobId) {
-    // TODO: Replace with real API call when backend is implemented
-    // const response = await get(`/api/products/pdf-extract/${jobId}`);
-    // return response.data;
-    return mockPDFService.getPDFExtractionStatus(jobId);
+    try {
+      // First, check processing status
+      const statusResponse = await get(`/api/catalogues/${jobId}/status`);
+
+      if (!statusResponse.data.success) {
+        throw new Error('Failed to fetch catalogue status');
+      }
+
+      const statusData = statusResponse.data.data;
+
+      // If still processing, return progress
+      if (statusData.status === 'processing') {
+        return {
+          jobId,
+          status: 'processing',
+          progress: statusData.progress || 50,
+          message: statusData.message || 'Processing catalogue...'
+        };
+      }
+
+      // If failed, throw error
+      if (statusData.status === 'failed') {
+        throw new Error(statusData.message || 'Processing failed');
+      }
+
+      // If completed, fetch items
+      const itemsResponse = await get(`/api/catalogues/${jobId}/items`, {
+        params: { page: 1, limit: 100 }  // Fetch all items
+      });
+
+      if (!itemsResponse.data.success) {
+        throw new Error('Failed to fetch catalogue items');
+      }
+
+      const { items } = itemsResponse.data.data;
+
+      // Transform catalogue items to match expected product format
+      const products = items.map((item, index) => ({
+        id: item.id,
+        name: item.name,
+        sku: '',  // User must provide
+        price: 29.99,  // Default price
+        quantity: 100,  // Default quantity
+        tags: [...(item.sizes || []), ...(item.colours || [])],  // Merge sizes + colours
+        image: item.imageUrl,
+        description: item.description || '',
+        confidence: 0.85,  // Default confidence since backend doesn't provide
+        page: item.page,
+        // Backend-specific fields for later conversion
+        _catalogueItemId: item.id,
+        _sizes: item.sizes,
+        _colours: item.colours
+      }));
+
+      return {
+        jobId,
+        status: 'completed',
+        products,
+        metadata: {
+          totalPages: Math.max(...items.map(i => i.page || 0), 0),
+          productsFound: items.length,
+          imagesExtracted: items.length
+        }
+      };
+    } catch (error) {
+      throw new Error(error.response?.data?.error?.message || error.message);
+    }
   },
 
   /**
-   * Import products from PDF extraction
-   * @param {string} jobId - Job ID
+   * Import products from PDF extraction (convert catalogue items to products)
+   * @param {string} jobId - Job ID (catalogueId)
    * @param {Array} products - Edited products to import
    * @param {boolean} skipDuplicates - Skip existing SKUs instead of updating
    * @returns {Promise<{created: number, updated: number, skipped: number, errors: Array}>}
    */
   async importPDFProducts(jobId, products, skipDuplicates = false) {
-    // TODO: Replace with real API call when backend is implemented
-    // const response = await post('/api/products/pdf-import', {
-    //   jobId,
-    //   products,
-    //   skipDuplicates
-    // });
-    // return response.data;
-    return mockPDFService.importPDFProducts(jobId, products, skipDuplicates);
+    try {
+      // Extract item IDs from products
+      const itemIds = products
+        .filter(p => p._catalogueItemId)  // Only items from backend
+        .map(p => p._catalogueItemId);
+
+      if (itemIds.length === 0) {
+        throw new Error('No valid catalogue items to convert');
+      }
+
+      // Calculate default price/quantity from edited products
+      // (User should have edited these in the preview table)
+      const defaultPrice = products[0]?.price || 29.99;
+      const defaultQuantity = products[0]?.quantity || 100;
+
+      // Call backend to create products from items
+      const response = await post(`/api/catalogues/${jobId}/create-products`, {
+        itemIds,
+        defaultPrice,
+        defaultQuantity,
+        generateSku: true,
+        skuPrefix: 'CAT-'
+      });
+
+      if (!response.data.success) {
+        throw new Error('Failed to create products');
+      }
+
+      const result = response.data.data;
+
+      return {
+        created: result.created,
+        updated: 0,  // Backend doesn't update, only creates
+        skipped: 0,
+        errors: result.errors || []
+      };
+    } catch (error) {
+      throw new Error(error.response?.data?.error?.message || error.message);
+    }
   },
 
   /**

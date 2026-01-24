@@ -9,6 +9,7 @@ from typing import List, Tuple, Optional
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from PIL import Image
+import asyncio
 
 # Add agent to Python path
 agent_path = Path(__file__).parent.parent.parent / "agent"
@@ -26,90 +27,66 @@ from app.services import product_service
 catalogue_ingestor = CatalogueIngestor()
 
 
-async def upload_and_ingest_catalogue(
-    db: Session,
+async def process_catalogue_background(
+    catalogue_id: str,
     merchant_id: str,
-    file: UploadFile,
+    file_url: str,
+    pdf_content: bytes,
     filename: str
-) -> Catalogue:
+):
     """
-    Upload a PDF catalogue, process it with the agent, and store extracted items.
+    Background task to process catalogue with AI agent.
 
     Args:
-        db: Database session
+        catalogue_id: The catalogue's ID
         merchant_id: The merchant's ID
-        file: The uploaded PDF file
+        file_url: URL of uploaded PDF in R2
+        pdf_content: Raw PDF file content
         filename: Original filename
-
-    Returns:
-        Catalogue: The created catalogue record
-
-    Raises:
-        Exception: If processing fails
     """
-    start_time = time.time()
-    catalogue = None
+    from app.database import SessionLocal
+
+    db = SessionLocal()
     temp_pdf_path = None
 
     try:
-        # Step 1: Upload PDF to R2
-        unique_filename = f"{uuid.uuid4()}.pdf"
-        upload_result = await storage_service.upload_file(file, "catalogues", unique_filename)
+        # Get catalogue record
+        catalogue = db.query(Catalogue).filter(Catalogue.id == catalogue_id).first()
+        if not catalogue:
+            return
 
-        if "error" in upload_result:
-            raise Exception(f"Failed to upload PDF: {upload_result['error']}")
-
-        file_url = upload_result["url"]
-
-        # Step 2: Create Catalogue record with status="processing"
-        catalogue = Catalogue(
-            id=str(uuid.uuid4()),
-            merchant_id=merchant_id,
-            filename=filename,
-            file_url=file_url,
-            status="processing",
-            items_extracted=0
-        )
-        db.add(catalogue)
-        db.commit()
-        db.refresh(catalogue)
-
-        # Step 3: Download PDF to temp file for processing
-        # Reset file position
-        await file.seek(0)
-        pdf_content = await file.read()
-
+        # Save PDF to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_pdf:
             temp_pdf.write(pdf_content)
             temp_pdf_path = temp_pdf.name
 
-        # Step 4: Call agent to ingest catalogue
+        # Process with AI agent
         final_state = catalogue_ingestor.ingest(temp_pdf_path)
 
-        # Check for errors in final state
+        # Check for errors
         if "error" in final_state and final_state["error"]:
-            raise Exception(final_state["error"])
+            catalogue.status = "failed"
+            catalogue.error_message = str(final_state["error"])
+            db.commit()
+            return
 
-        # Step 5: Parse final state to get items with cropped images
+        # Parse results
         item_payloads = catalogue_ingestor.parse_final_state(final_state)
 
-        # Step 6: Process each item
+        # Process each item
         items_created = 0
         for item_payload in item_payloads:
             try:
-                # Upload cropped item image to R2
                 image_path = item_payload.get("image_path")
                 if not image_path or not os.path.exists(image_path):
                     continue
 
-                # Create UploadFile-like object for the cropped image
+                # Upload cropped image to R2
                 with open(image_path, 'rb') as img_file:
                     img_content = img_file.read()
 
-                # Upload to R2
                 item_image_filename = f"{uuid.uuid4()}.jpg"
 
-                # Create a temporary file-like object for upload
                 import io
                 from fastapi import UploadFile as FastAPIUploadFile
 
@@ -125,12 +102,11 @@ async def upload_and_ingest_catalogue(
                 )
 
                 if "error" in upload_result:
-                    print(f"Failed to upload item image: {upload_result['error']}")
                     continue
 
                 item_image_url = upload_result["url"]
 
-                # Create CatalogueItem record
+                # Create catalogue item
                 catalogue_item = CatalogueItem(
                     id=str(uuid.uuid4()),
                     catalogue_id=catalogue.id,
@@ -147,54 +123,119 @@ async def upload_and_ingest_catalogue(
                 db.add(catalogue_item)
                 items_created += 1
 
-                # Clean up local item image
+                # Clean up temp image
                 try:
                     os.remove(image_path)
                 except:
                     pass
 
             except Exception as e:
-                print(f"Error processing catalogue item: {e}")
+                print(f"Error processing item: {e}")
                 continue
 
-        # Step 7: Update Catalogue record
-        processing_time = time.time() - start_time
+        # Update catalogue status
         catalogue.status = "completed"
         catalogue.items_extracted = items_created
-        catalogue.processing_time = processing_time
+        catalogue.processing_time = time.time() - catalogue.created_at.timestamp()
         db.commit()
-        db.refresh(catalogue)
 
-        # Clean up temp PDF and page images
+        # Cleanup
         if temp_pdf_path and os.path.exists(temp_pdf_path):
             os.remove(temp_pdf_path)
 
-        # Clean up page images from data/catalogues/
+        # Clean up page images
         pdf_page_paths = final_state.get("pdf_page_paths", [])
         for page_path in pdf_page_paths:
             try:
                 if os.path.exists(page_path):
                     os.remove(page_path)
-                # Also try to remove the catalogue directory if empty
                 page_dir = Path(page_path).parent
                 if page_dir.exists() and not any(page_dir.iterdir()):
                     page_dir.rmdir()
             except:
                 pass
 
+    except Exception as e:
+        # Mark as failed
+        try:
+            catalogue = db.query(Catalogue).filter(Catalogue.id == catalogue_id).first()
+            if catalogue:
+                catalogue.status = "failed"
+                catalogue.error_message = str(e)
+                db.commit()
+        except:
+            pass
+
+        # Cleanup temp file
+        if temp_pdf_path and os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
+    finally:
+        db.close()
+
+
+async def upload_and_ingest_catalogue(
+    db: Session,
+    merchant_id: str,
+    file: UploadFile,
+    filename: str
+) -> Catalogue:
+    """
+    Upload a PDF catalogue and start background processing.
+    Returns immediately with status='processing'.
+
+    Args:
+        db: Database session
+        merchant_id: The merchant's ID
+        file: The uploaded PDF file
+        filename: Original filename
+
+    Returns:
+        Catalogue: The created catalogue record with status='processing'
+
+    Raises:
+        Exception: If upload fails
+    """
+    try:
+        # Step 1: Upload PDF to R2
+        unique_filename = f"{uuid.uuid4()}.pdf"
+        upload_result = await storage_service.upload_file(file, "catalogues", unique_filename)
+
+        if "error" in upload_result:
+            raise Exception(f"Failed to upload PDF: {upload_result['error']}")
+
+        file_url = upload_result["url"]
+
+        # Step 2: Read PDF content for background processing
+        await file.seek(0)
+        pdf_content = await file.read()
+
+        # Step 3: Create Catalogue record with status="processing"
+        catalogue = Catalogue(
+            id=str(uuid.uuid4()),
+            merchant_id=merchant_id,
+            filename=filename,
+            file_url=file_url,
+            status="processing",
+            items_extracted=0
+        )
+        db.add(catalogue)
+        db.commit()
+        db.refresh(catalogue)
+
+        # Step 4: Start background processing (non-blocking)
+        asyncio.create_task(
+            process_catalogue_background(
+                catalogue.id,
+                merchant_id,
+                file_url,
+                pdf_content,
+                filename
+            )
+        )
+
         return catalogue
 
     except Exception as e:
-        # Update catalogue status to failed if it was created
-        if catalogue:
-            catalogue.status = "failed"
-            catalogue.error_message = str(e)
-            db.commit()
-
-        # Clean up temp file
-        if temp_pdf_path and os.path.exists(temp_pdf_path):
-            os.remove(temp_pdf_path)
-
         raise e
 
 

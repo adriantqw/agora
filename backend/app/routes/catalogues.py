@@ -139,6 +139,78 @@ def list_catalogues(
     )
 
 
+@router.get("/{catalogue_id}/status", response_model=dict)
+def get_catalogue_status(
+    catalogue_id: str,
+    current_user: Merchant = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get catalogue processing status (for polling during upload).
+
+    Args:
+        catalogue_id: The catalogue's ID
+        current_user: Current authenticated merchant
+        db: Database session
+
+    Returns:
+        Status information with progress
+    """
+    catalogue = catalogue_service.get_catalogue_by_id(
+        db=db,
+        merchant_id=current_user.id,
+        catalogue_id=catalogue_id
+    )
+
+    if not catalogue:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "success": False,
+                "error": {
+                    "code": "CATALOGUE_NOT_FOUND",
+                    "message": "Catalogue not found"
+                }
+            }
+        )
+
+    # Calculate progress based on status
+    if catalogue.status == "processing":
+        # Fake progress calculation (you could enhance this with real progress tracking)
+        import time
+        elapsed = time.time() - catalogue.created_at.timestamp()
+        # Assume 60 seconds average processing time
+        progress = min(95, int((elapsed / 60) * 100))
+
+        return {
+            "success": True,
+            "data": {
+                "status": "processing",
+                "progress": progress,
+                "message": f"Processing catalogue... {progress}%"
+            }
+        }
+    elif catalogue.status == "completed":
+        return {
+            "success": True,
+            "data": {
+                "status": "completed",
+                "progress": 100,
+                "itemsExtracted": catalogue.items_extracted,
+                "message": f"Extracted {catalogue.items_extracted} items"
+            }
+        }
+    else:  # failed
+        return {
+            "success": True,
+            "data": {
+                "status": "failed",
+                "progress": 0,
+                "message": catalogue.error_message or "Processing failed"
+            }
+        }
+
+
 @router.get("/{catalogue_id}", response_model=dict)
 def get_catalogue(
     catalogue_id: str,

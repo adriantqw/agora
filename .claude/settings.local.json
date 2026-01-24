@@ -6,7 +6,13 @@
       "Bash(backend/agent/.venv/Scripts/python.exe:*)",
       "Bash(agent/.venv/Scripts/python.exe scripts/seed_database.py)",
       "Bash(timeout 10 agent/.venv/Scripts/python.exe:*)",
-      "Bash(agent/.venv/Scripts/python.exe:*)"
+      "Bash(agent/.venv/Scripts/python.exe:*)",
+      "Bash(git rebase:*)",
+      "Bash(git merge:*)",
+      "Bash(test:*)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.main import app; print\\(''Server imports successfully!''\\)\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
