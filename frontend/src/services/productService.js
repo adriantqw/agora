@@ -116,11 +116,11 @@ const productService = {
       // Upload PDF to backend (returns immediately, processing happens in background)
       const response = await uploadFile('/api/catalogues/upload', file);
 
-      if (!response.data.success) {
-        throw new Error(response.data.error?.message || 'Upload failed');
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Upload failed');
       }
 
-      const catalogue = response.data.data;
+      const catalogue = response.data;
 
       // Return job-like response for polling UI
       return {
@@ -144,11 +144,11 @@ const productService = {
       // First, check processing status
       const statusResponse = await get(`/api/catalogues/${jobId}/status`);
 
-      if (!statusResponse.data.success) {
+      if (!statusResponse.success) {
         throw new Error('Failed to fetch catalogue status');
       }
 
-      const statusData = statusResponse.data.data;
+      const statusData = statusResponse.data;
 
       // If still processing, return progress
       if (statusData.status === 'processing') {
@@ -170,11 +170,11 @@ const productService = {
         params: { page: 1, limit: 100 }  // Fetch all items
       });
 
-      if (!itemsResponse.data.success) {
+      if (!itemsResponse.success) {
         throw new Error('Failed to fetch catalogue items');
       }
 
-      const { items } = itemsResponse.data.data;
+      const { items } = itemsResponse.data;
 
       // Transform catalogue items to match expected product format
       const products = items.map((item, index) => ({
@@ -218,34 +218,41 @@ const productService = {
    */
   async importPDFProducts(jobId, products, skipDuplicates = false) {
     try {
-      // Extract item IDs from products
-      const itemIds = products
-        .filter(p => p._catalogueItemId)  // Only items from backend
-        .map(p => p._catalogueItemId);
+      // map items
+      const items = products
+        .filter(p => p._catalogueItemId)
+        .map(p => ({
+          id: p._catalogueItemId,
+          name: p.name,
+          sku: p.sku,
+          price: parseFloat(p.price),
+          quantity: parseInt(p.quantity, 10),
+          description: p.description,
+          tags: p.tags
+        }));
 
-      if (itemIds.length === 0) {
+      if (items.length === 0) {
         throw new Error('No valid catalogue items to convert');
       }
 
-      // Calculate default price/quantity from edited products
-      // (User should have edited these in the preview table)
+      // Calculate default price/quantity from edited products (fallback)
       const defaultPrice = products[0]?.price || 29.99;
       const defaultQuantity = products[0]?.quantity || 100;
 
       // Call backend to create products from items
       const response = await post(`/api/catalogues/${jobId}/create-products`, {
-        itemIds,
+        items,
         defaultPrice,
         defaultQuantity,
         generateSku: true,
         skuPrefix: 'CAT-'
       });
 
-      if (!response.data.success) {
+      if (!response.success) {
         throw new Error('Failed to create products');
       }
 
-      const result = response.data.data;
+      const result = response.data;
 
       return {
         created: result.created,

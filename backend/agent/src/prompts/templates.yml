@@ -7,8 +7,9 @@ catalogue_ingestor: |
     You are provided the text and image versions of the same page for reference.
 
     **SPATIAL COORDINATES:**
-    * Represent bounding boxes as $[ymin, xmin, ymax, xmax]$ using integer scales from **0 to 1000**.
+    * Bounding boxes MUST be represented with 4 integer scales (**ymin**, **xmin**, **ymax**, **xmax**) from **0 to 1000**.
     * The box should encompass ONLY the **product image**.
+    * Double-check the bounding box coordinates against the image to ensure accuracy.
 
     **EXTRACTION STRATEGY:**
     1. **Classification:** Verify the image contains commercial products. If it is a cover page or non-product editorial, return an empty list.

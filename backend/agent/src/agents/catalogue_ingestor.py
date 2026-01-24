@@ -75,12 +75,19 @@ class CatalogueIngestor:
         except Exception as e:
             return {"error": f"Failed to convert PDF to images: {str(e)}"}
 
+        finally:
+            if 'pdf' in locals():
+                pdf.close()
+
     def _read_pdf(self, state: CatalogueIngestorState):
         """Read PDF text"""
         try:
             idx = state["current_page_idx"]
             pdf_pages = pdfium.PdfDocument(state["pdf_path"])
-            return pdf_pages[idx].get_textpage().get_text_range()
+            try:
+                return pdf_pages[idx].get_textpage().get_text_range()
+            finally:
+                pdf_pages.close()
 
         except Exception as e:
             return {"error": f"Failed to read PDF: {str(e)}"}

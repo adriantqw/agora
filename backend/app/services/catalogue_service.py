@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 from fastapi import UploadFile
 from PIL import Image
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Add agent to Python path
 agent_path = Path(__file__).parent.parent.parent / "agent"
@@ -19,6 +22,7 @@ from src.agents.catalogue_ingestor import CatalogueIngestor
 from app.models.catalogue import Catalogue, CatalogueItem
 from app.models.product import Product
 from app.schemas.product import ProductCreate
+from app.schemas.catalogue import CreateProductsItem
 from app.services.storage_service import storage_service
 from app.services import product_service
 
@@ -130,7 +134,7 @@ async def process_catalogue_background(
                     pass
 
             except Exception as e:
-                print(f"Error processing item: {e}")
+                logger.error(f"Error processing item for catalogue {catalogue_id}: {e}", exc_info=True)
                 continue
 
         # Update catalogue status
@@ -141,7 +145,10 @@ async def process_catalogue_background(
 
         # Cleanup
         if temp_pdf_path and os.path.exists(temp_pdf_path):
-            os.remove(temp_pdf_path)
+            try:
+                os.remove(temp_pdf_path)
+            except Exception as e:
+                logger.warning(f"Failed to delete temp PDF file: {e}")
 
         # Clean up page images
         pdf_page_paths = final_state.get("pdf_page_paths", [])
@@ -156,6 +163,9 @@ async def process_catalogue_background(
                 pass
 
     except Exception as e:
+        # Log the full error
+        logger.exception(f"Background processing failed for catalogue {catalogue_id}")
+        
         # Mark as failed
         try:
             catalogue = db.query(Catalogue).filter(Catalogue.id == catalogue_id).first()
@@ -168,7 +178,10 @@ async def process_catalogue_background(
 
         # Cleanup temp file
         if temp_pdf_path and os.path.exists(temp_pdf_path):
-            os.remove(temp_pdf_path)
+            try:
+                os.remove(temp_pdf_path)
+            except Exception:
+                pass
     finally:
         db.close()
 
@@ -330,19 +343,19 @@ def get_catalogue_items(
 def create_products_from_items(
     db: Session,
     merchant_id: str,
-    item_ids: List[str],
+    items: List[CreateProductsItem],
     default_price: float,
     default_quantity: int,
     generate_sku: bool = True,
     sku_prefix: str = "CAT-"
 ) -> dict:
     """
-    Create products from catalogue items.
+    Create products from catalogue items with overrides.
 
     Args:
         db: Database session
         merchant_id: The merchant's ID
-        item_ids: List of catalogue item IDs
+        items: List of item payload with overrides
         default_price: Default price for products
         default_quantity: Default quantity for products
         generate_sku: Whether to generate SKU
@@ -351,57 +364,86 @@ def create_products_from_items(
     Returns:
         dict with created count and errors
     """
+    # Extract IDs
+    item_ids = [item.id for item in items]
+    
     # Fetch catalogue items
-    items = db.query(CatalogueItem).filter(
+    db_items = db.query(CatalogueItem).filter(
         CatalogueItem.id.in_(item_ids),
         CatalogueItem.merchant_id == merchant_id
     ).all()
-
-    # Filter out already converted items
-    items_to_convert = [item for item in items if not item.is_converted]
+    
+    # Map DB items for O(1) lookup
+    db_items_map = {item.id: item for item in db_items}
 
     created = 0
     errors = []
 
-    for item in items_to_convert:
+    for item_input in items:
+        db_item = db_items_map.get(item_input.id)
+        
+        if not db_item:
+            errors.append({
+                "itemId": item_input.id,
+                "error": "Item not found"
+            })
+            continue
+
+        if db_item.is_converted:
+            # Skip already converted items
+            continue
+
         try:
-            # Generate SKU
-            if generate_sku:
+            # Determine SKU
+            if item_input.sku:
+                 sku = item_input.sku
+            elif generate_sku:
                 short_uuid = str(uuid.uuid4())[:8].upper()
                 sku = f"{sku_prefix}{short_uuid}"
             else:
                 # Use item name as SKU base
-                sku = f"{sku_prefix}{item.name.replace(' ', '-')[:20]}"
+                name_base = item_input.name or db_item.name
+                sku = f"{sku_prefix}{name_base.replace(' ', '-')[:20]}"
 
+            # Determine fields (override > db > default)
+            name = item_input.name or db_item.name
+            description = item_input.description or db_item.description
+            price = item_input.price if item_input.price is not None else default_price
+            quantity = item_input.quantity if item_input.quantity is not None else default_quantity
+            
             # Merge sizes and colours into tags
             tags = []
-            if item.sizes:
-                tags.extend(item.sizes)
-            if item.colours:
-                tags.extend(item.colours)
+            if db_item.sizes:
+                tags.extend(db_item.sizes)
+            if db_item.colours:
+                tags.extend(db_item.colours)
+            
+            # Add extra tags from input if any
+            if item_input.tags:
+                tags.extend([t for t in item_input.tags if t not in tags])
 
             # Create product
             product_data = ProductCreate(
-                name=item.name,
+                name=name,
                 sku=sku,
-                price=default_price,
-                quantity=default_quantity,
+                price=price,
+                quantity=quantity,
                 tags=tags,
-                image=item.image_url,
-                description=item.description
+                image=db_item.image_url,
+                description=description
             )
 
             product = product_service.create_product(db, merchant_id, product_data)
 
             # Update catalogue item
-            item.product_id = product.id
-            item.is_converted = True
+            db_item.product_id = product.id
+            db_item.is_converted = True
 
             created += 1
 
         except Exception as e:
             errors.append({
-                "itemId": item.id,
+                "itemId": db_item.id,
                 "error": str(e)
             })
 

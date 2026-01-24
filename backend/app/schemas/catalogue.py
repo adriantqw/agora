@@ -119,10 +119,29 @@ class CatalogueItemListResponse(BaseModel):
 
 # === Request Schemas ===
 
+class CreateProductsItem(BaseModel):
+    """Item payload for product creation with overrides."""
+    
+    id: str
+    name: Optional[str] = None
+    sku: Optional[str] = None
+    price: Optional[float] = None
+    quantity: Optional[int] = None
+    description: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+    @field_validator('price')
+    @classmethod
+    def round_price_item(cls, v):
+        if v is not None:
+            return round(v, 2)
+        return v
+
+
 class CreateProductsRequest(BaseModel):
     """Schema for creating products from catalogue items."""
 
-    itemIds: List[str] = Field(..., min_length=1, max_length=100)
+    items: List[CreateProductsItem] = Field(..., min_length=1, max_length=100)
     defaultPrice: float = Field(..., ge=0)
     defaultQuantity: int = Field(..., ge=0)
     generateSku: bool = Field(default=True)

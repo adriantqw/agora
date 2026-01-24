@@ -349,19 +349,19 @@ def create_products(
         )
 
     # Validate item count
-    if len(request.itemIds) < 1:
+    if len(request.items) < 1:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "success": False,
                 "error": {
                     "code": "INVALID_REQUEST",
-                    "message": "At least one item ID is required"
+                    "message": "At least one item is required"
                 }
             }
         )
 
-    if len(request.itemIds) > 100:
+    if len(request.items) > 100:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
@@ -377,7 +377,7 @@ def create_products(
         result = catalogue_service.create_products_from_items(
             db=db,
             merchant_id=current_user.id,
-            item_ids=request.itemIds,
+            items=request.items,
             default_price=request.defaultPrice,
             default_quantity=request.defaultQuantity,
             generate_sku=request.generateSku,
