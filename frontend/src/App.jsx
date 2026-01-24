@@ -3,6 +3,9 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import StorefrontLandingPage from './pages/StorefrontLandingPage'
 import ShoppingConciergePage from './pages/ShoppingConciergePage'
+import QuizPage from './pages/QuizPage'
+import SearchResultsPage from './pages/SearchResultsPage'
+import BrowsePage from './pages/BrowsePage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -37,6 +40,10 @@ function AppRoutes() {
       {/* Public Routes */}
       <Route path="/" element={<StorefrontLandingPage />} />
       <Route path="/concierge" element={<ShoppingConciergePage />} />
+      <Route path="/quiz" element={<QuizPage />} />
+      <Route path="/search" element={<SearchResultsPage />} />
+      <Route path="/browse" element={<BrowsePage />} />
+      <Route path="/browse/:category" element={<BrowsePage />} />
 
       {/* Merchant Routes */}
       <Route

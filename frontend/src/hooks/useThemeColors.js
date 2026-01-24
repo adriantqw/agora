@@ -26,6 +26,9 @@ export const useThemeColors = () => {
         background: getColor('--card-background'),
         backgroundAlt: getColor('--card-background-alt'),
       },
+      surface: {
+        light: getColor('--color-surface-light'),
+      },
       text: {
         primary: getColor('--text-primary'),
         secondary: getColor('--text-secondary'),
@@ -35,6 +38,7 @@ export const useThemeColors = () => {
       border: {
         color: getColor('--border-color'),
         light: getColor('--border-color-light'),
+        subtle: getColor('--color-border-subtle'),
       },
       primary: {
         blue: getColor('--primary-blue'),
@@ -42,6 +46,11 @@ export const useThemeColors = () => {
         blueLight: getColor('--primary-blue-light'),
         purple: getColor('--primary-purple'),
         purpleDark: getColor('--primary-purple-dark'),
+        // Pink colors for consumer pages
+        pink: getColor('--color-primary-pink'),
+        pinkDark: getColor('--color-primary-pink-dark'),
+        pinkLight: getColor('--color-primary-pink-light'),
+        pinkSecondary: getColor('--color-secondary-pink'),
       },
       status: {
         success: {
@@ -90,6 +99,9 @@ export const useThemeColors = () => {
         blue: getColor('--gradient-blue'),
         purple: getColor('--gradient-purple'),
         ai: getColor('--gradient-ai'),
+        // Pink gradients for consumer pages
+        pink: getColor('--gradient-pink'),
+        fittingRoom: getColor('--gradient-fitting-room'),
       },
       shadow: {
         sm: getColor('--shadow-sm'),

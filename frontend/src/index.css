@@ -59,6 +59,20 @@
   --gradient-blue: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   --gradient-purple: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
   --gradient-ai: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Pink Color Palette for Consumer Pages */
+  --color-primary-pink: #F5A5B8;
+  --color-primary-pink-dark: #E8879C;
+  --color-primary-pink-light: #FDD5DD;
+  --color-secondary-pink: #FFB6C1;
+
+  /* Gradients for Fashion Experience (Consumer) */
+  --gradient-pink: linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%);
+  --gradient-fitting-room: linear-gradient(180deg, #FFB6C1 0%, #FFA07A 100%);
+
+  /* Surface Colors for Consumer Pages */
+  --color-surface-light: #F9F9F9;
+  --color-border-subtle: #EEEEEE;
 }
 
 html.dark-theme {
@@ -122,6 +136,20 @@ html.dark-theme {
   --gradient-blue: linear-gradient(135deg, #3182ce 0%, #2563eb 100%);
   --gradient-purple: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
   --gradient-ai: linear-gradient(135deg, #7c3aed 0%, #6b21a8 100%);
+
+  /* Pink Color Palette for Consumer Pages (Dark Theme) */
+  --color-primary-pink: #F5A5B8;
+  --color-primary-pink-dark: #E8879C;
+  --color-primary-pink-light: #FDD5DD;
+  --color-secondary-pink: #FFB6C1;
+
+  /* Gradients for Fashion Experience (Consumer) - Keep vibrant in dark mode */
+  --gradient-pink: linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%);
+  --gradient-fitting-room: linear-gradient(180deg, #FFB6C1 0%, #FFA07A 100%);
+
+  /* Surface Colors for Consumer Pages */
+  --color-surface-light: #1f2937;
+  --color-border-subtle: #374151;
 }
 
 * {
