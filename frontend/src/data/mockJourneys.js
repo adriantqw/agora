@@ -87,7 +87,7 @@ export const mockJourneys = [
     title: 'The Office Edit',
     status: 'in-progress',
     statusColor: '#4299e1',
-    statusLabel: 'In Progress',
+    statusLabel: 'Ongoing Journey',
     closetUrl: '/browse',
     outfits: [
       {
