@@ -177,7 +177,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
             textAlign: 'center',
             cursor: disabled ? 'not-allowed' : 'pointer',
             transition: `all ${transitions.normal}`,
-            background: isDragging ? colors.primaryLight : error ? colors.errorLight : colors.surface,
+            background: isDragging ? colors.primaryLight : error ? colors.errorLight : colors.card?.background || colors.surface,
             opacity: disabled ? 0.5 : 1
           }}
           role="button"
@@ -187,7 +187,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
           {/* Upload icon */}
           <UploadCloud
             size={32}
-            color={error ? colors.error : colors.neutral500}
+            color={error ? colors.error : colors.primary}
             style={{ marginBottom: spacing.md }}
           />
 
@@ -195,7 +195,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
           <p style={{
             fontSize: typography.sizes.md,
             fontWeight: typography.weights.semibold,
-            color: error ? colors.error : colors.neutral900,
+            color: error ? colors.error : colors.text?.primary || colors.neutral900,
             margin: `0 0 ${spacing.sm}`
           }}>
             Drop image here or click to browse
@@ -204,7 +204,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
           {/* Supported formats */}
           <span style={{
             fontSize: typography.sizes.sm,
-            color: colors.neutral600
+            color: colors.text?.secondary || colors.neutral600
           }}>
             Supports JPG, PNG, WEBP
           </span>
@@ -215,7 +215,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
           border: `2px solid ${colors.neutral300}`,
           borderRadius: radius.lg,
           padding: spacing.lg,
-          background: colors.surface,
+          background: colors.card?.background || colors.surface,
           position: 'relative'
         }}>
           {/* Preview image */}
@@ -225,7 +225,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
             borderRadius: radius.md,
             overflow: 'hidden',
             marginBottom: spacing.md,
-            background: colors.neutral100
+            background: colors.card?.backgroundAlt || colors.neutral100
           }}>
             <img
               src={preview}
@@ -241,7 +241,7 @@ export default function ImageUpload({ question, onAnswer, currentAnswer, disable
           {/* File name */}
           <p style={{
             fontSize: typography.sizes.sm,
-            color: colors.neutral700,
+            color: colors.text?.primary || colors.neutral700,
             margin: 0,
             wordBreak: 'break-all'
           }}>

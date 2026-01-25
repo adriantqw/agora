@@ -47,7 +47,7 @@ const ConsumerLandingPage = () => {
   return (
     <div
       style={{
-        background: colors.surface.light,
+        background: colors.page.background,
         minHeight: '100vh',
       }}
     >
@@ -64,17 +64,27 @@ const ConsumerLandingPage = () => {
       {/* Journey Sections */}
       <main
         style={{
-          padding: '40px 6%',
+          padding: '80px 6%',
           maxWidth: '1600px',
           margin: '0 auto',
         }}
       >
-        {mockJourneys.map((journey) => (
-          <JourneySection
-            key={journey.id}
-            journey={journey}
-            onOutfitAdd={handleOutfitAdd}
-          />
+        {mockJourneys.map((journey, index) => (
+          <React.Fragment key={journey.id}>
+            <JourneySection
+              journey={journey}
+              onOutfitAdd={handleOutfitAdd}
+            />
+            {index < mockJourneys.length - 1 && (
+              <div style={{
+                height: '2px',
+                background: colors.border.divider,
+                margin: '80px 0',
+                width: '100%',
+                opacity: 0.8
+              }} />
+            )}
+          </React.Fragment>
         ))}
       </main>
 

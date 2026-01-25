@@ -20,7 +20,7 @@ export default function AIMessage({ title, description, children, onSubmit, subm
         {/* Message bubble */}
         <div
           style={{
-            background: 'white',
+            background: colors.card.background,
             padding: '24px',
             borderRadius: '0 20px 20px 20px',
             boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
@@ -34,6 +34,7 @@ export default function AIMessage({ title, description, children, onSubmit, subm
               fontWeight: '800',
               marginBottom: '10px',
               letterSpacing: '-0.3px',
+              color: colors.text.primary,
             }}
           >
             {title}
@@ -65,8 +66,8 @@ export default function AIMessage({ title, description, children, onSubmit, subm
             <button
               onClick={onSubmit}
               style={{
-                background: colors.text.primary,
-                color: 'white',
+                background: colors.primary.eggPink,
+                color: '#1a202c', // Dark charcoal for high contrast on pink
                 border: 'none',
                 padding: '14px 34px',
                 borderRadius: '30px',
@@ -77,14 +78,15 @@ export default function AIMessage({ title, description, children, onSubmit, subm
                 gap: '10px',
                 transition: 'all 0.2s',
                 fontSize: '15px',
+                boxShadow: '0 4px 12px rgba(255, 183, 197, 0.4)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = '#000';
                 e.currentTarget.style.transform = 'scale(1.03)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.6)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = colors.text.primary;
                 e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.4)';
               }}
             >
               {submitLabel}

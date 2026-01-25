@@ -121,7 +121,7 @@ export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, on
                         <h3 style={{
                           fontSize: '15px',
                           fontWeight: '600',
-                          color: '#666',
+                          color: colors.text.secondary,
                           margin: 0
                         }}>
                           {String(index + 1).padStart(2, '0')}. {question.question}
@@ -174,7 +174,7 @@ export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, on
           </div>
           <div
             style={{
-              background: 'white',
+              background: colors.card.background,
               padding: '24px',
               borderRadius: '0 20px 20px 20px',
               boxShadow: '0 2px 10px rgba(0,0,0,0.03)',

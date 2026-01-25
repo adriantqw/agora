@@ -6,10 +6,8 @@
  */
 
 import { useState } from 'react';
-import STYLE_GUIDE from '../../config/styleGuide.js';
-import { getCardStyle, getGridStyle, getColorSwatchStyle } from '../../utils/styleHelpers.js';
-
-const { colors, radius, spacing, typography, shadows, transitions } = STYLE_GUIDE;
+import { useTheme } from '../../context/ThemeContext';
+import { getCardStyle, getGridStyle } from '../../utils/styleHelpers.js';
 
 /**
  * @typedef {Object} ColorPaletteProps
@@ -20,6 +18,9 @@ const { colors, radius, spacing, typography, shadows, transitions } = STYLE_GUID
  */
 
 export default function ColorPalette({ question, onAnswer, currentAnswer, disabled = false }) {
+  const theme = useTheme();
+  const { colors, radius, spacing, typography, transitions, shadows } = theme;
+
   const [hoveredOption, setHoveredOption] = useState(null);
   const [selectedOption, setSelectedOption] = useState(currentAnswer?.value || null);
 
@@ -38,7 +39,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
   };
 
   const containerStyle = layout === 'grid'
-    ? getGridStyle(columns)
+    ? getGridStyle(columns, theme)
     : { display: 'flex', flexDirection: 'column', gap: spacing.md };
 
   return (
@@ -56,10 +57,10 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled),
+                ...getCardStyle(isSelected, disabled, theme),
                 transform: isHovered && !disabled ? 'translateY(-4px)' : 'translateY(0)',
                 boxShadow: isSelected
-                  ? shadows.blue
+                  ? theme.shadows.pink || shadows.blue
                   : isHovered && !disabled
                     ? shadows.md
                     : shadows.sm
@@ -91,7 +92,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
                       height: '60px',
                       background: color,
                       borderRadius: radius.md,
-                      border: `2px solid ${isSelected ? colors.primary : colors.neutral200}`,
+                      border: `2px solid ${isSelected ? colors.primary : colors.neutral300}`,
                       transition: `all ${transitions.normal}`,
                       boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.1)' : 'none'
                     }}
@@ -150,7 +151,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
                 <div style={{
                   marginTop: spacing.md,
                   paddingTop: spacing.md,
-                  borderTop: `1px solid ${colors.neutral200}`
+                  borderTop: `1px solid ${colors.neutral300}`
                 }}>
                   <div style={{
                     fontSize: typography.sizes.xs,
@@ -169,7 +170,8 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
                           background: colors.neutral100,
                           borderRadius: spacing.xs,
                           fontFamily: 'monospace',
-                          fontSize: typography.sizes.xs
+                          fontSize: typography.sizes.xs,
+                          color: colors.text?.primary || colors.neutral900
                         }}
                       >
                         {color}

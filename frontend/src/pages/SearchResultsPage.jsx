@@ -4,10 +4,12 @@ import Mascot from '../components/common/Mascot/Mascot';
 import FilterTag from '../components/quiz/FilterTag/FilterTag';
 import { CONSUMER_THEME } from '../contexts/SearchContext';
 import { getFilterCount } from '../services/quizService';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 export default function SearchResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const colors = useThemeColors();
   const searchData = location.state || {};
   const { query = '', filters = {}, useExistingPreferences = false } = searchData;
 
@@ -27,7 +29,7 @@ export default function SearchResultsPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#F9F9F9',
+      background: colors.page.background,
       fontFamily: '"Inter", -apple-system, sans-serif',
       position: 'relative',
     }}>
@@ -47,7 +49,7 @@ export default function SearchResultsPage() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#1a202c',
+            color: colors.text.primary,
             marginBottom: '16px',
           }}>
             Your Perfect Matches
@@ -55,7 +57,7 @@ export default function SearchResultsPage() {
           {query && (
             <p style={{
               fontSize: '18px',
-              color: '#718096',
+              color: colors.text.secondary,
               marginBottom: '16px',
             }}>
               Searching for: <strong style={{ color: CONSUMER_THEME.primary }}>"{query}"</strong>
@@ -64,7 +66,7 @@ export default function SearchResultsPage() {
           {hasFilters && (
             <p style={{
               fontSize: '16px',
-              color: '#718096',
+              color: colors.text.secondary,
             }}>
               {filterCount} filter{filterCount !== 1 ? 's' : ''} applied
             </p>
@@ -74,7 +76,7 @@ export default function SearchResultsPage() {
         {/* Active Filters Section */}
         {hasFilters && (
           <div style={{
-            background: 'white',
+            background: colors.card.background,
             borderRadius: '16px',
             padding: '32px',
             marginBottom: '48px',
@@ -89,7 +91,7 @@ export default function SearchResultsPage() {
               <h2 style={{
                 fontSize: '20px',
                 fontWeight: '600',
-                color: '#2d3748',
+                color: colors.text.primary,
                 margin: 0,
               }}>
                 Active Filters
@@ -133,6 +135,7 @@ export default function SearchResultsPage() {
                   filters={filters.dateTime}
                   category="dateTime"
                   onRemove={handleRemoveFilter}
+                  colors={colors}
                 />
               )}
 
@@ -143,6 +146,7 @@ export default function SearchResultsPage() {
                   filters={filters.style}
                   category="style"
                   onRemove={handleRemoveFilter}
+                  colors={colors}
                 />
               )}
 
@@ -153,6 +157,7 @@ export default function SearchResultsPage() {
                   filters={[filters.price]}
                   category="price"
                   onRemove={handleRemoveFilter}
+                  colors={colors}
                 />
               )}
 
@@ -163,6 +168,7 @@ export default function SearchResultsPage() {
                   filters={filters.addOns}
                   category="addOns"
                   onRemove={handleRemoveFilter}
+                  colors={colors}
                 />
               )}
 
@@ -173,7 +179,7 @@ export default function SearchResultsPage() {
                   alignItems: 'center',
                   gap: '12px',
                   padding: '12px 16px',
-                  background: '#f7fafc',
+                  background: colors.card.backgroundAlt || '#f7fafc',
                   borderRadius: '8px',
                   border: `1px solid ${CONSUMER_THEME.primaryLight}`,
                 }}>
@@ -189,7 +195,7 @@ export default function SearchResultsPage() {
                   >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <span style={{ fontSize: '14px', color: '#2d3748', fontWeight: '500' }}>
+                  <span style={{ fontSize: '14px', color: colors.text.primary, fontWeight: '500' }}>
                     Using existing wedding preferences
                   </span>
                 </div>
@@ -212,14 +218,14 @@ export default function SearchResultsPage() {
           <h2 style={{
             fontSize: '32px',
             fontWeight: '600',
-            color: '#2d3748',
+            color: colors.text.primary,
             marginBottom: '16px',
           }}>
             Product Results Coming Soon
           </h2>
           <p style={{
             fontSize: '16px',
-            color: '#718096',
+            color: colors.text.secondary,
             marginBottom: '32px',
             lineHeight: '1.6',
             maxWidth: '600px',
@@ -286,7 +292,7 @@ export default function SearchResultsPage() {
  * FilterRow Component
  * Displays a row of filters with a title
  */
-function FilterRow({ title, filters, category, onRemove }) {
+function FilterRow({ title, filters, category, onRemove, colors }) {
   return (
     <div style={{
       display: 'flex',
@@ -297,7 +303,7 @@ function FilterRow({ title, filters, category, onRemove }) {
         minWidth: '140px',
         fontSize: '14px',
         fontWeight: '600',
-        color: '#4a5568',
+        color: colors.text.secondary,
         paddingTop: '8px',
       }}>
         {title}

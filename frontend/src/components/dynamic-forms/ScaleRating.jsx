@@ -82,7 +82,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
           left: 0,
           right: 0,
           height: '8px',
-          background: colors.neutral200,
+          background: colors.neutral200 || colors.border?.subtle,
           borderRadius: radius.full,
           transform: 'translateY(-50%)',
           pointerEvents: 'none'
@@ -94,7 +94,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
             top: 0,
             height: '100%',
             width: `${percentage}%`,
-            background: `linear-gradient(90deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
+            background: colors.primary,
             borderRadius: radius.full,
             transition: isDragging ? 'none' : 'width 0.2s ease'
           }} />
@@ -140,7 +140,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
         <div style={{ textAlign: 'left', flex: 1 }}>
           <div style={{
             fontSize: typography.sizes.xs,
-            color: colors.neutral500,
+            color: colors.text?.secondary || colors.neutral500,
             marginBottom: spacing.xs
           }}>
             {min}
@@ -148,7 +148,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
           <div style={{
             fontSize: typography.sizes.sm,
             fontWeight: typography.weights.medium,
-            color: colors.neutral700
+            color: colors.text?.primary || colors.neutral700
           }}>
             {minLabel}
           </div>
@@ -157,7 +157,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
         <div style={{ textAlign: 'right', flex: 1 }}>
           <div style={{
             fontSize: typography.sizes.xs,
-            color: colors.neutral500,
+            color: colors.text?.secondary || colors.neutral500,
             marginBottom: spacing.xs
           }}>
             {max}
@@ -165,7 +165,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
           <div style={{
             fontSize: typography.sizes.sm,
             fontWeight: typography.weights.medium,
-            color: colors.neutral700
+            color: colors.text?.primary || colors.neutral700
           }}>
             {maxLabel}
           </div>
@@ -189,7 +189,7 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
               style={{
                 width: '2px',
                 height: '8px',
-                background: isActive ? colors.primary : colors.neutral300,
+                background: isActive ? colors.primary : colors.neutral300 || colors.border?.subtle,
                 borderRadius: '1px',
                 transition: 'background 0.2s ease'
               }}

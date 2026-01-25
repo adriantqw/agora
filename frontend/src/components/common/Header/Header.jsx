@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Compass, LayoutGrid, UserCircle } from 'lucide-react';
+import ThemeToggle from '../../ThemeToggle';
+import { useThemeColors } from '../../../hooks/useThemeColors';
 
 export default function Header({
   variant = 'full',
@@ -9,11 +11,12 @@ export default function Header({
   onSearch,
 }) {
   const navigate = useNavigate();
+  const colors = useThemeColors();
 
   return (
     <header style={{
-      background: 'white',
-      borderBottom: '1px solid #EEEEEE',
+      background: colors.gradient.pink,
+      borderBottom: `2px solid ${colors.border.divider}`,
       position: 'sticky',
       top: 0,
       zIndex: 100,
@@ -31,13 +34,13 @@ export default function Header({
           alignItems: 'center',
           gap: '12px',
         }}>
-          {/* Egg icon */}
+          {/* Egg icon - white background on pink header */}
           <div style={{
             width: '40px',
             height: '48px',
-            background: 'linear-gradient(135deg, #F5A5B8 0%, #FFB6C1 100%)',
+            background: 'white',
             borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-            boxShadow: '0 4px 12px rgba(245, 165, 184, 0.25)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
             position: 'relative',
           }}>
             {/* Eyes */}
@@ -53,13 +56,13 @@ export default function Header({
               <div style={{
                 width: '4px',
                 height: '4px',
-                background: '#1a202c',
+                background: colors.primary.eggPinkDark || '#E8879C',
                 borderRadius: '50%',
               }} />
               <div style={{
                 width: '4px',
                 height: '4px',
-                background: '#1a202c',
+                background: colors.primary.eggPinkDark || '#E8879C',
                 borderRadius: '50%',
               }} />
             </div>
@@ -68,8 +71,9 @@ export default function Header({
           <span style={{
             fontWeight: '700',
             fontSize: '24px',
-            color: 'var(--color-primary-pink)',
+            color: 'white',
             fontFamily: '"Inter", -apple-system, sans-serif',
+            textShadow: '0 2px 4px rgba(0,0,0,0.05)',
           }}>
             Agora
           </span>
@@ -87,16 +91,18 @@ export default function Header({
               display: 'flex',
               alignItems: 'center',
               background: 'white',
-              border: '2px solid #E2E8F0',
+              border: `2px solid rgba(255, 255, 255, 0.2)`,
               borderRadius: '20px',
               padding: '4px',
               transition: 'all 0.2s ease',
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = '#F5A5B8';
+              e.currentTarget.style.borderColor = 'white';
+              e.currentTarget.style.boxShadow = '0 0 0 4px rgba(255, 255, 255, 0.1)';
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = '#E2E8F0';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
             >
               <input
@@ -186,18 +192,16 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   fontSize: '14px',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <Compass size={18} strokeWidth={2} />
@@ -216,18 +220,16 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   fontSize: '14px',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <LayoutGrid size={18} strokeWidth={2} />
@@ -245,18 +247,16 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '8px',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   fontSize: '14px',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <UserCircle size={18} strokeWidth={2} />
@@ -278,16 +278,14 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '50%',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <Compass size={18} strokeWidth={2} />
@@ -305,16 +303,14 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '50%',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <LayoutGrid size={18} strokeWidth={2} />
@@ -331,16 +327,14 @@ export default function Header({
                   background: 'transparent',
                   borderRadius: '50%',
                   cursor: 'pointer',
-                  color: '#718096',
+                  color: 'white',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <UserCircle size={18} strokeWidth={2} />
@@ -361,16 +355,14 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#718096',
+                  color: 'white',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -393,16 +385,14 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#718096',
+                  color: 'white',
                   transition: 'all 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#F9F9F9';
-                  e.currentTarget.style.color = '#F5A5B8';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#718096';
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -418,9 +408,9 @@ export default function Header({
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#a0aec0',
+                  color: 'rgba(255, 255, 255, 0.8)',
                   fontSize: '12px',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   cursor: 'pointer',
                   textDecoration: 'none',
                   fontFamily: 'inherit',
@@ -428,16 +418,22 @@ export default function Header({
                   transition: 'color 0.2s',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#718096';
+                  e.currentTarget.style.color = 'white';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#a0aec0';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
                 }}
               >
                 Merchant
               </button>
             </>
           )}
+
+          <ThemeToggle
+            iconColor="white"
+            hoverBackground="rgba(255, 255, 255, 0.2)"
+            hoverIconColor="white"
+          />
         </div>
       </div>
 

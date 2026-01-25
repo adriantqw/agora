@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header/Header';
 import Mascot from '../components/common/Mascot/Mascot';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 export default function BrowsePage() {
   const navigate = useNavigate();
+  const colors = useThemeColors();
 
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#F9F9F9',
+      background: colors.page.background,
       fontFamily: '"Inter", -apple-system, sans-serif',
       position: 'relative',
     }}>
@@ -27,14 +29,14 @@ export default function BrowsePage() {
         <h1 style={{
           fontSize: '48px',
           fontWeight: '700',
-          color: '#1a202c',
+          color: colors.text.primary,
           marginBottom: '16px',
         }}>
           Browse Collections
         </h1>
         <p style={{
           fontSize: '18px',
-          color: '#718096',
+          color: colors.text.secondary,
           marginBottom: '48px',
         }}>
           This feature is coming soon! Explore our curated collections.

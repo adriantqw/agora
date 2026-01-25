@@ -38,6 +38,8 @@ const OutfitCard = ({ outfit, onAdd }) => {
     }
   };
 
+  const isDark = document.documentElement.classList.contains('dark-theme');
+
   return (
     <div
       style={{
@@ -51,7 +53,7 @@ const OutfitCard = ({ outfit, onAdd }) => {
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-10px)';
-        e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.15)';
+        e.currentTarget.style.boxShadow = colors.shadow.md;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
@@ -64,7 +66,11 @@ const OutfitCard = ({ outfit, onAdd }) => {
           position: 'relative',
           width: '100%',
           paddingTop: '133.33%', // 4:3 aspect ratio
-          background: imageUrl ? `url(${imageUrl}) center/cover` : backgroundColor || '#f3f4f6',
+          background: imageUrl 
+            ? `url(${imageUrl}) center/cover` 
+            : isDark 
+              ? colors.card.backgroundAlt // Use theme color in dark mode
+              : backgroundColor || '#f3f4f6', // Use provided color in light mode
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -105,7 +111,11 @@ const OutfitCard = ({ outfit, onAdd }) => {
             <IconComponent
               size={48}
               strokeWidth={1.5}
-              style={{ color: iconColor || colors.text.tertiary }}
+              style={{ 
+                color: isDark 
+                  ? (iconColor === '#1a202c' ? colors.text.secondary : iconColor) 
+                  : iconColor || colors.text.tertiary 
+              }}
             />
           </div>
         )}

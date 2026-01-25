@@ -14,8 +14,8 @@ export default function UserMessage({ text, timestamp }) {
     >
       <div
         style={{
-          background: colors.text.primary,
-          color: 'white',
+          background: colors.primary.eggPink,
+          color: '#1a202c', // Dark text for contrast against pink
           padding: '16px 24px',
           borderRadius: '24px 24px 4px 24px',
           fontSize: '15px',

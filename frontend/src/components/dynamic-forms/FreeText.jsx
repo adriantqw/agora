@@ -88,7 +88,7 @@ export default function FreeText({ question, onAnswer, currentAnswer, disabled =
   const isAtLimit = charCount >= charLimit;
 
   const inputStyle = {
-    ...getInputStyle(isFocused, false),
+    ...getInputStyle(isFocused, false, theme),
     resize: multiline ? 'vertical' : 'none',
     minHeight: multiline ? '120px' : 'auto'
   };
@@ -121,7 +121,7 @@ export default function FreeText({ question, onAnswer, currentAnswer, disabled =
         {/* Helper Text */}
         {required && !value && (
           <p id={`${question.id}-helper`} style={{
-            ...getHelperTextStyle(false),
+            ...getHelperTextStyle(false, theme),
             margin: 0,
             fontStyle: 'italic'
           }}>

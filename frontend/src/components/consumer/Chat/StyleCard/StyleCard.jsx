@@ -16,14 +16,14 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        background: isSelected ? '#fff0f3' : 'white',
-        border: `2px solid ${isSelected ? colors.primary.eggPink : 'transparent'}`,
+        background: isSelected ? 'var(--color-primary-pink-light)' : colors.card.background,
+        border: `2px solid ${isSelected ? colors.primary.eggPink : colors.border.subtle}`,
         borderRadius: '16px',
         overflow: 'hidden',
         cursor: 'pointer',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         position: 'relative',
-        boxShadow: isHovered ? '0 8px 20px rgba(0,0,0,0.06)' : '0 2px 8px rgba(0,0,0,0.02)',
+        boxShadow: isHovered ? colors.shadow.md : colors.shadow.sm,
         transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
       }}
     >
@@ -35,7 +35,7 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: bgColor || colors.surface.light,
+          background: isSelected ? 'transparent' : colors.card.backgroundAlt,
         }}
       >
         <IconComponent size={36} color={iconColor || colors.primary.eggPink} />
@@ -48,6 +48,7 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
           textAlign: 'center',
           fontWeight: '700',
           fontSize: '14px',
+          color: colors.text.primary,
         }}
       >
         {label}

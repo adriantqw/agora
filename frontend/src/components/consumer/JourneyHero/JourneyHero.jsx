@@ -115,9 +115,10 @@ const JourneyHero = ({ onSearch, activeJourneys = 3, savedConcepts = 12 }) => {
   return (
     <div
       style={{
-        background: `linear-gradient(180deg, ${colors.primary.eggPinkLight} 0%, ${colors.surface.light} 100%)`,
+        background: colors.page.background,
         padding: '80px 6% 60px',
         textAlign: 'center',
+        borderBottom: `2px solid ${colors.border.divider}`,
       }}
     >
       {/* Heading */}

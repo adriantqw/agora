@@ -14,48 +14,48 @@ import STYLE_GUIDE from './styleGuide.js';
 export const CONSUMER_THEME = {
   colors: {
     // Primary colors (Egg pink - replaces Agora blue)
-    primary: '#ffb7c5',
-    primaryDark: '#ff9fb0',
-    primaryLight: '#fff0f3',
+    primary: 'var(--color-primary-pink)',
+    primaryDark: 'var(--color-primary-pink-dark)',
+    primaryLight: 'var(--color-primary-pink-light)',
 
     // Secondary colors (darker pink variants)
-    secondary: '#ff9fb0',
-    secondaryDark: '#ff8ba0',
-    secondaryLight: '#ffb7c5',
+    secondary: 'var(--color-primary-pink-dark)',
+    secondaryDark: 'var(--color-primary-pink-dark)',
+    secondaryLight: 'var(--color-primary-pink)',
 
     // Accent colors (lighter pink)
-    accent: '#ffcbd4',
-    accentLight: '#ffe0e6',
+    accent: 'var(--color-primary-pink-light)',
+    accentLight: 'var(--color-egg-pink-light)',
 
-    // Keep all other colors from STYLE_GUIDE unchanged
-    neutral900: STYLE_GUIDE.colors.neutral900,
-    neutral800: STYLE_GUIDE.colors.neutral800,
-    neutral700: STYLE_GUIDE.colors.neutral700,
-    neutral600: STYLE_GUIDE.colors.neutral600,
-    neutral500: STYLE_GUIDE.colors.neutral500,
-    neutral400: STYLE_GUIDE.colors.neutral400,
-    neutral300: STYLE_GUIDE.colors.neutral300,
-    neutral200: STYLE_GUIDE.colors.neutral200,
-    neutral100: STYLE_GUIDE.colors.neutral100,
-    neutral50: STYLE_GUIDE.colors.neutral50,
+    // Neutrals - Map to semantic CSS variables for dark mode support
+    neutral900: 'var(--text-primary)',   // Main text
+    neutral800: 'var(--text-primary)',
+    neutral700: 'var(--text-secondary)', // Secondary text
+    neutral600: 'var(--text-tertiary)',
+    neutral500: 'var(--text-muted)',
+    neutral400: 'var(--border-color)',   // Borders
+    neutral300: 'var(--border-color)',
+    neutral200: 'var(--border-color-light)',
+    neutral100: 'var(--card-background-alt)', // Slight contrast background
+    neutral50: 'var(--card-background)',      // Card background
 
-    success: STYLE_GUIDE.colors.success,
-    successLight: STYLE_GUIDE.colors.successLight,
-    warning: STYLE_GUIDE.colors.warning,
-    warningLight: STYLE_GUIDE.colors.warningLight,
-    error: STYLE_GUIDE.colors.error,
-    errorLight: STYLE_GUIDE.colors.errorLight,
+    success: 'var(--success-text)',
+    successLight: 'var(--success-bg)',
+    warning: 'var(--warning-text)',
+    warningLight: 'var(--warning-bg)',
+    error: 'var(--error-text)',
+    errorLight: 'var(--error-bg)',
 
-    background: STYLE_GUIDE.colors.background,
-    surface: STYLE_GUIDE.colors.surface,
-    overlay: STYLE_GUIDE.colors.overlay
+    background: 'var(--page-background)',
+    surface: 'var(--card-background)',
+    overlay: 'rgba(0, 0, 0, 0.5)'
   },
 
   // Override shadows with egg pink variants
   shadows: {
-    sm: STYLE_GUIDE.shadows.sm,
-    md: STYLE_GUIDE.shadows.md,
-    lg: STYLE_GUIDE.shadows.lg,
+    sm: 'var(--shadow-sm)',
+    md: 'var(--shadow-md)',
+    lg: 'var(--shadow-md)', // Fallback
     blue: '0 4px 16px rgba(255, 183, 197, 0.3)', // Egg pink shadow
     pink: '0 4px 16px rgba(255, 183, 197, 0.3)'  // Alias
   },

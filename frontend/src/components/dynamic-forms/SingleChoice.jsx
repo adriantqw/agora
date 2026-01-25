@@ -5,10 +5,8 @@
  */
 
 import { useState } from 'react';
-import STYLE_GUIDE from '../../config/styleGuide.js';
+import { useTheme } from '../../context/ThemeContext';
 import { getCardStyle, getStackStyle } from '../../utils/styleHelpers.js';
-
-const { colors, spacing, typography, radius } = STYLE_GUIDE;
 
 /**
  * @typedef {Object} SingleChoiceProps
@@ -19,6 +17,9 @@ const { colors, spacing, typography, radius } = STYLE_GUIDE;
  */
 
 export default function SingleChoice({ question, onAnswer, currentAnswer, disabled = false }) {
+  const theme = useTheme();
+  const { colors, spacing, typography, radius } = theme;
+
   const [selectedOption, setSelectedOption] = useState(
     currentAnswer?.selectedOptions?.[0] || currentAnswer?.value || null
   );
@@ -42,7 +43,7 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
   return (
     <div style={{ fontFamily: typography.fontFamily }}>
       {/* Options List */}
-      <div style={getStackStyle()}>
+      <div style={getStackStyle(theme)}>
         {options.map((option) => {
           const isSelected = selectedOption === option.id;
           const isHovered = hoveredOption === option.id;
@@ -54,7 +55,7 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled),
+                ...getCardStyle(isSelected, disabled, theme),
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: spacing.md,
@@ -91,7 +92,7 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
                     width: '8px',
                     height: '8px',
                     borderRadius: radius.full,
-                    background: colors.surface
+                    background: 'white'
                   }} />
                 )}
               </div>

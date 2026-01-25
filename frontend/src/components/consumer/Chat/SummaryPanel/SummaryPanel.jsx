@@ -37,7 +37,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
       </span>
       <div
         style={{
-          background: colors.surface.light,
+          background: colors.card.background,
           padding: '12px 16px',
           borderRadius: '12px',
           fontSize: '14px',
@@ -45,10 +45,11 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
+          border: `1px solid ${colors.border.subtle}`,
         }}
       >
-        {Icon && <Icon size={14} color={colors.text.secondary} />}
-        <span style={{ flex: 1 }}>{value || 'Not set'}</span>
+        {Icon && <Icon size={14} color={colors.primary.eggPink} />}
+        <span style={{ flex: 1, color: colors.text.primary }}>{value || 'Not set'}</span>
         {onEditClick && (
           <Edit2
             size={12}
@@ -64,8 +65,8 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
   return (
     <aside
       style={{
-        background: 'white',
-        borderLeft: `1px solid ${colors.border.subtle}`,
+        background: colors.page.background,
+        borderLeft: `2px solid ${colors.border.divider}`,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -90,7 +91,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           style={{
             fontSize: '12px',
             fontWeight: '800',
-            color: colors.text.muted,
+            color: colors.text.secondary,
             textTransform: 'uppercase',
             letterSpacing: '1.5px',
             marginBottom: '12px',
@@ -99,7 +100,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             gap: '8px',
           }}
         >
-          <Map size={14} />
+          <Map size={14} color={colors.primary.eggPink} />
           CURRENT JOURNEY
         </div>
         <div
@@ -111,6 +112,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
+            color: colors.text.primary,
           }}
         >
           <span style={{ flex: 1 }}>{journey.title || 'New Journey'}</span>
@@ -132,7 +134,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
               borderRadius: '4px',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = colors.surface.light;
+              e.currentTarget.style.background = colors.card.backgroundAlt;
               e.currentTarget.style.color = colors.primary.eggPink;
             }}
             onMouseLeave={(e) => {
@@ -200,8 +202,8 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 <div
                   key={index}
                   style={{
-                    background: index === 0 ? '#fff5f7' : colors.surface.light,
-                    color: index === 0 ? colors.primary.eggPink : '#bbb',
+                    background: index === 0 ? 'var(--color-primary-pink-light)' : colors.card.background,
+                    color: index === 0 ? colors.primary.eggPink : colors.text.muted,
                     borderRadius: '10px',
                     aspectRatio: '1',
                     display: 'flex',
@@ -223,13 +225,13 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
               <>
                 <div
                   style={{
-                    background: colors.surface.light,
+                    background: colors.card.background,
                     borderRadius: '10px',
                     aspectRatio: '1',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#bbb',
+                    color: colors.text.muted,
                     border: `1px dashed ${colors.border.subtle}`,
                     fontSize: '11px',
                     fontWeight: '600',
@@ -241,13 +243,13 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 </div>
                 <div
                   style={{
-                    background: colors.surface.light,
+                    background: colors.card.background,
                     borderRadius: '10px',
                     aspectRatio: '1',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#bbb',
+                    color: colors.text.muted,
                     border: `1px dashed ${colors.border.subtle}`,
                     fontSize: '11px',
                     fontWeight: '600',
@@ -262,7 +264,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             {/* Add button */}
             <div
               style={{
-                background: 'white',
+                background: colors.card.background,
                 borderRadius: '10px',
                 aspectRatio: '1',
                 display: 'flex',
@@ -270,6 +272,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 justifyContent: 'center',
                 border: `1px solid ${colors.border.subtle}`,
                 cursor: 'pointer',
+                color: colors.text.secondary,
               }}
               onClick={() => onEdit && onEdit('keyPieces')}
             >
@@ -286,15 +289,15 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
         flexDirection: 'column',
         gap: '12px',
         padding: '20px 30px',
-        borderTop: `1px solid ${colors.border.subtle}`,
-        background: 'white',
+        borderTop: `2px solid ${colors.border.divider}`,
+        background: colors.page.background,
       }}>
         {/* Save Journey Button */}
         <button
           onClick={onSaveJourney}
           style={{
             background: colors.primary.eggPink,
-            color: 'white',
+            color: '#1a202c', // Dark text for contrast on pink
             border: 'none',
             borderRadius: '12px',
             padding: '14px 20px',
@@ -327,7 +330,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           style={{
             background: 'transparent',
             color: colors.text.secondary,
-            border: `1px solid ${colors.border.subtle}`,
+            border: `1px solid ${colors.border.divider}`,
             borderRadius: '12px',
             padding: '14px 20px',
             fontSize: '14px',
@@ -340,13 +343,13 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             transition: 'all 0.2s'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = colors.surface.light;
+            e.currentTarget.style.background = colors.card.backgroundAlt;
             e.currentTarget.style.borderColor = colors.primary.eggPink;
             e.currentTarget.style.color = colors.primary.eggPink;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.borderColor = colors.border.subtle;
+            e.currentTarget.style.borderColor = colors.border.divider;
             e.currentTarget.style.color = colors.text.secondary;
           }}
         >
@@ -354,6 +357,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           Return to Home
         </button>
       </div>
+
 
       {/* Edit Title Popup */}
       {isEditingTitle && (
@@ -374,7 +378,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
         >
           <div
             style={{
-              background: 'white',
+              background: colors.card.background,
               borderRadius: '16px',
               padding: '32px',
               width: '90%',
@@ -443,6 +447,8 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 marginBottom: '24px',
                 fontFamily: 'inherit',
                 transition: 'border-color 0.2s',
+                background: colors.input.background,
+                color: colors.text.primary,
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = colors.primary.eggPink;

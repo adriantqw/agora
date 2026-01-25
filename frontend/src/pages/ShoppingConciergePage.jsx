@@ -382,7 +382,7 @@ export default function ShoppingConciergePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: colors.surface.light }}>
+    <div style={{ minHeight: '100vh', background: colors.page.background }}>
       {/* Header with journey variant */}
       <Header
         variant="journey"
@@ -441,7 +441,7 @@ export default function ShoppingConciergePage() {
 
           aside {
             border-left: none !important;
-            border-top: 1px solid var(--color-border-subtle) !important;
+            border-top: 2px solid ${colors.border.divider} !important;
           }
         }
       `}</style>

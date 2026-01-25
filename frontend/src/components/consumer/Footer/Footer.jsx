@@ -23,10 +23,11 @@ const Footer = () => {
   return (
     <footer
       style={{
-        background: colors.text.primary,
-        color: '#ffffff',
+        background: colors.page.background,
+        color: colors.text.primary,
         padding: '60px 6% 0',
         marginTop: '80px',
+        borderTop: `2px solid ${colors.border.divider}`,
       }}
     >
       {/* Footer Grid */}
@@ -54,7 +55,7 @@ const Footer = () => {
           <p
             style={{
               fontSize: '14px',
-              color: 'rgba(255, 255, 255, 0.7)',
+              color: colors.text.secondary,
               lineHeight: '1.6',
               maxWidth: '280px',
             }}
@@ -72,7 +73,7 @@ const Footer = () => {
               textTransform: 'uppercase',
               letterSpacing: '1px',
               marginBottom: '16px',
-              color: '#ffffff',
+              color: colors.text.primary,
             }}
           >
             My Activity
@@ -90,7 +91,7 @@ const Footer = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     cursor: 'pointer',
                     padding: 0,
@@ -101,7 +102,7 @@ const Footer = () => {
                     e.currentTarget.style.color = '#F5A5B8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                    e.currentTarget.style.color = colors.text.secondary;
                   }}
                 >
                   {item.label}
@@ -120,7 +121,7 @@ const Footer = () => {
               textTransform: 'uppercase',
               letterSpacing: '1px',
               marginBottom: '16px',
-              color: '#ffffff',
+              color: colors.text.primary,
             }}
           >
             Experience
@@ -138,7 +139,7 @@ const Footer = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     cursor: 'pointer',
                     padding: 0,
@@ -149,7 +150,7 @@ const Footer = () => {
                     e.currentTarget.style.color = '#F5A5B8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                    e.currentTarget.style.color = colors.text.secondary;
                   }}
                 >
                   {item.label}
@@ -168,7 +169,7 @@ const Footer = () => {
               textTransform: 'uppercase',
               letterSpacing: '1px',
               marginBottom: '16px',
-              color: '#ffffff',
+              color: colors.text.primary,
             }}
           >
             Support
@@ -186,7 +187,7 @@ const Footer = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     cursor: 'pointer',
                     padding: 0,
@@ -197,7 +198,7 @@ const Footer = () => {
                     e.currentTarget.style.color = '#F5A5B8';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                    e.currentTarget.style.color = colors.text.secondary;
                   }}
                 >
                   {item.label}
@@ -211,7 +212,7 @@ const Footer = () => {
       {/* Footer Bottom Bar */}
       <div
         style={{
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          borderTop: `2px solid ${colors.border.divider}`,
           padding: '24px 0',
           display: 'flex',
           alignItems: 'center',
@@ -233,7 +234,7 @@ const Footer = () => {
             style={{
               margin: 0,
               fontSize: '13px',
-              color: 'rgba(255, 255, 255, 0.5)',
+              color: colors.text.muted,
             }}
           >
             © 2026 Agora. All rights reserved.
@@ -244,17 +245,17 @@ const Footer = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.5)',
+                color: colors.text.muted,
                 fontSize: '13px',
                 cursor: 'pointer',
                 padding: 0,
                 transition: 'color 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                e.currentTarget.style.color = colors.text.secondary;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+                e.currentTarget.style.color = colors.text.muted;
               }}
             >
               Privacy Policy
@@ -264,17 +265,17 @@ const Footer = () => {
               style={{
                 background: 'transparent',
                 border: 'none',
-                color: 'rgba(255, 255, 255, 0.5)',
+                color: colors.text.muted,
                 fontSize: '13px',
                 cursor: 'pointer',
                 padding: 0,
                 transition: 'color 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                e.currentTarget.style.color = colors.text.secondary;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)';
+                e.currentTarget.style.color = colors.text.muted;
               }}
             >
               Terms of Service

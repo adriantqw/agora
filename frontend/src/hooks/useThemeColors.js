@@ -39,6 +39,7 @@ export const useThemeColors = () => {
         color: getColor('--border-color'),
         light: getColor('--border-color-light'),
         subtle: getColor('--color-border-subtle'),
+        divider: getColor('--section-divider'),
       },
       primary: {
         blue: getColor('--primary-blue'),

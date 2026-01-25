@@ -21,10 +21,10 @@ export const getCardStyle = (selected = false, disabled = false, theme = STYLE_G
   const { colors: themeColors, radius: themeRadius, spacing: themeSpacing, transitions: themeTransitions, shadows: themeShadows } = theme;
 
   return {
-    background: themeColors.surface,
+    background: themeColors.surface || themeColors.card?.background || '#fff',
     border: selected
-      ? `3px solid ${themeColors.primary}`
-      : `1px solid ${themeColors.neutral300}`,
+      ? `2px solid ${themeColors.primary}`
+      : `1px solid ${themeColors.neutral300 || 'rgba(0,0,0,0.1)'}`,
     borderRadius: themeRadius.md,
     padding: themeSpacing.lg,
     cursor: disabled ? 'not-allowed' : 'pointer',
@@ -41,46 +41,49 @@ export const getCardStyle = (selected = false, disabled = false, theme = STYLE_G
  *
  * @param {'primary' | 'secondary' | 'ghost'} variant - Button variant
  * @param {boolean} disabled - Whether the button is disabled
+ * @param {Object} theme - Theme configuration
  * @returns {Object} Style object for the button
  */
-export const getButtonStyle = (variant = 'primary', disabled = false) => {
+export const getButtonStyle = (variant = 'primary', disabled = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, radius: themeRadius, spacing: themeSpacing, typography: themeTypography, transitions: themeTransitions, shadows: themeShadows } = theme;
+
   const baseStyle = {
-    padding: `${spacing.md} ${spacing.xl}`,
-    fontSize: typography.sizes.md,
-    fontWeight: typography.weights.semibold,
-    fontFamily: typography.fontFamily,
+    padding: `${themeSpacing.md} ${themeSpacing.xl}`,
+    fontSize: themeTypography.sizes.md,
+    fontWeight: themeTypography.weights.semibold,
+    fontFamily: themeTypography.fontFamily,
     border: 'none',
-    borderRadius: radius.md,
+    borderRadius: themeRadius.md,
     cursor: disabled ? 'not-allowed' : 'pointer',
-    transition: `all ${transitions.normal} ${transitions.easing}`,
+    transition: `all ${themeTransitions.normal} ${themeTransitions.easing}`,
     opacity: disabled ? 0.5 : 1,
     display: 'inline-flex',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: themeSpacing.sm,
     boxSizing: 'border-box'
   };
 
   const variants = {
     primary: {
       ...baseStyle,
-      color: colors.surface,
+      color: 'white',
       background: disabled
-        ? colors.neutral400
-        : `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
-      boxShadow: disabled ? 'none' : shadows.blue
+        ? themeColors.neutral400
+        : `linear-gradient(135deg, ${themeColors.primary} 0%, ${themeColors.primaryDark} 100%)`,
+      boxShadow: disabled ? 'none' : themeShadows.blue
     },
     secondary: {
       ...baseStyle,
-      color: disabled ? colors.neutral500 : colors.neutral900,
-      background: colors.neutral100,
-      border: `1px solid ${colors.neutral300}`
+      color: disabled ? themeColors.neutral500 : themeColors.neutral900,
+      background: themeColors.neutral100,
+      border: `1px solid ${themeColors.neutral300}`
     },
     ghost: {
       ...baseStyle,
-      color: disabled ? colors.neutral400 : colors.primary,
+      color: disabled ? themeColors.neutral400 : themeColors.primary,
       background: 'transparent',
       border: 'none',
-      padding: `${spacing.sm} ${spacing.md}`
+      padding: `${themeSpacing.sm} ${themeSpacing.md}`
     }
   };
 
@@ -101,6 +104,7 @@ export const getQuestionContainerStyle = (theme = STYLE_GUIDE) => {
     borderRadius: themeRadius.lg,
     padding: themeSpacing.xxl,
     boxShadow: themeShadows.md,
+    border: `1px solid ${themeColors.neutral300 || 'transparent'}`,
     marginBottom: themeSpacing.xl,
     fontFamily: themeTypography.fontFamily
   };
@@ -130,26 +134,31 @@ export const getQuestionTextStyle = (theme = STYLE_GUIDE) => {
  *
  * @param {boolean} focused - Whether the input is focused
  * @param {boolean} error - Whether the input has an error
+ * @param {Object} theme - Theme configuration
  * @returns {Object} Style object for the input field
  */
-export const getInputStyle = (focused = false, error = false) => ({
-  width: '100%',
-  padding: `${spacing.md} ${spacing.lg}`,
-  fontSize: typography.sizes.md,
-  fontFamily: typography.fontFamily,
-  border: error
-    ? `2px solid ${colors.error}`
-    : focused
-      ? `2px solid ${colors.primary}`
-      : `2px solid ${colors.neutral300}`,
-  borderRadius: radius.md,
-  background: focused ? colors.surface : colors.neutral50,
-  outline: 'none',
-  transition: `all ${transitions.normal} ${transitions.easing}`,
-  boxSizing: 'border-box',
-  color: colors.neutral900,
-  lineHeight: typography.lineHeights.normal
-});
+export const getInputStyle = (focused = false, error = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, radius: themeRadius, spacing: themeSpacing, typography: themeTypography, transitions: themeTransitions } = theme;
+
+  return {
+    width: '100%',
+    padding: `${themeSpacing.md} ${themeSpacing.lg}`,
+    fontSize: themeTypography.sizes.md,
+    fontFamily: themeTypography.fontFamily,
+    border: error
+      ? `2px solid ${themeColors.error}`
+      : focused
+        ? `2px solid ${themeColors.primary}`
+        : `2px solid ${themeColors.neutral300}`,
+    borderRadius: themeRadius.md,
+    background: focused ? themeColors.surface : themeColors.neutral100,
+    outline: 'none',
+    transition: `all ${themeTransitions.normal} ${themeTransitions.easing}`,
+    boxSizing: 'border-box',
+    color: themeColors.neutral900,
+    lineHeight: themeTypography.lineHeights.normal
+  };
+};
 
 /**
  * Get chip style (for multi-select options)
@@ -170,7 +179,7 @@ export const getChipStyle = (selected = false, disabled = false, theme = STYLE_G
     fontSize: themeTypography.sizes.base,
     fontWeight: themeTypography.weights.medium,
     fontFamily: themeTypography.fontFamily,
-    color: selected ? themeColors.surface : themeColors.neutral700,
+    color: selected ? 'white' : themeColors.neutral700,
     background: selected ? themeColors.primary : themeColors.neutral100,
     border: `1px solid ${selected ? themeColors.primary : themeColors.neutral300}`,
     borderRadius: themeRadius.full,
@@ -185,36 +194,46 @@ export const getChipStyle = (selected = false, disabled = false, theme = STYLE_G
  * Get label style
  *
  * @param {boolean} required - Whether the field is required
+ * @param {Object} theme - Theme configuration
  * @returns {Object} Style object for the label
  */
-export const getLabelStyle = (required = false) => ({
-  display: 'block',
-  fontSize: typography.sizes.sm,
-  fontWeight: typography.weights.semibold,
-  color: colors.neutral700,
-  marginBottom: spacing.sm,
-  fontFamily: typography.fontFamily,
-  ...(required && {
-    ':after': {
-      content: '" *"',
-      color: colors.error
-    }
-  })
-});
+export const getLabelStyle = (required = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, spacing: themeSpacing, typography: themeTypography } = theme;
+
+  return {
+    display: 'block',
+    fontSize: themeTypography.sizes.sm,
+    fontWeight: themeTypography.weights.semibold,
+    color: themeColors.neutral700,
+    marginBottom: themeSpacing.sm,
+    fontFamily: themeTypography.fontFamily,
+    ...(required && {
+      ':after': {
+        content: '" *"',
+        color: themeColors.error
+      }
+    })
+  };
+};
 
 /**
  * Get helper text style
  *
  * @param {boolean} error - Whether this is an error message
+ * @param {Object} theme - Theme configuration
  * @returns {Object} Style object for helper text
  */
-export const getHelperTextStyle = (error = false) => ({
-  fontSize: typography.sizes.sm,
-  color: error ? colors.error : colors.neutral600,
-  marginTop: spacing.sm,
-  fontFamily: typography.fontFamily,
-  lineHeight: typography.lineHeights.normal
-});
+export const getHelperTextStyle = (error = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, typography: themeTypography, spacing: themeSpacing } = theme;
+
+  return {
+    fontSize: themeTypography.sizes.sm,
+    color: error ? themeColors.error : themeColors.neutral600,
+    marginTop: themeSpacing.sm,
+    fontFamily: themeTypography.fontFamily,
+    lineHeight: themeTypography.lineHeights.normal
+  };
+};
 
 /**
  * Get grid container style
