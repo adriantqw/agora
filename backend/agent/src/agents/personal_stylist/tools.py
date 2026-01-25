@@ -1,6 +1,7 @@
 import base64
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
+from langgraph.config import get_stream_writer
 from ...utils.yaml import load_config
 from ...models.langchain_utils import load_model_from_config
 
@@ -17,12 +18,16 @@ async def txt2img(prompt: str, example_img_paths: list[str] = []):
         AsyncGenerator: An async generator yielding the image generation events.
     """
     # Load model and config
-    config = load_config("model")["image_model"]
-    model = load_model_from_config(config)
-    image_config = {
-        "aspect_ratio": "16:9",
-        "media_resolution": "MEDIA_RESOLUTION_LOW",
-    }
+    model_config = load_config("model")["image_model"]
+    model = load_model_from_config(model_config)
+
+    # Initialise the writer
+    try:
+        writer = get_stream_writer()
+    except (KeyError, TypeError):
+        # We are running in a test or standalone script without a graph runtime
+        # Create a dummy writer that just prints to stdout or does nothing
+        def writer(x): print(f"[Dev Log]: {x}")
     
     # Compile example images
     image_examples = []
@@ -43,5 +48,15 @@ async def txt2img(prompt: str, example_img_paths: list[str] = []):
         ]
     )]
 
-    # Call model
-    return model.astream_events(messages=messages, image_config=image_config)
+    # Consume the model's stream and pipe it to the writer
+    final_output = None
+    async for event in model.astream_events(input = messages, version="v2"):
+        # We emit the event to the agent's custom stream
+        writer(event) 
+        
+        # Capture the final result to return to the LLM agent state
+        if event["event"] == "on_chat_model_end":
+            final_output = event["data"]["output"]
+
+    # Return the final result so the LLM knows the tool finished successfully
+    return final_output
