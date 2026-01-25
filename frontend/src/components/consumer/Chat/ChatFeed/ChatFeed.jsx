@@ -49,7 +49,7 @@ export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, on
               title={message.title}
               description={message.description}
               onSubmit={hasQuestions && allRequiredAnswered ? onBatchSubmit : null}
-              submitLabel="Update Preferences"
+              submitLabel="Continue Journey"
             >
               {/* Render all questions in batch */}
               {hasQuestions && (
