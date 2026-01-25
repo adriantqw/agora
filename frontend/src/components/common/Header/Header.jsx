@@ -29,11 +29,15 @@ export default function Header({
         gap: '32px',
       }}>
         {/* Logo */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
+        <div 
+          onClick={() => navigate('/')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            cursor: 'pointer',
+          }}
+        >
           {/* Egg icon - white background on pink header */}
           <div style={{
             width: '40px',
@@ -237,6 +241,7 @@ export default function Header({
               </button>
 
               <button
+                onClick={() => navigate('/login')}
                 className="nav-button-landing"
                 style={{
                   display: 'flex',
@@ -260,7 +265,7 @@ export default function Header({
                 }}
               >
                 <UserCircle size={18} strokeWidth={2} />
-                <span className="nav-label-landing">Account</span>
+                <span className="nav-label-landing">Profile</span>
               </button>
             </>
           ) : variant === 'journey' ? (
@@ -317,6 +322,7 @@ export default function Header({
               </button>
 
               <button
+                onClick={() => navigate('/login')}
                 style={{
                   width: '36px',
                   height: '36px',

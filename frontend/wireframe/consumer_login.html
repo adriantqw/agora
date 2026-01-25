@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora - Login</title>
+    
+    <!-- Fonts: Plus Jakarta Sans (Matches the clean, modern aesthetic) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Phosphor Icons (Matches the line-art style) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        agora: {
+                            pink: '#F294AA',
+                            pinkDark: '#E07D94',
+                            bg: '#F8F9FB',
+                            text: '#1F2937',
+                            muted: '#6B7280',
+                            accent: '#FDF2F4' // Very light pink for backgrounds
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                        'glow': '0 0 0 4px rgba(242, 148, 170, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F8F9FB;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db;
+        }
+
+        /* Gradient Animation for the right panel */
+        .gradient-bg {
+            background: linear-gradient(135deg, #FFF0F3 0%, #FFF 100%);
+        }
+
+        .floating-icon {
+            animation: float 6s ease-in-out infinite;
+        }
+        .floating-icon-delayed {
+            animation: float 6s ease-in-out 3s infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-gray-800">
+
+    <!-- HEADER -->
+    <!-- Matches Image 1 header exactly -->
+    <header class="bg-agora-pink h-16 flex items-center justify-between px-6 md:px-10 shadow-sm sticky top-0 z-50">
+        <!-- Logo Area -->
+        <div class="flex items-center space-x-2 text-white cursor-pointer hover:opacity-90 transition">
+            <i class="ph-fill ph-smiley text-3xl"></i>
+            <span class="text-xl font-bold tracking-tight">Agora</span>
+        </div>
+
+        <!-- Search Bar (Hidden on Mobile, simplified for Login page context) -->
+        <div class="hidden md:flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 w-96 mx-4 border border-white/30">
+            <i class="ph ph-magnifying-glass text-white text-lg"></i>
+            <input type="text" placeholder="What are you looking for?" class="bg-transparent border-none outline-none text-white placeholder-white/80 ml-2 w-full text-sm">
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex items-center space-x-6 text-white/90">
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-flag text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Journeys</span>
+            </a>
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-t-shirt text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Closet</span>
+            </a>
+            <a href="#" class="flex flex-col items-center group opacity-100 font-semibold">
+                <div class="bg-white/20 p-1.5 rounded-full mb-0.5">
+                    <i class="ph-fill ph-user text-lg"></i>
+                </div>
+                <!-- Indicator dot for active page -->
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+            </a>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
+        
+        <!-- Decorative Background Blobs (Subtle) -->
+        <div class="absolute top-20 left-10 w-64 h-64 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
+        <div class="absolute bottom-20 right-10 w-64 h-64 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+
+        <!-- LOGIN CARD -->
+        <div class="bg-white rounded-[32px] shadow-soft w-full max-w-[1000px] min-h-[600px] grid grid-cols-1 md:grid-cols-2 overflow-hidden relative z-10">
+            
+            <!-- LEFT COLUMN: Form -->
+            <div class="p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+                
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                    <p class="text-agora-muted">Continue your style journey where you left off.</p>
+                </div>
+
+                <form id="loginForm" class="space-y-5">
+                    
+                    <!-- Email Input -->
+                    <div class="space-y-1.5">
+                        <label for="email" class="text-xs font-semibold uppercase tracking-wider text-gray-500 ml-1">Email Address</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="ph ph-envelope-simple text-gray-400 text-xl group-focus-within:text-agora-pink transition-colors"></i>
+                            </div>
+                            <input type="email" id="email" 
+                                class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 text-gray-900 rounded-2xl focus:outline-none focus:border-agora-pink focus:ring-4 focus:ring-pink-50 transition-all placeholder-gray-400" 
+                                placeholder="hello@agora.style" required>
+                        </div>
+                    </div>
+
+                    <!-- Password Input -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center ml-1">
+                            <label for="password" class="text-xs font-semibold uppercase tracking-wider text-gray-500">Password</label>
+                            <a href="#" class="text-xs font-medium text-purple-500 hover:text-purple-600">Forgot Password?</a>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="ph ph-lock-key text-gray-400 text-xl group-focus-within:text-agora-pink transition-colors"></i>
+                            </div>
+                            <input type="password" id="password" 
+                                class="w-full pl-11 pr-12 py-3.5 bg-gray-50 border border-gray-100 text-gray-900 rounded-2xl focus:outline-none focus:border-agora-pink focus:ring-4 focus:ring-pink-50 transition-all placeholder-gray-400" 
+                                placeholder="••••••••" required>
+                            
+                            <!-- Toggle Password Button -->
+                            <button type="button" onclick="togglePassword()" class="absolute inset-y-0 right-0 pr-4 flex items-center cursor-pointer text-gray-400 hover:text-gray-600">
+                                <i id="eyeIcon" class="ph ph-eye text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <button type="submit" class="w-full bg-agora-pink hover:bg-agora-pinkDark text-white font-semibold py-4 rounded-full shadow-lg shadow-pink-200 transition-all transform active:scale-[0.98] mt-4 flex justify-center items-center gap-2">
+                        <span>Sign In</span>
+                        <i class="ph-bold ph-arrow-right"></i>
+                    </button>
+
+                </form>
+
+                <!-- Divider -->
+                <div class="relative flex py-8 items-center">
+                    <div class="flex-grow border-t border-gray-100"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-300 text-sm">Or sign in with</span>
+                    <div class="flex-grow border-t border-gray-100"></div>
+                </div>
+
+                <!-- Social Login -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-600">
+                        <i class="ph-fill ph-google-logo text-lg text-gray-800"></i>
+                        Google
+                    </button>
+                    <button class="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-600">
+                        <i class="ph-fill ph-apple-logo text-lg text-gray-800"></i>
+                        Apple
+                    </button>
+                </div>
+
+                <div class="mt-8 text-center text-sm text-gray-500">
+                    New to Agora? 
+                    <a href="#" class="text-agora-pink font-semibold hover:underline">Start your Style Profile</a>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: Visual/Brand -->
+            <!-- Styled to look like the "Valentine's Day Date" or "The Office Edit" cards -->
+            <div class="hidden md:flex flex-col justify-between relative gradient-bg p-12">
+                
+                <!-- Decorative Top Tags -->
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full text-[10px] font-bold tracking-wide text-purple-600 uppercase border border-white">Trending</span>
+                    <span class="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-full text-[10px] font-bold tracking-wide text-agora-pink uppercase border border-white">New Season</span>
+                </div>
+
+                <!-- Central Visual -->
+                <div class="flex-grow flex flex-col items-center justify-center relative">
+                    <!-- Background Circle -->
+                    <div class="w-64 h-64 rounded-full border border-white/40 absolute"></div>
+                    <div class="w-48 h-48 rounded-full border border-white/60 absolute"></div>
+                    
+                    <!-- Floating Icons (Mimicking the dashboard cards) -->
+                    <div class="relative z-10 grid grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-agora-pink floating-icon">
+                            <i class="ph-duotone ph-dress text-4xl"></i>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-purple-500 floating-icon-delayed mt-8">
+                            <i class="ph-duotone ph-sparkle text-4xl"></i>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-blue-400 floating-icon-delayed -mt-4">
+                            <i class="ph-duotone ph-briefcase text-4xl"></i>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm text-yellow-500 floating-icon">
+                            <i class="ph-duotone ph-sunglasses text-4xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Text -->
+                <div class="relative z-10">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Your Personal AI Stylist</h3>
+                    <p class="text-gray-500 leading-relaxed text-sm">
+                        Ready for your next event? We've generated <span class="text-agora-pink font-semibold">3 new outfits</span> based on your closet and the latest trends.
+                    </p>
+                    
+                    <!-- Fake "Add to Journey" Pill -->
+                    <div class="mt-6 flex items-center justify-between bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-white">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-agora-pink">
+                                <i class="ph-fill ph-heart"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500 font-medium">Daily Suggestion</div>
+                                <div class="text-sm font-bold text-gray-800">Date Night Chic</div>
+                            </div>
+                        </div>
+                        <div class="w-8 h-8 rounded-full bg-agora-pink text-white flex items-center justify-center shadow-md cursor-default">
+                            <i class="ph-bold ph-plus"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <!-- Matches Image 1 footer -->
+    <footer class="bg-white py-12 border-t border-gray-100 text-xs">
+        <div class="container mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="col-span-2 md:col-span-1">
+                <div class="flex items-center space-x-2 text-agora-pink mb-4">
+                    <i class="ph-fill ph-smiley text-2xl"></i>
+                    <span class="text-lg font-bold">Agora</span>
+                </div>
+                <p class="text-gray-400 leading-relaxed mb-4">
+                    Your personal AI stylist for every occasion. Start a journey, build your closet, and let AI help you look your best.
+                </p>
+                <div class="text-gray-300">
+                    © 2024 Agora. All rights reserved.
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">My Activity</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Journeys</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">My Closet</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Saved Items</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Orders</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Experience</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Start a Journey</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Browse Styles</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Virtual Fitting Room</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">AI Stylist</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Help Center</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Contact Us</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Size Guide</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Returns</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.replace('ph-eye', 'ph-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.replace('ph-eye-slash', 'ph-eye');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const btn = this.querySelector('button[type="submit"]');
+            
+            // Simulation of loading state
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl"></i><span>Signing In...</span>';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            
+            setTimeout(() => {
+                alert(`Welcome back, ${email}! Redirecting to your Closet...`);
+                btn.innerHTML = originalContent;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
