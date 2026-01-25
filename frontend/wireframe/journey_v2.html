@@ -144,7 +144,7 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 40px;
         }
 
         /* User Message Styling */
@@ -195,7 +195,7 @@
             padding: 24px;
             border-radius: 0 20px 20px 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            margin-bottom: 16px;
+            margin-bottom: 24px;
             border: 1px solid var(--border-color);
         }
 
@@ -212,12 +212,37 @@
             font-size: 15px;
         }
 
-        /* Interactive Grid */
+        /* --- BATCH QUESTION STYLING --- */
+        .question-batch-container {
+            display: flex;
+            flex-direction: column;
+            gap: 32px; /* Space between questions */
+        }
+
+        .question-block h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .question-block h3::after {
+            content: "";
+            flex-grow: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+
+        /* Component: Grid */
         .interaction-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 16px;
-            margin-top: 20px;
         }
 
         .style-card {
@@ -231,19 +256,12 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
 
-        .style-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-        }
-
-        .style-card.selected {
-            border-color: var(--egg-pink);
-            background: #fff0f3;
-        }
+        .style-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        .style-card.selected { border-color: var(--egg-pink); background: #fff0f3; }
 
         .style-card-img {
             width: 100%;
-            height: 150px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -269,15 +287,80 @@
             align-items: center;
             justify-content: center;
         }
+        .style-card.selected .check-circle { display: flex; }
 
-        .style-card.selected .check-circle {
-            display: flex;
+        /* Component: Slider */
+        .slider-wrapper {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
         }
+        
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .scale-value {
+            background: var(--text-main);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: var(--egg-pink);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        /* Component: Tags */
+        .tag-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag-btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-btn:hover { background: #fdf2f8; }
+        .tag-btn.active { background: var(--text-main); color: white; border-color: var(--text-main); }
+
 
         .quiz-actions {
             display: flex;
             justify-content: flex-end;
-            margin-top: 24px;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
         }
 
         .btn-next {
@@ -434,42 +517,70 @@
             </div>
         </div>
 
-        <!-- AI RESPONSE 1 (Aesthetic Choice) -->
+        <!-- AI RESPONSE: BATCH QUESTIONS -->
         <div class="ai-message">
             <div class="ai-avatar">
                 <i data-lucide="sparkles" size="20"></i>
             </div>
             <div class="message-content">
                 <div class="bubble">
-                    <h2>Perfect choice. Let's set the vibe.</h2>
-                    <p>Since it's a date night in London, which of these aesthetics resonates most with how you want to feel? I'll use this to filter our curated merchant catalog.</p>
+                    <h2>Got it. Let's refine your style profile.</h2>
+                    <p>I have 3 questions to help me curate the perfect collection for your night out.</p>
                 </div>
 
-                <div class="interaction-grid">
-                    <div class="style-card selected" onclick="toggleCard(this)">
-                        <div class="style-card-img" style="background: #fff0f3;"><i data-lucide="heart" size="36" color="#ffb7c5"></i></div>
-                        <div class="style-card-label">Romantic & Soft</div>
-                        <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+                <div class="question-batch-container">
+                    
+                    <!-- Q1: Visual Mood -->
+                    <div class="question-block">
+                        <h3>01. Select a Vibe</h3>
+                        <div class="interaction-grid">
+                            <div class="style-card selected" onclick="toggleCard(this)">
+                                <div class="style-card-img" style="background: #fff0f3;"><i data-lucide="heart" size="36" color="#ffb7c5"></i></div>
+                                <div class="style-card-label">Romantic</div>
+                                <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+                            </div>
+                            <div class="style-card" onclick="toggleCard(this)">
+                                <div class="style-card-img" style="background: #f8fafc;"><i data-lucide="gem" size="36" color="#94a3b8"></i></div>
+                                <div class="style-card-label">Chic</div>
+                                <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+                            </div>
+                            <div class="style-card" onclick="toggleCard(this)">
+                                <div class="style-card-img" style="background: #fafafa;"><i data-lucide="flame" size="36" color="#1a1a1a"></i></div>
+                                <div class="style-card-label">Edgy</div>
+                                <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="style-card" onclick="toggleCard(this)">
-                        <div class="style-card-img" style="background: #f8fafc;"><i data-lucide="gem" size="36" color="#94a3b8"></i></div>
-                        <div class="style-card-label">Chic & Modern</div>
-                        <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+
+                    <!-- Q2: Intensity Scale -->
+                    <div class="question-block">
+                        <h3>02. Intensity Level</h3>
+                        <div class="slider-wrapper">
+                            <div class="slider-header">
+                                <span style="font-size: 14px; color: var(--text-light);">How bold should we go?</span>
+                                <span class="scale-value" id="risk-value">5.0</span>
+                            </div>
+                            <input type="range" class="range-slider" id="risk-slider" min="1" max="10" step="0.5" value="5">
+                        </div>
                     </div>
-                    <div class="style-card" onclick="toggleCard(this)">
-                        <div class="style-card-img" style="background: #fafafa;"><i data-lucide="flame" size="36" color="#1a1a1a"></i></div>
-                        <div class="style-card-label">Edgy & Bold</div>
-                        <div class="check-circle"><i data-lucide="check" size="14"></i></div>
+
+                    <!-- Q3: Attributes -->
+                    <div class="question-block">
+                        <h3>03. Must-Haves</h3>
+                        <div class="tag-wrapper">
+                            <button class="tag-btn active" onclick="toggleTag(this)">Warm Layers</button>
+                            <button class="tag-btn" onclick="toggleTag(this)">Waterproof</button>
+                            <button class="tag-btn active" onclick="toggleTag(this)">Comfortable</button>
+                            <button class="tag-btn" onclick="toggleTag(this)">Sustainable</button>
+                            <button class="tag-btn" onclick="toggleTag(this)">Luxury Brands</button>
+                        </div>
                     </div>
-                    <div class="style-card" onclick="toggleCard(this)">
-                        <div class="style-card-img" style="background: #fff7ed;"><i data-lucide="sun" size="36" color="#fb923c"></i></div>
-                        <div class="style-card-label">Boho & Relaxed</div>
-                        <div class="check-circle"><i data-lucide="check" size="14"></i></div>
-                    </div>
+
                 </div>
 
+                <!-- SINGLE SUBMIT FOR BATCH -->
                 <div class="quiz-actions">
-                    <button class="btn-next">Next Step <i data-lucide="arrow-right" size="18"></i></button>
+                    <button class="btn-next">Continue Journey <i data-lucide="arrow-right" size="18"></i></button>
                 </div>
             </div>
         </div>
@@ -481,7 +592,7 @@
         <div>
             <div class="panel-header"><i data-lucide="map" size="14"></i> Current Journey</div>
             <div class="journey-title">Valentine's Day</div>
-            <div class="journey-status-text">Creating Style Profile...</div>
+            <div class="journey-status-text">Refining Preferences...</div>
         </div>
 
         <div class="summary-list">
@@ -511,16 +622,6 @@
                     <i data-lucide="edit-2" size="12" class="edit-icon"></i>
                 </div>
             </div>
-
-            <div class="summary-item">
-                <span class="s-label">Key Pieces (Ideation)</span>
-                <div class="ideation-preview">
-                    <div class="mini-card" style="background: #fff5f7; color: #ffb7c5; border-color: #ffb7c5; border-style: solid;">Slip Dress</div>
-                    <div class="mini-card">Heels?</div>
-                    <div class="mini-card">Gold Jewelry</div>
-                    <div class="mini-card" style="border-style: solid; background: white;"><i data-lucide="plus" size="16"></i></div>
-                </div>
-            </div>
         </div>
     </aside>
 
@@ -530,9 +631,19 @@
     lucide.createIcons();
 
     function toggleCard(card) {
-        const allCards = document.querySelectorAll('.style-card');
+        const allCards = card.parentElement.querySelectorAll('.style-card');
         allCards.forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
+    }
+
+    function toggleTag(btn) {
+        btn.classList.toggle('active');
+    }
+
+    const slider = document.getElementById('risk-slider');
+    const valueDisplay = document.getElementById('risk-value');
+    slider.oninput = function() {
+        valueDisplay.textContent = parseFloat(this.value).toFixed(1);
     }
 </script>
 

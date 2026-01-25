@@ -52,6 +52,11 @@ export default function ShoppingConciergePage() {
   // Answer tracking state
   const [currentAnswers, setCurrentAnswers] = useState({});
 
+  // Batch tracking state
+  const [currentBatchId, setCurrentBatchId] = useState(null);
+  const [batchAnswers, setBatchAnswers] = useState({});  // Answers for current batch only
+  const [batchNumber, setBatchNumber] = useState(0);
+
   // Conversation tracking
   const [currentStep, setCurrentStep] = useState('aesthetic');
 
@@ -72,8 +77,14 @@ export default function ShoppingConciergePage() {
   }, []);
 
   // Add AI message to chat feed
-  const addAIMessage = useCallback(({ title, description, question, questionType, options }) => {
+  const addAIMessage = useCallback(({ title, description, question, questionType, options, questions }) => {
     setIsTyping(true);
+
+    // Generate unique batch ID
+    const batchId = `batch-${Date.now()}`;
+    if (questions && questions.length > 0) {
+      setCurrentBatchId(batchId);
+    }
 
     // Simulate AI thinking delay
     setTimeout(() => {
@@ -84,9 +95,11 @@ export default function ShoppingConciergePage() {
           type: 'ai',
           title,
           description,
-          question, // New structure with question object
+          question, // New structure with question object (single question - legacy)
           questionType, // Legacy support
           options, // Legacy support
+          questions, // Array of questions (batch mode)
+          batchId, // Unique ID for this batch
           timestamp: new Date(),
         },
       ]);
@@ -109,11 +122,15 @@ export default function ShoppingConciergePage() {
       title: extractedOccasion || 'New Journey',
       occasion: extractedOccasion,
       weather: extractedLocation,
+      status: 'Creating Style Profile...'
     }));
 
-    // Generate first AI response (aesthetic selection)
-    const aestheticResponse = conciergeService.generateConversationResponse('aesthetic');
-    addAIMessage(aestheticResponse);
+    // Generate first batch of questions
+    const batch1 = conciergeService.generateBatch1();
+    addAIMessage(batch1);
+
+    // Set batch number
+    setBatchNumber(1);
   }, [addUserMessage, addAIMessage]);
 
   // Initialize conversation on mount if query exists
@@ -127,30 +144,107 @@ export default function ShoppingConciergePage() {
 
   // Handle answer submission from QuestionRenderer
   const handleAnswer = useCallback((answer) => {
-    // Store answer in state
-    setCurrentAnswers((prev) => ({
+    // Store in batch-specific state (not global currentAnswers yet)
+    setBatchAnswers((prev) => ({
       ...prev,
-      [answer.questionId]: answer,
+      [answer.questionId]: answer
     }));
 
-    // Find the question that was answered
-    const currentMessage = messages.find(
-      (msg) => msg.type === 'ai' && msg.question?.id === answer.questionId
-    );
+    // DO NOT add user message here - wait for batch submit
+  }, []);
 
-    if (!currentMessage || !currentMessage.question) return;
+  // Handle batch submit button click
+  const handleBatchSubmit = useCallback(() => {
+    // Find current batch message
+    const batchMessage = messages.find(msg => msg.batchId === currentBatchId);
+    if (!batchMessage || !batchMessage.questions) return;
 
-    // Format answer for display in user message
-    const displayText = conciergeService.formatAnswerForDisplay(
-      currentMessage.question,
-      answer
-    );
+    // Check if all required questions are answered
+    const requiredQuestions = batchMessage.questions.filter(q => q.required);
+    const allRequiredAnswered = requiredQuestions.every(q => batchAnswers[q.id]);
 
-    // Add user message bubble with answer after a short delay
-    setTimeout(() => {
-      addUserMessage(displayText);
-    }, 300);
-  }, [messages, addUserMessage]);
+    if (!allRequiredAnswered) {
+      // Show validation error or keep button disabled
+      return;
+    }
+
+    // Generate summary text for user message
+    const summaryParts = batchMessage.questions
+      .map(question => {
+        const answer = batchAnswers[question.id];
+        if (!answer) return null;
+        return conciergeService.formatAnswerForBatchSummary(question, answer);
+      })
+      .filter(Boolean);  // Remove null/undefined entries
+
+    const summaryText = summaryParts.length > 0
+      ? summaryParts.join(' • ')
+      : '(no additional details)';
+
+    // Add user message with summary
+    addUserMessage(summaryText);
+
+    // Merge batch answers into global currentAnswers
+    setCurrentAnswers(prev => ({ ...prev, ...batchAnswers }));
+
+    // Process answers and update journey context
+    batchMessage.questions.forEach(question => {
+      const answer = batchAnswers[question.id];
+      if (!answer) return;
+
+      // Update journey context based on question type
+      if (question.id === 'aesthetic-visual-mood') {
+        const aesthetic = conciergeService.processAestheticAnswer(answer);
+        setJourneyContext(prev => ({ ...prev, aesthetic }));
+      } else if (question.id === 'risk-tolerance-scale') {
+        const riskTolerance = conciergeService.processRiskAnswer(answer);
+        setJourneyContext(prev => ({ ...prev, riskTolerance }));
+      } else if (question.id === 'style-attributes') {
+        const attributes = conciergeService.processAttributesAnswer(answer);
+        setJourneyContext(prev => ({ ...prev, attributes }));
+      } else if (question.id === 'inspiration-image') {
+        const inspirationImage = conciergeService.processImageAnswer(answer);
+        setJourneyContext(prev => ({ ...prev, inspirationImage }));
+      } else if (question.id === 'additional-context') {
+        const additionalContext = conciergeService.processContextAnswer(answer);
+        setJourneyContext(prev => ({ ...prev, additionalContext }));
+      } else if (question.id === 'budget-range') {
+        const budget = answer.value ? parseFloat(answer.value) : null;
+        setJourneyContext(prev => ({ ...prev, budget }));
+      } else if (question.id === 'key-pieces') {
+        const keyPieces = answer.value ? answer.value.split(',').map(s => s.trim()) : [];
+        setJourneyContext(prev => ({ ...prev, keyPieces }));
+      }
+      // Add more question processing as needed
+    });
+
+    // Clear batch answers
+    setBatchAnswers({});
+
+    // Progress to next batch
+    if (batchNumber === 1) {
+      setBatchNumber(2);
+      setJourneyContext(prev => ({ ...prev, status: 'Refining Preferences...' }));
+      setTimeout(() => {
+        const batch2 = conciergeService.generateBatch2();
+        addAIMessage(batch2);
+      }, 500);
+    } else if (batchNumber === 2) {
+      setBatchNumber(3);
+      setJourneyContext(prev => ({ ...prev, status: 'Final Touches...' }));
+      setTimeout(() => {
+        const batch3 = conciergeService.generateBatch3();
+        addAIMessage(batch3);
+      }, 500);
+    } else if (batchNumber === 3) {
+      setBatchNumber(4);
+      setJourneyContext(prev => ({ ...prev, status: 'Journey Complete!' }));
+      setTimeout(() => {
+        const completion = conciergeService.generateCompletionMessage();
+        addAIMessage(completion);
+      }, 500);
+    }
+  }, [batchAnswers, currentBatchId, messages, batchNumber, addUserMessage, addAIMessage]);
 
   // Handle next step button click
   const handleNextStep = useCallback((messageId) => {
@@ -313,8 +407,8 @@ export default function ShoppingConciergePage() {
             messages={messages}
             loading={isTyping}
             onAnswer={handleAnswer}
-            currentAnswers={currentAnswers}
-            onNextStep={handleNextStep}
+            batchAnswers={batchAnswers}
+            onBatchSubmit={handleBatchSubmit}
           />
 
           {/* RIGHT: Summary Panel */}

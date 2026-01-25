@@ -989,6 +989,180 @@ export const processContextAnswer = (answer) => {
   return answer?.value || '';
 };
 
+/**
+ * Generate Batch 1: Initial Style Profile (5 questions)
+ *
+ * @returns {Object} Batch configuration with title, description, questions array
+ */
+export const generateBatch1 = () => ({
+  title: 'Let\'s create your style profile',
+  description: 'I have 5 questions to help me understand your preferences.',
+  questions: [
+    getAestheticQuestion(),
+    getRiskToleranceQuestion(),
+    getAttributesQuestion(),
+    getImageUploadQuestion(),
+    getContextQuestion()
+  ]
+});
+
+/**
+ * Generate Batch 2: Preferences & Constraints (4 questions)
+ *
+ * @returns {Object} Batch configuration with title, description, questions array
+ */
+export const generateBatch2 = () => ({
+  title: 'Great! Now let\'s narrow it down',
+  description: 'A few more details to find the perfect matches.',
+  questions: [
+    {
+      id: 'budget-range',
+      type: 'scale-rating',
+      question: 'What is your budget comfort level?',
+      min: 1,
+      max: 5,
+      step: 1,
+      minLabel: 'Budget-Friendly ($)',
+      maxLabel: 'Premium ($$$$$)',
+      required: true
+    },
+    {
+      id: 'color-preferences',
+      type: 'multi-select',
+      question: 'Which color families do you prefer?',
+      required: false,
+      options: [
+        { id: 'warm', label: 'Warm Tones (reds, oranges, yellows)', metadata: { tags: ['warm'] } },
+        { id: 'cool', label: 'Cool Tones (blues, greens, purples)', metadata: { tags: ['cool'] } },
+        { id: 'neutral', label: 'Neutrals (black, white, beige, gray)', metadata: { tags: ['neutral'] } },
+        { id: 'pastel', label: 'Pastels', metadata: { tags: ['pastel'] } },
+        { id: 'bold', label: 'Bold & Vibrant', metadata: { tags: ['bold'] } }
+      ]
+    },
+    {
+      id: 'fit-preferences',
+      type: 'single-choice',
+      question: 'How do you prefer your clothes to fit?',
+      required: true,
+      options: [
+        { id: 'fitted', label: 'Fitted & Tailored', metadata: { tags: ['fitted'] } },
+        { id: 'relaxed', label: 'Relaxed & Comfortable', metadata: { tags: ['relaxed'] } },
+        { id: 'oversized', label: 'Oversized & Loose', metadata: { tags: ['oversized'] } },
+        { id: 'mixed', label: 'Mix of Different Fits', metadata: { tags: ['mixed'] } }
+      ]
+    },
+    {
+      id: 'brand-preferences',
+      type: 'free-text',
+      question: 'Any favorite brands or brands to avoid?',
+      multiline: true,
+      maxLength: 200,
+      placeholder: 'e.g., Love Zara, avoid fast fashion...',
+      required: false
+    }
+  ]
+});
+
+/**
+ * Generate Batch 3: Final Details (3 questions)
+ *
+ * @returns {Object} Batch configuration with title, description, questions array
+ */
+export const generateBatch3 = () => ({
+  title: 'Almost there!',
+  description: 'Just a few final touches to perfect your collection.',
+  questions: [
+    {
+      id: 'key-pieces',
+      type: 'free-text',
+      question: 'Are there specific pieces you\'re looking for?',
+      multiline: true,
+      maxLength: 200,
+      placeholder: 'e.g., A statement coat, comfortable heels...',
+      required: false
+    },
+    {
+      id: 'avoid-list',
+      type: 'free-text',
+      question: 'Anything you want to avoid?',
+      multiline: true,
+      maxLength: 200,
+      placeholder: 'e.g., No dresses, no high heels...',
+      required: false
+    },
+    {
+      id: 'special-requirements',
+      type: 'free-text',
+      question: 'Any special requirements or considerations?',
+      multiline: false,
+      maxLength: 200,
+      placeholder: 'e.g., Petite sizing, maternity, wheelchair accessible...',
+      required: false
+    }
+  ]
+});
+
+/**
+ * Generate completion message
+ *
+ * @returns {Object} Completion message configuration
+ */
+export const generateCompletionMessage = () => ({
+  title: 'Perfect! I have everything I need.',
+  description: 'I think I have enough information to search for the perfect outfits for you! Give me a moment to curate your personalized collection.',
+  questions: []  // No questions, just a message
+});
+
+/**
+ * Format answer for display in batch summary (concise version)
+ *
+ * @param {Object} question - Question object
+ * @param {Object} answer - Answer object from QuestionRenderer
+ * @returns {string|null} Formatted text for batch summary (null if skipped)
+ */
+export const formatAnswerForBatchSummary = (question, answer) => {
+  if (!answer || !answer.value) {
+    return null;  // Return null instead of "Skipped" for batch summaries
+  }
+
+  switch (question.type) {
+    case 'image-choice':
+      const selectedOption = question.options?.find(opt => opt.id === answer.value);
+      return selectedOption?.label || answer.value;  // Just the label
+
+    case 'scale-rating':
+      const value = parseFloat(answer.value).toFixed(1);
+      const labelShort = question.question.split(' ').slice(0, 2).join(' ');
+      return `${labelShort}: ${value}/${question.max}`;
+
+    case 'multi-select':
+      if (!answer.selectedOptions || answer.selectedOptions.length === 0) {
+        return null;
+      }
+      const labels = answer.selectedOptions
+        .map(optId => question.options?.find(opt => opt.id === optId)?.label)
+        .filter(Boolean);
+      return labels.join(', ');
+
+    case 'single-choice':
+      if (!answer.value) return null;
+      const choiceOption = question.options?.find(opt => opt.id === answer.value);
+      return choiceOption?.label || answer.value;
+
+    case 'image-upload':
+      return answer.fileName ? '📷 Photo uploaded' : null;
+
+    case 'free-text':
+      if (!answer.value || !answer.value.trim()) return null;
+      return answer.value.length > 50
+        ? `${answer.value.substring(0, 50)}...`
+        : answer.value;
+
+    default:
+      return String(answer.value);
+  }
+};
+
 export default {
   generateQuestions,
   submitAnswers,
@@ -1006,8 +1180,15 @@ export default {
   getImageUploadQuestion,
   getContextQuestion,
 
+  // Batch generation functions
+  generateBatch1,
+  generateBatch2,
+  generateBatch3,
+  generateCompletionMessage,
+
   // Answer processing functions
   formatAnswerForDisplay,
+  formatAnswerForBatchSummary,
   processAestheticAnswer,
   processRiskAnswer,
   processAttributesAnswer,

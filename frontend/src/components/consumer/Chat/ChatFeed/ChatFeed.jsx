@@ -5,7 +5,7 @@ import UserMessage from '../UserMessage/UserMessage';
 import AIMessage from '../AIMessage/AIMessage';
 import QuestionRenderer from '../../../dynamic-forms/QuestionRenderer';
 
-export default function ChatFeed({ messages, loading, onAnswer, currentAnswers, onNextStep }) {
+export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, onBatchSubmit }) {
   const colors = useThemeColors();
   const messagesEndRef = useRef(null);
 
@@ -34,24 +34,58 @@ export default function ChatFeed({ messages, loading, onAnswer, currentAnswers, 
             />
           );
         } else if (message.type === 'ai') {
-          const hasAnswer = message.question && currentAnswers?.[message.question.id];
+          const hasQuestions = message.questions && message.questions.length > 0;
+
+          // Check if all required questions are answered
+          const allRequiredAnswered = hasQuestions
+            ? message.questions
+                .filter(q => q.required)
+                .every(q => batchAnswers?.[q.id])
+            : false;
 
           return (
             <AIMessage
               key={message.id}
               title={message.title}
               description={message.description}
-              onNext={hasAnswer ? () => onNextStep(message.id) : null}
+              onSubmit={hasQuestions && allRequiredAnswered ? onBatchSubmit : null}
+              submitLabel="Update Preferences"
             >
-              {/* Render interactive question component using QuestionRenderer */}
-              {message.question && (
-                <QuestionRenderer
-                  question={message.question}
-                  onAnswer={onAnswer}
-                  currentAnswer={currentAnswers?.[message.question.id]}
-                  disabled={false}
-                  showQuestionText={false}
-                />
+              {/* Render all questions in batch */}
+              {hasQuestions && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '32px',
+                  marginTop: '20px'
+                }}>
+                  {message.questions.map((question, index) => (
+                    <div key={question.id} style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      {/* Question number header */}
+                      <h3 style={{
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        color: '#666',
+                        margin: 0
+                      }}>
+                        {String(index + 1).padStart(2, '0')}. {question.question}
+                      </h3>
+
+                      {/* Question component */}
+                      <QuestionRenderer
+                        question={question}
+                        onAnswer={onAnswer}
+                        currentAnswer={batchAnswers?.[question.id]}
+                        disabled={false}
+                        showQuestionText={false}  // Already shown in header
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
             </AIMessage>
           );

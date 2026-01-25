@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import AIAvatar from '../AIAvatar/AIAvatar';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
 
-export default function AIMessage({ title, description, children, onNext }) {
+export default function AIMessage({ title, description, children, onSubmit, submitLabel = 'Next Step' }) {
   const colors = useThemeColors();
 
   return (
@@ -50,11 +50,11 @@ export default function AIMessage({ title, description, children, onNext }) {
           </p>
         </div>
 
-        {/* Interactive content (e.g., StyleCard grid) */}
+        {/* Interactive content (e.g., StyleCard grid, batched questions) */}
         {children}
 
-        {/* Optional Next Step button */}
-        {onNext && (
+        {/* Optional Submit button */}
+        {onSubmit && (
           <div
             style={{
               display: 'flex',
@@ -63,7 +63,7 @@ export default function AIMessage({ title, description, children, onNext }) {
             }}
           >
             <button
-              onClick={onNext}
+              onClick={onSubmit}
               style={{
                 background: colors.text.primary,
                 color: 'white',
@@ -87,7 +87,7 @@ export default function AIMessage({ title, description, children, onNext }) {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              Next Step
+              {submitLabel}
               <ArrowRight size={18} />
             </button>
           </div>
