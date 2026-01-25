@@ -254,7 +254,7 @@ To regenerate PNG favicons:
 
 **Public Routes:**
 - `/` - Journey-based consumer homepage with AI stylist (public)
-- `/quiz` - Shopping quiz for outfit curation
+- `/journey` - Shopping quiz for outfit curation
 - `/fitting-room` - Virtual fitting room
 - `/browse` - Browse products by category
 - `/search` - Search results page
