@@ -19,7 +19,7 @@ export default function Header({
       zIndex: 100,
     }}>
       <div className="header-container" style={{
-        padding: variant === 'journey' ? '12px 4%' : '20px 48px',
+        padding: (variant === 'journey' || variant === 'landing') ? '12px 4%' : '20px 48px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -75,11 +75,11 @@ export default function Header({
           </span>
         </div>
 
-        {/* Compact Search Bar (center) - Show for full and journey variants */}
-        {(variant === 'full' || variant === 'journey') && onSearch && (
+        {/* Compact Search Bar (center) - Show only for journey variant with search */}
+        {variant === 'journey' && onSearch && (
           <div className="header-search" style={{
             flex: 1,
-            maxWidth: variant === 'journey' ? '400px' : '500px',
+            maxWidth: '400px',
             margin: '0 auto',
           }}>
             <div style={{
@@ -171,7 +171,99 @@ export default function Header({
           alignItems: 'center',
           gap: '12px',
         }}>
-          {variant === 'journey' ? (
+          {variant === 'landing' ? (
+            /* Landing variant navigation - Icon + Text */
+            <>
+              <button
+                onClick={() => navigate('/')}
+                className="nav-button-landing"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'transparent',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: '#718096',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#F9F9F9';
+                  e.currentTarget.style.color = '#F5A5B8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#718096';
+                }}
+              >
+                <Compass size={18} strokeWidth={2} />
+                <span className="nav-label-landing">Journeys</span>
+              </button>
+
+              <button
+                onClick={() => navigate('/browse')}
+                className="nav-button-landing"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'transparent',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: '#718096',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#F9F9F9';
+                  e.currentTarget.style.color = '#F5A5B8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#718096';
+                }}
+              >
+                <LayoutGrid size={18} strokeWidth={2} />
+                <span className="nav-label-landing">Closet</span>
+              </button>
+
+              <button
+                className="nav-button-landing"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'transparent',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: '#718096',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#F9F9F9';
+                  e.currentTarget.style.color = '#F5A5B8';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#718096';
+                }}
+              >
+                <UserCircle size={18} strokeWidth={2} />
+                <span className="nav-label-landing">Account</span>
+              </button>
+            </>
+          ) : variant === 'journey' ? (
             /* Journey variant navigation - Icon only */
             <>
               <button
@@ -376,6 +468,19 @@ export default function Header({
           .merchant-link {
             font-size: 11px !important;
             padding: 4px 6px !important;
+          }
+
+          /* Hide text labels on mobile for landing variant */
+          .nav-label-landing {
+            display: none !important;
+          }
+
+          /* Make landing variant buttons icon-only on mobile */
+          .nav-button-landing {
+            width: 36px !important;
+            height: 36px !important;
+            padding: 0 !important;
+            justify-content: center !important;
           }
         }
       `}</style>

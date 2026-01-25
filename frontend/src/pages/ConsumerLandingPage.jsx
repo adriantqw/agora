@@ -51,8 +51,8 @@ const ConsumerLandingPage = () => {
         minHeight: '100vh',
       }}
     >
-      {/* Header with journey variant */}
-      <Header variant="journey" showNav={true} />
+      {/* Header with landing variant */}
+      <Header variant="landing" showNav={true} />
 
       {/* Hero Section */}
       <JourneyHero
