@@ -9,3 +9,5 @@ catalogue_ingestor: &base_agent_recipe
       max_tokens: 1024
       thinking_level: low
       include_thoughts: true
+
+personal_stylist: *base_agent_recipe

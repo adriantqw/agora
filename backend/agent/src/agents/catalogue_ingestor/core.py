@@ -7,15 +7,14 @@ import re
 import os
 from dotenv import load_dotenv
 import tempfile
-import uuid
 from pathlib import Path
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage
 from .schemas import CatalogueItemList
 from .states import CatalogueIngestorState
-from ..models.utils import load_model_from_config
-from ..utils.yaml import load_prompt_templates, load_config
-from ..utils.image import get_pil_box
+from ...models.langchain_utils import load_model_from_config
+from ...utils.yaml import load_prompt_templates, load_config
+from ...utils.image import get_pil_box
 from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
