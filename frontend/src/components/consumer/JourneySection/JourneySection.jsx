@@ -126,7 +126,7 @@ const JourneySection = ({ journey, onOutfitAdd }) => {
               e.currentTarget.style.background = 'transparent';
             }}
           >
-            <span>Resume Journey</span>
+            <span>Start Journey</span>
             <ArrowRight size={16} strokeWidth={2.5} />
           </button>
         )}

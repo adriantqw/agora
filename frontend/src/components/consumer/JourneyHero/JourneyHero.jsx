@@ -10,13 +10,10 @@ import './typewriter.css';
  * - "Personal AI Stylist" heading with subtext
  * - Journey search bar with typewriter placeholder effect
  * - Pink arrow submit button
- * - Status pills showing active journeys and saved concepts
  *
  * @param {Function} onSearch - Callback when search is submitted
- * @param {number} activeJourneys - Number of active journeys
- * @param {number} savedConcepts - Number of saved concepts
  */
-const JourneyHero = ({ onSearch, activeJourneys = 3, savedConcepts = 12 }) => {
+const JourneyHero = ({ onSearch }) => {
   const colors = useThemeColors();
   const [searchQuery, setSearchQuery] = useState('');
   const [placeholderText, setPlaceholderText] = useState('');
@@ -266,70 +263,6 @@ const JourneyHero = ({ onSearch, activeJourneys = 3, savedConcepts = 12 }) => {
           </button>
         </div>
       </form>
-
-      {/* Status Pills */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '16px',
-          flexWrap: 'wrap',
-        }}
-      >
-        {/* Active Journeys */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: colors.card.background,
-            padding: '8px 16px',
-            borderRadius: '20px',
-            border: `1px solid ${colors.border.subtle}`,
-            fontSize: '14px',
-            fontWeight: '500',
-            color: colors.text.secondary,
-          }}
-        >
-          <span
-            className="status-dot"
-            style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              background: '#10b981',
-            }}
-          />
-          <span>
-            <strong style={{ color: colors.text.primary }}>{activeJourneys}</strong> Active Journeys
-          </span>
-        </div>
-
-        {/* Saved Concepts */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: colors.card.background,
-            padding: '8px 16px',
-            borderRadius: '20px',
-            border: `1px solid ${colors.border.subtle}`,
-            fontSize: '14px',
-            fontWeight: '500',
-            color: colors.text.secondary,
-          }}
-        >
-          <Sparkles
-            size={14}
-            style={{ color: colors.primary.eggPink }}
-          />
-          <span>
-            <strong style={{ color: colors.text.primary }}>{savedConcepts}</strong> Saved Concepts
-          </span>
-        </div>
-      </div>
     </div>
   );
 };

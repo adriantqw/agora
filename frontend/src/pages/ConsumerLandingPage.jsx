@@ -6,7 +6,7 @@ import Mascot from '../components/common/Mascot/Mascot';
 import JourneyHero from '../components/consumer/JourneyHero/JourneyHero';
 import JourneySection from '../components/consumer/JourneySection/JourneySection';
 import Footer from '../components/consumer/Footer/Footer';
-import { mockJourneys } from '../data/mockJourneys';
+import { guestMockData } from '../data/guestMockData';
 
 /**
  * ConsumerLandingPage
@@ -29,12 +29,8 @@ const ConsumerLandingPage = () => {
   };
 
   const handleOutfitAdd = (outfit, journey) => {
-    // Future: Add to cart functionality
-    console.log('Add outfit to cart:', outfit, 'from journey:', journey.title);
-
-    // Show notification
-    setNotification(`Added "${outfit.label}" to your closet!`);
-    setTimeout(() => setNotification(null), 3000);
+    // For guests, redirect to login on "Add"
+    navigate('/login');
   };
 
   const handleAIFabClick = () => {
@@ -57,8 +53,6 @@ const ConsumerLandingPage = () => {
       {/* Hero Section */}
       <JourneyHero
         onSearch={handleSearch}
-        activeJourneys={3}
-        savedConcepts={12}
       />
 
       {/* Journey Sections */}
@@ -69,13 +63,13 @@ const ConsumerLandingPage = () => {
           margin: '0 auto',
         }}
       >
-        {mockJourneys.map((journey, index) => (
+        {guestMockData.map((journey, index) => (
           <React.Fragment key={journey.id}>
             <JourneySection
               journey={journey}
               onOutfitAdd={handleOutfitAdd}
             />
-            {index < mockJourneys.length - 1 && (
+            {index < guestMockData.length - 1 && (
               <div style={{
                 height: '2px',
                 background: colors.border.divider,
