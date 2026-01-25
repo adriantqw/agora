@@ -1,14 +1,118 @@
 from dotenv import load_dotenv
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
+
+from .states import PersonalStylistState
+from .tools import (
+    generate_image_choice,
+    generate_colour_palette,
+    generate_multi_select,
+    generate_scale_rating,
+    generate_free_text,
+    generate_text_with_image,
+    txt2img
+)
+from ...models.langchain_utils import load_model_from_config
+from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
 
-RECURSION_LIMIT = 200
+RECURSION_LIMIT = 50
+
 
 class PersonalStylistAgent:
-    """Personal Stylist Agent. This agent is responsible for generating a questionnaire based on the user's query."""
+    """
+    React-style Personal Stylist Agent with UI generation tools.
+
+    Uses LangGraph's prebuilt react agent pattern with a checkpointer
+    for session management via thread IDs.
+    """
+
     def __init__(self):
-        """Initialize the agent."""
+        """Initialize the agent with model, tools, and checkpointer."""
         self.agent_config = load_config("agent")["personal_stylist"]
         self.model = load_model_from_config(self.agent_config["model"])
-        self.templates = load_prompt_templates()["personal_stylist"]
-        self.graph = self._compile_graph()
+        self.system_prompt = load_prompt_templates()["personal_stylist"]
+        self.checkpointer = MemorySaver()
+
+        # Define available tools
+        self.tools = [
+            generate_image_choice,
+            generate_colour_palette,
+            generate_multi_select,
+            generate_scale_rating,
+            generate_free_text,
+            generate_text_with_image,
+            txt2img
+        ]
+
+        # Create react agent with custom state schema
+        self.agent = create_react_agent(
+            model=self.model,
+            tools=self.tools,
+            checkpointer=self.checkpointer,
+            state_schema=PersonalStylistState,
+            prompt=self.system_prompt
+        )
+
+    def invoke(self, message: str, thread_id: str) -> dict:
+        """
+        Invoke the agent with a message and thread_id for session continuity.
+
+        Args:
+            message: User message to process
+            thread_id: Unique identifier for the conversation thread
+
+        Returns:
+            dict: Agent state including messages, ui_inputs, ui_answers, journey
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        return self.agent.invoke(
+            {"messages": [("user", message)]},
+            config=config
+        )
+
+    async def stream(self, message: str, thread_id: str):
+        """
+        Stream agent responses for real-time updates.
+
+        Args:
+            message: User message to process
+            thread_id: Unique identifier for the conversation thread
+
+        Yields:
+            Event dictionaries from the agent execution
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        async for event in self.agent.astream_events(
+            {"messages": [("user", message)]},
+            config=config,
+            version="v2"
+        ):
+            yield event
+
+    def get_state(self, thread_id: str):
+        """
+        Get the current state for a thread.
+
+        Args:
+            thread_id: Unique identifier for the conversation thread
+
+        Returns:
+            StateSnapshot: Current state of the agent for this thread
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        return self.agent.get_state(config)
+
+    def get_state_values(self, thread_id: str) -> dict:
+        """
+        Get the state values (without metadata) for a thread.
+
+        Args:
+            thread_id: Unique identifier for the conversation thread
+
+        Returns:
+            dict: State values including ui_inputs, ui_answers, journey
+        """
+        state = self.get_state(thread_id)
+        return state.values if state else {}
