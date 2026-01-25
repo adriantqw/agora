@@ -430,6 +430,8 @@ export default function Header({
           )}
 
           <ThemeToggle
+            size={variant === 'journey' ? 36 : 40}
+            borderRadius={variant === 'journey' ? '50%' : '8px'}
             iconColor="white"
             hoverBackground="rgba(255, 255, 255, 0.2)"
             hoverIconColor="white"

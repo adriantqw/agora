@@ -5,7 +5,9 @@ import { useThemeColors } from '../hooks/useThemeColors';
 const ThemeToggle = ({
   iconColor,
   hoverBackground = '#F9F9F9',
-  hoverIconColor = '#F5A5B8'
+  hoverIconColor = '#F5A5B8',
+  size = 40,
+  borderRadius = '8px'
 }) => {
   const { theme, toggleTheme } = useTheme();
   const colors = useThemeColors();
@@ -22,18 +24,20 @@ const ThemeToggle = ({
       onMouseLeave={() => setIsHovered(false)}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       style={{
-        width: '40px',
-        height: '40px',
-        padding: '8px',
+        width: `${size}px`,
+        height: `${size}px`,
+        padding: '0',
         background: isHovered ? hoverBackground : 'transparent',
         border: 'none',
-        borderRadius: '8px',
+        borderRadius: borderRadius,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         transition: 'all 0.2s ease',
         color: currentIconColor,
+        flexShrink: 0,
+        transform: isHovered ? 'scale(1.05)' : 'scale(1)',
       }}
     >
       {isDark ? (
