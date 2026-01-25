@@ -9,7 +9,7 @@ from ...utils.yaml import load_config
 from ...models.langchain_utils import load_model_from_config
 
 @tool
-async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list[str] = []):
+async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list[str] | None = None):
     """
     Generate an image from a text prompt.
 
@@ -40,6 +40,8 @@ async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list
     # Compile example images
     image_examples = []
     image_content = []
+    if example_img_paths is None:
+        example_img_paths = []
     if example_img_paths:
         for image_path in example_img_paths:
             with open(image_path, "rb") as image_file:
@@ -84,8 +86,7 @@ async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list
 
                     return {"status": "completed", "image_path": path}
 
-                else:
-                    raise ValueError("No image_url found in the output content.")
-                
-    else:
-        raise ValueError("No valid output from the image generation model.")
+            # No image_url found after checking all items
+            raise ValueError("No image_url found in the output content.")
+
+    raise ValueError("No valid output from the image generation model.")

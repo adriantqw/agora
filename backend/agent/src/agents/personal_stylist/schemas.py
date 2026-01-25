@@ -1,5 +1,5 @@
 from typing import Union, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 class UserResponse(BaseModel):
     question_id: str
@@ -15,24 +15,42 @@ class ImageOption(BaseModel):
 
 class ImageChoice(BaseModel):
     """An image choice input field."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["image-choice"] = "image-choice"
     question: str
     options: list[ImageOption] = Field(description="Maximum of 3 options allowed")
 
+    @field_validator('options')
+    @classmethod
+    def validate_options_length(cls, v):
+        if len(v) > 3:
+            raise ValueError('Maximum of 3 options allowed')
+        return v
+
 class ColourPaletteOption(BaseModel):
-    """An option for a colour palette choice."""
+    """A colour palette choice input field."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["colour-palette"] = "colour-palette"
-    label: str
-    colour_hex_options: list[str] = Field(description="Hex code of the colour, e.g., #FF5733")
+    question: str
+    colour_hex_options: list[str] = Field(description="Hex codes of the colours, e.g., #FF5733")
 
 class MultiSelectTextOption(BaseModel):
     """A multi-select input field with text options."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["multi-select"] = "multi-select"
     question: str
     options: list[str] = Field(description="Maximum of 5 options allowed")
 
+    @field_validator('options')
+    @classmethod
+    def validate_options_length(cls, v):
+        if len(v) > 5:
+            raise ValueError('Maximum of 5 options allowed')
+        return v
+
 class ScaleRating(BaseModel):
     """A scale rating input field."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["scale-rating"] = "scale-rating"
     question: str
     min_label: str = Field(description="Label for the low end, e.g., 'Budget'")
@@ -40,11 +58,13 @@ class ScaleRating(BaseModel):
 
 class FreeTextResponse(BaseModel):
     """A free text input field."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["free-text"] = "free-text"
     question: str
 
 class TextWithImageResponse(BaseModel):
     """A text input field with an image generation prompt."""
+    id: str = Field(description="Unique identifier for this question")
     type: Literal["text-with-image"] = "text-with-image"
     question: str
     image_path: str = Field(description="Path to the image file generated for context")

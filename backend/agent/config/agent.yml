@@ -4,14 +4,18 @@
 catalogue_ingestor: &base_agent_recipe
   model: &base_model_recipe
     name: gemini-3-pro-preview
-    params:
+    params: &base_model_params_recipe
       temperature: 0.7
       max_tokens: 1024
       thinking_level: low
       include_thoughts: true
 
-personal_stylist: 
+## Consumer agents
+### Personal stylist config
+personal_stylist:
   <<: *base_agent_recipe
   model:
     <<: *base_model_recipe
-    max_tokens: 4096
+    params:
+      <<: *base_model_params_recipe
+      max_tokens: 4096
