@@ -1,29 +1,13 @@
-from typing import Annotated, TypedDict, Optional, Union
+from typing import Annotated, TypedDict, Optional
 import operator
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 from .schemas import (
-    ImageChoice,
-    ColourPaletteOption,
-    MultiSelectTextOption,
-    ScaleRating,
-    FreeTextResponse,
-    TextWithImageResponse,
     UserResponse,
-    JourneySchema
+    JourneySchema,
 )
-
-# Type alias for UI input types
-UIInputType = Union[
-    ImageChoice,
-    ColourPaletteOption,
-    MultiSelectTextOption,
-    ScaleRating,
-    FreeTextResponse,
-    TextWithImageResponse
-]
 
 
 class PersonalStylistState(TypedDict):

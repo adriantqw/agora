@@ -11,7 +11,7 @@ class ImageOption(BaseModel):
     """An option for an image choice input field."""
     id: str
     label: str
-    image_prompt: str = Field(description="Detailed description for image generation")
+    image_path: str = Field(description="Path to the image file")
 
 class ImageChoice(BaseModel):
     """An image choice input field."""
@@ -47,11 +47,19 @@ class TextWithImageResponse(BaseModel):
     """A text input field with an image generation prompt."""
     type: Literal["text-with-image"] = "text-with-image"
     question: str
-    image_prompt: str = Field(description="Detailed description for image generation")
+    image_path: str = Field(description="Path to the image file generated for context")
 
 class JourneySchema(BaseModel):
     time_of_day: Literal["morning", "afternoon", "evening", "night"]
     occasion: str
     style_preferences: list[str] = Field(default_factory=list)
     budget_range: Optional[int] = None
-    
+
+UIInputType = Union[
+    ImageChoice,
+    ColourPaletteOption,
+    MultiSelectTextOption,
+    ScaleRating,
+    FreeTextResponse,
+    TextWithImageResponse
+]

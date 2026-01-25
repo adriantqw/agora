@@ -1,17 +1,10 @@
 from dotenv import load_dotenv
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 from langgraph.checkpoint.memory import MemorySaver
 
 from .states import PersonalStylistState
-from .tools import (
-    generate_image_choice,
-    generate_colour_palette,
-    generate_multi_select,
-    generate_scale_rating,
-    generate_free_text,
-    generate_text_with_image,
-    txt2img
-)
+from .schemas import UIInputType
+from .tools import txt2img
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -36,23 +29,16 @@ class PersonalStylistAgent:
         self.checkpointer = MemorySaver()
 
         # Define available tools
-        self.tools = [
-            generate_image_choice,
-            generate_colour_palette,
-            generate_multi_select,
-            generate_scale_rating,
-            generate_free_text,
-            generate_text_with_image,
-            txt2img
-        ]
+        self.tools = [txt2img]
 
         # Create react agent with custom state schema
-        self.agent = create_react_agent(
+        self.agent = create_agent(
             model=self.model,
             tools=self.tools,
             checkpointer=self.checkpointer,
+            response_format=UIInputType,
             state_schema=PersonalStylistState,
-            prompt=self.system_prompt
+            system_prompt=self.system_prompt
         )
 
     def invoke(self, message: str, thread_id: str) -> dict:
@@ -66,7 +52,7 @@ class PersonalStylistAgent:
         Returns:
             dict: Agent state including messages, ui_inputs, ui_answers, journey
         """
-        config = {"configurable": {"thread_id": thread_id}}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
         return self.agent.invoke(
             {"messages": [("user", message)]},
             config=config
@@ -83,7 +69,7 @@ class PersonalStylistAgent:
         Yields:
             Event dictionaries from the agent execution
         """
-        config = {"configurable": {"thread_id": thread_id}}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
         async for event in self.agent.astream_events(
             {"messages": [("user", message)]},
             config=config,
