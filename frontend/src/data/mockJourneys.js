@@ -86,7 +86,7 @@ export const mockJourneys = [
     id: 'office-edit',
     title: 'The Office Edit',
     status: 'in-progress',
-    statusColor: '#4299e1',
+    statusColor: '#F5A5B8',
     statusLabel: 'Ongoing Journey',
     closetUrl: '/browse',
     outfits: [
@@ -141,7 +141,7 @@ export const mockJourneys = [
     id: 'girls-night',
     title: "Girls' Night Out",
     status: 'ideation',
-    statusColor: '#F5A5B8',
+    statusColor: '#4299e1',
     statusLabel: 'Ideation Stage',
     closetUrl: '/browse',
     outfits: [
