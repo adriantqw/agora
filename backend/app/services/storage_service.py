@@ -110,6 +110,44 @@ class StorageService:
         except ClientError:
             return False
 
+    async def upload_file(self, file: UploadFile, folder: str, filename: str, max_size: int = 50 * 1024 * 1024) -> dict:
+        """
+        Upload any file type to R2 (not just images).
+
+        Args:
+            file: The uploaded file from FastAPI
+            folder: Folder prefix (e.g., "catalogues" or "catalogue-items")
+            filename: The filename to use (should include extension)
+            max_size: Maximum file size in bytes (default 50MB)
+
+        Returns:
+            dict with 'url' and 'filename' keys on success, or 'error' key on failure
+        """
+        # Read file content
+        content = await file.read()
+
+        if len(content) > max_size:
+            return {"error": f"File too large. Maximum size is {max_size // 1024 // 1024}MB"}
+
+        # Construct key with folder prefix
+        key = f"{folder.rstrip('/')}/{filename}"
+
+        try:
+            self.client.put_object(
+                Bucket=settings.R2_BUCKET_NAME,
+                Key=key,
+                Body=content,
+                ContentType=file.content_type or "application/octet-stream",
+            )
+
+            # Construct public URL
+            public_url = f"{settings.R2_PUBLIC_URL.rstrip('/')}/{key}"
+
+            return {"url": public_url, "filename": key}
+
+        except ClientError as e:
+            return {"error": f"Upload failed: {str(e)}"}
+
 
 # Global service instance
 storage_service = StorageService()

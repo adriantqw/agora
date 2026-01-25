@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     R2_BUCKET_NAME: str = "agora-product-images"
     R2_PUBLIC_URL: str = ""  # e.g., https://your-bucket.r2.dev
 
+    # Google AI Configuration
+    GOOGLE_API_KEY: str = ""
+
+    # Catalogue Processing
+    CATALOGUE_UPLOAD_DIR: str = "data/uploads/catalogues"
+    TESSERACT_PATH: str = "/usr/bin/tesseract"
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
     @property

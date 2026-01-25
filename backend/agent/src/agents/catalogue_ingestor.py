@@ -6,15 +6,16 @@ import pytesseract
 import re
 import os
 from dotenv import load_dotenv
+import tempfile
 import uuid
 from pathlib import Path
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage
-from src.agents.schemas import CatalogueItemList
-from src.agents.states import CatalogueIngestorState
-from src.models.utils import load_model_from_config
-from backend.agent.src.utils.yaml import load_prompt_templates, load_config
-from src.utils.image import get_pil_box
+from .schemas import CatalogueItemList
+from .states import CatalogueIngestorState
+from ..models.utils import load_model_from_config
+from ..utils.yaml import load_prompt_templates, load_config
+from ..utils.image import get_pil_box
 from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
@@ -39,8 +40,7 @@ class CatalogueIngestor:
         try:
             # Load PDF
             pdf = pdfium.PdfDocument(state["pdf_path"])
-            catalogue_path = Path(f'data/catalogues/catalogue-{uuid.uuid4().hex}')
-            catalogue_path.mkdir(parents=True, exist_ok=True)
+            catalogue_path = Path(tempfile.mkdtemp(prefix='catalogue-'))
 
             # Convert each page to image
             for page_indices in range(len(pdf)):
@@ -75,12 +75,19 @@ class CatalogueIngestor:
         except Exception as e:
             return {"error": f"Failed to convert PDF to images: {str(e)}"}
 
+        finally:
+            if 'pdf' in locals():
+                pdf.close()
+
     def _read_pdf(self, state: CatalogueIngestorState):
         """Read PDF text"""
         try:
             idx = state["current_page_idx"]
             pdf_pages = pdfium.PdfDocument(state["pdf_path"])
-            return pdf_pages[idx].get_textpage().get_text_range()
+            try:
+                return pdf_pages[idx].get_textpage().get_text_range()
+            finally:
+                pdf_pages.close()
 
         except Exception as e:
             return {"error": f"Failed to read PDF: {str(e)}"}
@@ -234,8 +241,9 @@ class CatalogueIngestor:
             item_img = page_img.crop(get_pil_box(item.bbox, page_img.width, page_img.height))
 
             # Save item image
-            item_img_path = Path("data/items") / f'item-{uuid.uuid4().hex}.jpeg'
-            item_img_path.parent.mkdir(parents=True, exist_ok=True)
+            fd, item_img_path_str = tempfile.mkstemp(prefix='item-', suffix='.jpeg')
+            os.close(fd)
+            item_img_path = Path(item_img_path_str)
             item_img.save(item_img_path, format='JPEG', optimize=True)
 
             # Prepare payload
@@ -243,8 +251,8 @@ class CatalogueIngestor:
             catalogue_item_payload["image_path"] = str(item_img_path)
             catalogue_item_payloads.append(catalogue_item_payload)
 
-           except:
-               logging.warning(f"Failed to process image for item: {item}")
+           except Exception as e:
+               logging.warning(f"Failed to process image for item: {item}. Error: {e}", exc_info=True)
                continue
 
         return catalogue_item_payloads

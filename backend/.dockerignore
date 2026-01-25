@@ -7,6 +7,9 @@ __pycache__/
 
 # Virtual Environment
 venv/
+.venv/
+agent/.venv/
+agent/venv/
 env/
 ENV/
 env.bak/
@@ -40,6 +43,15 @@ DEPLOYMENT.md
 # OS
 .DS_Store
 Thumbs.db
+
+# Setup scripts
+setup.sh
+setup.bat
+
+# Temporary uploads
+data/uploads/
+*.tmp
+*.log
 
 # Other
 .dockerignore

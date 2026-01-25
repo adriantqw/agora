@@ -16,6 +16,7 @@ This is the **Agora MerchantHub** - a merchant inventory management platform bui
 - ✅ Docker configuration complete (development & production)
 - ✅ Nginx with basic authentication configured
 - ✅ Production deployment scripts ready
+- 🔄 **Catalogue ingestion backend API available** (frontend UI not yet implemented)
 - `merchant-frontend-overview.md` - Complete design specification (source of truth)
 - `BACKEND_INTEGRATION.md` - Backend API integration guide
 - `README.docker.md` - Docker setup and deployment guide
@@ -333,6 +334,34 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - Structured message protocol for different event types (INVENTORY_UPDATE, IMPORT_PROGRESS, NOTIFICATION)
 - React hooks pattern for managing streaming connections
 
+### Available Backend APIs (Not Yet Implemented in Frontend)
+
+**Catalogue Ingestion API** (Added January 18, 2026):
+The backend now provides AI-powered PDF catalogue extraction via 6 new endpoints:
+
+1. `POST /api/catalogues/upload` - Upload PDF, extract items automatically
+2. `GET /api/catalogues` - List uploaded catalogues with pagination
+3. `GET /api/catalogues/{id}` - Get single catalogue details
+4. `GET /api/catalogues/{id}/items` - Get extracted items (database staging area)
+5. `POST /api/catalogues/{id}/create-products` - Convert selected items to products
+6. `DELETE /api/catalogues/{id}` - Delete catalogue and cleanup storage
+
+**Workflow:**
+- Merchant uploads PDF catalogue → AI extracts items (name, description, sizes, colours, images)
+- Items stored in database staging area for review (CSV-like structure)
+- Merchant reviews items via API, selects which to convert
+- Products created with merged tags from sizes + colours
+- Items marked as converted after product creation
+
+**Frontend Implementation TODO:**
+- Add Catalogue Import page with PDF upload
+- Display extracted items in table/grid for review
+- Allow item selection and bulk product creation with price/quantity input
+- Show extraction progress and status
+- Display cropped item images from R2 storage
+
+See backend CLAUDE.md for complete API specification and response formats.
+
 ## Demo Credentials
 
 - **Email:** demo@merchant.com
@@ -392,6 +421,33 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - Maximum 100 products per AI tagging request
 - Loading spinners and success/error toast notifications
 
+### January 18, 2026
+
+**Backend: Catalogue Ingestion API Available**
+- ✅ Backend implemented AI-powered PDF catalogue extraction
+- ✅ 6 new API endpoints available for catalogue management
+- ✅ Database staging area for item review (CSV-like structure)
+- ✅ Automatic extraction of names, descriptions, sizes, colours, images
+- ✅ Selective product creation from extracted items
+- ✅ Tags automatically merged from sizes + colours
+- 📝 Frontend UI not yet implemented
+
+**Available for Frontend Integration:**
+```javascript
+// Example API usage (not yet implemented in frontend)
+POST /api/catalogues/upload - Upload PDF
+GET /api/catalogues/{id}/items - Get extracted items for review
+POST /api/catalogues/{id}/create-products - Convert items to products
+```
+
+**Frontend Implementation Needed:**
+- Catalogue import page with PDF upload UI
+- Item review interface (table/grid view)
+- Item selection and bulk product creation flow
+- Price/quantity input for batch product creation
+- Cropped item image display from R2 storage
+- Extraction progress indicators
+
 ### January 25, 2026
 
 **Shopping Concierge Chat Interface (Consumer Journey Flow)**
@@ -401,7 +457,7 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
   - `UserMessage` - Right-aligned dark message bubbles
   - `AIMessage` - Left-aligned white bubbles with title/description
   - `StyleCard` - Interactive aesthetic selection cards
-  - `SummaryPanel` - Right sidebar (340px) with journey context
+  - `SummaryPanel` - Right sidebar (responsive 1/3 width) with journey context, scrollable content, fixed action buttons
   - `ChatFeed` - Scrollable message feed with auto-scroll
 - ✅ Updated `conciergeService.js` with conversation flow methods:
   - `getAestheticOptions()` - Returns 4 aesthetic choices
@@ -412,13 +468,19 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 - ✅ Replaced STYLE_GUIDE with `useThemeColors` hook (egg pink palette)
 - ✅ Added real-time journey context updates in summary panel
 - ✅ Responsive design with mobile breakpoint (< 900px stacks vertically)
+- ✅ Route changed from `/quiz` to `/journey` across all files
+- ✅ Header component variants: `landing` (icon + text) vs `journey` (icon-only with search bar)
+- ✅ Journey rename feature with inline edit popup
+- ✅ Summary panel action buttons: "Save Journey" and "Return to Home"
 
 **Current Implementation:**
-- User submits query from landing page → Chat interface loads
+- User submits query from landing page → Chat interface loads at `/journey`
 - AI presents 4 aesthetic options (Romantic, Chic, Edgy, Boho)
 - User selects aesthetic → User message bubble appears
 - Journey context updates with occasion, weather (extracted from query)
 - Status updates: "Creating Style Profile..." → "Building Your Journey..." → "Journey Complete!"
+- Journey title can be renamed via pencil icon
+- Header search bar allows adding new queries to chat
 
 **Architecture:**
 ```
@@ -426,13 +488,16 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 │         Chat Feed (Left)             │  Summary   │
 │   - User messages (right-aligned)    │   Panel    │
 │   - AI messages (left-aligned)       │  (Right)   │
-│   - Interactive StyleCard grids      │  340px     │
+│   - Interactive StyleCard grids      │  1/3 width │
+│   - Header with search bar           │  Scrolls   │
+│                                      │  + Fixed   │
+│                                      │  Buttons   │
 └──────────────────────────────────────┴────────────┘
 ```
 
 **Next Phase - Full Conversation Flow:**
 - Implement multi-step conversation (occasion → weather → budget → key pieces)
-- Add edit functionality for summary panel fields
+- Add edit functionality for summary panel fields (occasion, weather, budget)
 - Navigate to results page with curated product recommendations
 - Integrate with real AI backend service
 - Persist journey context to database
@@ -440,6 +505,17 @@ The frontend is designed to connect to a backend API. See `BACKEND_INTEGRATION.m
 See `IMPLEMENTATION_SUMMARY.md` for complete technical documentation.
 
 ### Next Steps
+
+**Catalogue Ingestion UI (HIGH PRIORITY):**
+Backend API is ready - frontend implementation needed:
+- Create `src/pages/MerchantCatalogueImportPage.jsx`
+- Add PDF file upload with drag-and-drop
+- Display extraction progress/status
+- Show extracted items in table with images
+- Add item selection and bulk product creation form
+- Integrate with catalogue API endpoints
+- Add catalogue service to `src/services/catalogueService.js`
+- Update navigation to include catalogue import link
 
 **AI Product Tagging - Production Implementation:**
 - Replace dummy implementation with actual AI service integration

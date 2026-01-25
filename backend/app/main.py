@@ -2,7 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.routes import auth, products
+from app.routes import auth, products, catalogues
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Create FastAPI application
 app = FastAPI(
@@ -23,6 +30,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(products.router)
+app.include_router(catalogues.router)
 
 
 @app.on_event("startup")
