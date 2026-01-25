@@ -185,9 +185,17 @@ export default function ShoppingConciergePage() {
   };
 
   // Handle edit actions from summary panel
-  const handleEditContext = (field) => {
-    console.log('Edit field:', field);
-    // Future: Allow re-asking questions or editing context
+  const handleEditContext = (field, value) => {
+    console.log('Edit field:', field, 'Value:', value);
+
+    if (field === 'title') {
+      setJourneyContext(prev => ({
+        ...prev,
+        title: value,
+      }));
+    } else {
+      // Future: Allow re-asking questions or editing other context fields
+    }
   };
 
   // Handle Save Journey button
