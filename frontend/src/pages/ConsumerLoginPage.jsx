@@ -341,47 +341,63 @@ const ConsumerLoginPage = () => {
               {/* Floating Icons Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', position: 'relative', zIndex: 10 }}>
                 <div style={{ 
-                  background: 'white', 
-                  padding: '24px', 
+                  background: 'white',
+                  width: '96px',
+                  height: '96px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
                   color: colors.primary.eggPink,
                   animation: 'float 6s ease-in-out infinite' 
                 }}>
-                  <Shirt size={32} />
+                  <Shirt size={40} />
                 </div>
                 <div style={{ 
-                  background: 'white', 
-                  padding: '24px', 
+                  background: 'white',
+                  width: '96px',
+                  height: '96px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
                   color: '#A855F7', // Purple
                   marginTop: '48px',
                   animation: 'float 6s ease-in-out 3s infinite'
                 }}>
-                  <Sparkles size={32} />
+                  <Sparkles size={40} />
                 </div>
                 <div style={{ 
-                  background: 'white', 
-                  padding: '24px', 
+                  background: 'white',
+                  width: '96px',
+                  height: '96px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
                   color: '#60A5FA', // Blue
                   marginTop: '-24px',
                   animation: 'float 6s ease-in-out 3s infinite'
                 }}>
-                  <Briefcase size={32} />
+                  <Briefcase size={40} />
                 </div>
                 <div style={{ 
-                  background: 'white', 
-                  padding: '24px', 
+                  background: 'white',
+                  width: '96px',
+                  height: '96px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
                   color: '#F59E0B', // Yellow
                   marginTop: '24px',
                   animation: 'float 6s ease-in-out infinite'
                 }}>
-                  <Glasses size={32} />
+                  <Glasses size={40} />
                 </div>
               </div>
             </div>
