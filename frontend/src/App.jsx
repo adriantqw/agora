@@ -9,6 +9,8 @@ import SearchResultsPage from './pages/SearchResultsPage'
 import FittingRoomPage from './pages/FittingRoomPage'
 import BrowsePage from './pages/BrowsePage'
 import ConsumerLoginPage from './pages/ConsumerLoginPage'
+import JourneysPage from './pages/JourneysPage'
+import ClosetPage from './pages/ClosetPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -48,6 +50,8 @@ function AppRoutes() {
       <Route path="/browse" element={<BrowsePage />} />
       <Route path="/browse/:category" element={<BrowsePage />} />
       <Route path="/login" element={<ConsumerLoginPage />} />
+      <Route path="/journeys" element={<JourneysPage />} />
+      <Route path="/closet" element={<ClosetPage />} />
 
       {/* Merchant Routes */}
       <Route

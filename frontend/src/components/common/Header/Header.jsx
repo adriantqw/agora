@@ -185,7 +185,7 @@ export default function Header({
             /* Landing variant navigation - Icon + Text */
             <>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/journeys')}
                 className="nav-button-landing"
                 style={{
                   display: 'flex',
@@ -213,7 +213,7 @@ export default function Header({
               </button>
 
               <button
-                onClick={() => navigate('/browse')}
+                onClick={() => navigate('/closet')}
                 className="nav-button-landing"
                 style={{
                   display: 'flex',
@@ -272,7 +272,7 @@ export default function Header({
             /* Journey variant navigation - Icon only */
             <>
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/journeys')}
                 style={{
                   width: '36px',
                   height: '36px',
@@ -297,7 +297,7 @@ export default function Header({
               </button>
 
               <button
-                onClick={() => navigate('/browse')}
+                onClick={() => navigate('/closet')}
                 style={{
                   width: '36px',
                   height: '36px',
