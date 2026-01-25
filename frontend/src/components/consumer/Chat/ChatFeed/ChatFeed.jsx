@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import { Loader } from 'lucide-react';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
 import UserMessage from '../UserMessage/UserMessage';
@@ -8,11 +8,60 @@ import QuestionRenderer from '../../../dynamic-forms/QuestionRenderer';
 export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, onBatchSubmit }) {
   const colors = useThemeColors();
   const messagesEndRef = useRef(null);
+  const messageRefs = useRef(new Map()); // Map of message ID -> DOM ref
+  const prevMessagesLength = useRef(0);
+  const lastMessageId = useRef(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Helper to set ref for a message
+  const setMessageRef = useCallback((messageId, element) => {
+    if (element) {
+      messageRefs.current.set(messageId, element);
+    } else {
+      messageRefs.current.delete(messageId);
+    }
+  }, []);
+
+  // Smart auto-scroll based on message type
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, loading]);
+    // Only scroll if messages array actually grew (new message added)
+    if (messages.length <= prevMessagesLength.current) {
+      prevMessagesLength.current = messages.length;
+      return;
+    }
+
+    prevMessagesLength.current = messages.length;
+
+    // Get the newest message
+    const newestMessage = messages[messages.length - 1];
+
+    // If it's the same as last processed message, skip
+    if (newestMessage?.id === lastMessageId.current) {
+      return;
+    }
+
+    lastMessageId.current = newestMessage?.id;
+
+    // Determine scroll strategy based on message type and content
+    const hasMultipleQuestions = newestMessage?.questions && newestMessage.questions.length > 1;
+
+    if (hasMultipleQuestions) {
+      // For batched questions: scroll to show the TOP of the AI message
+      // This ensures question 01. is visible
+      // Small delay to ensure nested components have rendered
+      setTimeout(() => {
+        const messageElement = messageRefs.current.get(newestMessage.id);
+        if (messageElement) {
+          messageElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start' // Align to top of viewport
+          });
+        }
+      }, 100); // 100ms delay - enough for render, short enough to feel instant
+    } else {
+      // For all other messages: scroll to bottom as normal
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   return (
     <main
@@ -44,50 +93,54 @@ export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, on
             : false;
 
           return (
-            <AIMessage
+            <div
               key={message.id}
-              title={message.title}
-              description={message.description}
-              onSubmit={hasQuestions && allRequiredAnswered ? onBatchSubmit : null}
-              submitLabel="Continue Journey"
+              ref={(el) => setMessageRef(message.id, el)}
             >
-              {/* Render all questions in batch */}
-              {hasQuestions && (
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '32px',
-                  marginTop: '20px'
-                }}>
-                  {message.questions.map((question, index) => (
-                    <div key={question.id} style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '12px'
-                    }}>
-                      {/* Question number header */}
-                      <h3 style={{
-                        fontSize: '15px',
-                        fontWeight: '600',
-                        color: '#666',
-                        margin: 0
+              <AIMessage
+                title={message.title}
+                description={message.description}
+                onSubmit={hasQuestions && allRequiredAnswered ? onBatchSubmit : null}
+                submitLabel="Continue Journey"
+              >
+                {/* Render all questions in batch */}
+                {hasQuestions && (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '32px',
+                    marginTop: '20px'
+                  }}>
+                    {message.questions.map((question, index) => (
+                      <div key={question.id} style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px'
                       }}>
-                        {String(index + 1).padStart(2, '0')}. {question.question}
-                      </h3>
+                        {/* Question number header */}
+                        <h3 style={{
+                          fontSize: '15px',
+                          fontWeight: '600',
+                          color: '#666',
+                          margin: 0
+                        }}>
+                          {String(index + 1).padStart(2, '0')}. {question.question}
+                        </h3>
 
-                      {/* Question component */}
-                      <QuestionRenderer
-                        question={question}
-                        onAnswer={onAnswer}
-                        currentAnswer={batchAnswers?.[question.id]}
-                        disabled={false}
-                        showQuestionText={false}  // Already shown in header
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </AIMessage>
+                        {/* Question component */}
+                        <QuestionRenderer
+                          question={question}
+                          onAnswer={onAnswer}
+                          currentAnswer={batchAnswers?.[question.id]}
+                          disabled={false}
+                          showQuestionText={false}  // Already shown in header
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </AIMessage>
+            </div>
           );
         }
         return null;
