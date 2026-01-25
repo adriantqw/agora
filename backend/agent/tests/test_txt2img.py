@@ -10,7 +10,7 @@ async def test_txt2img():
     prompt = "High-quality studio photography of a navy blue silk midi-dress, minimalist elegant style, soft morning light, 4k."
     print(f"Generating image for prompt: '{prompt}'")
     
-    async for event in txt2img.stream_txt2img(prompt=prompt):
+    async for event in txt2img.astream_events(prompt=prompt):
         print(event)
     
     result = event
