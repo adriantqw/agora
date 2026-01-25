@@ -3,9 +3,9 @@ import { Loader } from 'lucide-react';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
 import UserMessage from '../UserMessage/UserMessage';
 import AIMessage from '../AIMessage/AIMessage';
-import StyleCard from '../StyleCard/StyleCard';
+import QuestionRenderer from '../../../dynamic-forms/QuestionRenderer';
 
-export default function ChatFeed({ messages, loading, onStyleSelect, selectedStyle, onNextStep }) {
+export default function ChatFeed({ messages, loading, onAnswer, currentAnswers, onNextStep }) {
   const colors = useThemeColors();
   const messagesEndRef = useRef(null);
 
@@ -34,40 +34,24 @@ export default function ChatFeed({ messages, loading, onStyleSelect, selectedSty
             />
           );
         } else if (message.type === 'ai') {
+          const hasAnswer = message.question && currentAnswers?.[message.question.id];
+
           return (
             <AIMessage
               key={message.id}
               title={message.title}
               description={message.description}
-              onNext={
-                message.questionType === 'aesthetic' && selectedStyle
-                  ? onNextStep
-                  : null
-              }
+              onNext={hasAnswer ? () => onNextStep(message.id) : null}
             >
-              {/* Render interactive content based on question type */}
-              {message.questionType === 'aesthetic' && message.options && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                    gap: '16px',
-                    marginTop: '20px',
-                  }}
-                >
-                  {message.options.map((option) => (
-                    <StyleCard
-                      key={option.id}
-                      id={option.id}
-                      label={option.label}
-                      icon={option.icon}
-                      iconColor={option.iconColor}
-                      bgColor={option.bgColor}
-                      isSelected={selectedStyle === option.id}
-                      onSelect={onStyleSelect}
-                    />
-                  ))}
-                </div>
+              {/* Render interactive question component using QuestionRenderer */}
+              {message.question && (
+                <QuestionRenderer
+                  question={message.question}
+                  onAnswer={onAnswer}
+                  currentAnswer={currentAnswers?.[message.question.id]}
+                  disabled={false}
+                  showQuestionText={false}
+                />
               )}
             </AIMessage>
           );

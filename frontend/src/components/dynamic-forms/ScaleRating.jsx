@@ -5,9 +5,8 @@
  */
 
 import { useState } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import STYLE_GUIDE from '../../config/styleGuide.js';
-
-const { colors, spacing, typography, radius, constraints } = STYLE_GUIDE;
 
 /**
  * @typedef {Object} ScaleRatingProps
@@ -18,9 +17,13 @@ const { colors, spacing, typography, radius, constraints } = STYLE_GUIDE;
  */
 
 export default function ScaleRating({ question, onAnswer, currentAnswer, disabled = false }) {
+  const theme = useTheme();
+  const { colors, spacing, typography, radius, constraints } = theme;
+
   const {
     min = constraints['scale-rating'].defaultMin,
     max = constraints['scale-rating'].defaultMax,
+    step = 0.5,
     minLabel = 'Min',
     maxLabel = 'Max',
     required = false

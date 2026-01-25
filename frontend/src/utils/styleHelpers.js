@@ -14,22 +14,27 @@ const { colors, radius, shadows, spacing, typography, transitions } = STYLE_GUID
  *
  * @param {boolean} selected - Whether the card is selected
  * @param {boolean} disabled - Whether the card is disabled
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for the card
  */
-export const getCardStyle = (selected = false, disabled = false) => ({
-  background: colors.surface,
-  border: selected
-    ? `3px solid ${colors.primary}`
-    : `1px solid ${colors.neutral300}`,
-  borderRadius: radius.md,
-  padding: spacing.lg,
-  cursor: disabled ? 'not-allowed' : 'pointer',
-  transition: `all ${transitions.normal} ${transitions.easing}`,
-  opacity: disabled ? 0.5 : 1,
-  boxShadow: selected ? shadows.blue : 'none',
-  position: 'relative',
-  overflow: 'hidden'
-});
+export const getCardStyle = (selected = false, disabled = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, radius: themeRadius, spacing: themeSpacing, transitions: themeTransitions, shadows: themeShadows } = theme;
+
+  return {
+    background: themeColors.surface,
+    border: selected
+      ? `3px solid ${themeColors.primary}`
+      : `1px solid ${themeColors.neutral300}`,
+    borderRadius: themeRadius.md,
+    padding: themeSpacing.lg,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: `all ${themeTransitions.normal} ${themeTransitions.easing}`,
+    opacity: disabled ? 0.5 : 1,
+    boxShadow: selected ? (themeShadows.pink || themeShadows.blue) : 'none',
+    position: 'relative',
+    overflow: 'hidden'
+  };
+};
 
 /**
  * Get button style with variants
@@ -85,30 +90,40 @@ export const getButtonStyle = (variant = 'primary', disabled = false) => {
 /**
  * Get question container style
  *
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for the question container
  */
-export const getQuestionContainerStyle = () => ({
-  background: colors.surface,
-  borderRadius: radius.lg,
-  padding: spacing.xxl,
-  boxShadow: shadows.md,
-  marginBottom: spacing.xl,
-  fontFamily: typography.fontFamily
-});
+export const getQuestionContainerStyle = (theme = STYLE_GUIDE) => {
+  const { colors: themeColors, radius: themeRadius, spacing: themeSpacing, shadows: themeShadows, typography: themeTypography } = theme;
+
+  return {
+    background: themeColors.surface,
+    borderRadius: themeRadius.lg,
+    padding: themeSpacing.xxl,
+    boxShadow: themeShadows.md,
+    marginBottom: themeSpacing.xl,
+    fontFamily: themeTypography.fontFamily
+  };
+};
 
 /**
  * Get question text style
  *
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for the question text
  */
-export const getQuestionTextStyle = () => ({
-  fontSize: typography.sizes.xl,
-  fontWeight: typography.weights.semibold,
-  color: colors.neutral900,
-  marginBottom: spacing.xl,
-  lineHeight: typography.lineHeights.normal,
-  fontFamily: typography.fontFamily
-});
+export const getQuestionTextStyle = (theme = STYLE_GUIDE) => {
+  const { colors: themeColors, spacing: themeSpacing, typography: themeTypography } = theme;
+
+  return {
+    fontSize: themeTypography.sizes.xl,
+    fontWeight: themeTypography.weights.semibold,
+    color: themeColors.neutral900,
+    marginBottom: themeSpacing.xl,
+    lineHeight: themeTypography.lineHeights.normal,
+    fontFamily: themeTypography.fontFamily
+  };
+};
 
 /**
  * Get input field style
@@ -141,25 +156,30 @@ export const getInputStyle = (focused = false, error = false) => ({
  *
  * @param {boolean} selected - Whether the chip is selected
  * @param {boolean} disabled - Whether the chip is disabled
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for the chip
  */
-export const getChipStyle = (selected = false, disabled = false) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: spacing.sm,
-  padding: `${spacing.sm} ${spacing.lg}`,
-  fontSize: typography.sizes.base,
-  fontWeight: typography.weights.medium,
-  fontFamily: typography.fontFamily,
-  color: selected ? colors.surface : colors.neutral700,
-  background: selected ? colors.primary : colors.neutral100,
-  border: `1px solid ${selected ? colors.primary : colors.neutral300}`,
-  borderRadius: radius.full,
-  cursor: disabled ? 'not-allowed' : 'pointer',
-  transition: `all ${transitions.normal} ${transitions.easing}`,
-  opacity: disabled ? 0.5 : 1,
-  boxSizing: 'border-box'
-});
+export const getChipStyle = (selected = false, disabled = false, theme = STYLE_GUIDE) => {
+  const { colors: themeColors, spacing: themeSpacing, typography: themeTypography, radius: themeRadius, transitions: themeTransitions } = theme;
+
+  return {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: themeSpacing.sm,
+    padding: `${themeSpacing.sm} ${themeSpacing.lg}`,
+    fontSize: themeTypography.sizes.base,
+    fontWeight: themeTypography.weights.medium,
+    fontFamily: themeTypography.fontFamily,
+    color: selected ? themeColors.surface : themeColors.neutral700,
+    background: selected ? themeColors.primary : themeColors.neutral100,
+    border: `1px solid ${selected ? themeColors.primary : themeColors.neutral300}`,
+    borderRadius: themeRadius.full,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: `all ${themeTransitions.normal} ${themeTransitions.easing}`,
+    opacity: disabled ? 0.5 : 1,
+    boxSizing: 'border-box'
+  };
+};
 
 /**
  * Get label style
@@ -200,26 +220,36 @@ export const getHelperTextStyle = (error = false) => ({
  * Get grid container style
  *
  * @param {number} columns - Number of columns (2-4)
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for grid container
  */
-export const getGridStyle = (columns = 2) => ({
-  display: 'grid',
-  gridTemplateColumns: `repeat(${columns}, 1fr)`,
-  gap: spacing.lg,
-  marginTop: spacing.lg
-});
+export const getGridStyle = (columns = 2, theme = STYLE_GUIDE) => {
+  const { spacing: themeSpacing } = theme;
+
+  return {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gap: themeSpacing.lg,
+    marginTop: themeSpacing.lg
+  };
+};
 
 /**
  * Get stack container style
  *
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for stack container
  */
-export const getStackStyle = () => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: spacing.md,
-  marginTop: spacing.lg
-});
+export const getStackStyle = (theme = STYLE_GUIDE) => {
+  const { spacing: themeSpacing } = theme;
+
+  return {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: themeSpacing.md,
+    marginTop: themeSpacing.lg
+  };
+};
 
 /**
  * Get hover effect style
@@ -291,17 +321,22 @@ export const getSpinnerStyle = (size = 'md') => {
 /**
  * Get image placeholder style
  *
+ * @param {Object} theme - Theme configuration (optional, defaults to STYLE_GUIDE)
  * @returns {Object} Style object for image placeholders
  */
-export const getImagePlaceholderStyle = () => ({
-  aspectRatio: '1',
-  background: colors.neutral100,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: radius.md,
-  color: colors.neutral400
-});
+export const getImagePlaceholderStyle = (theme = STYLE_GUIDE) => {
+  const { colors: themeColors, radius: themeRadius } = theme;
+
+  return {
+    aspectRatio: '1',
+    background: themeColors.neutral100,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: themeRadius.md,
+    color: themeColors.neutral400
+  };
+};
 
 /**
  * Get color swatch style

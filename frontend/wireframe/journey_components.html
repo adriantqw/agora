@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora | Interactive Components</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --egg-pink: #ffb7c5;
+            --egg-pink-hover: #ff9fb0;
+            --text-main: #1a1a1a;
+            --text-light: #666666;
+            --text-muted: #999999;
+            --bg-gray: #fafafa;
+            --white: #ffffff;
+            --border-color: #f0f0f0;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            padding: 40px 5%;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* --- COMPONENT WRAPPER (AI Message Style) --- */
+        .ai-message {
+            display: flex;
+            gap: 16px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .ai-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--egg-pink);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(255, 183, 197, 0.3);
+        }
+
+        .message-content {
+            flex-grow: 1;
+        }
+
+        .bubble {
+            background: var(--white);
+            padding: 24px;
+            border-radius: 0 20px 20px 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .bubble h3 {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .bubble p {
+            color: var(--text-light);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        /* --- GRID UTILITY --- */
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        /* --- 1. IMAGE CHOICE --- */
+        .image-option {
+            border: 2px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--white);
+            text-align: center;
+        }
+
+        .image-option:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .image-option.selected { border-color: var(--egg-pink); background: #fff0f3; }
+        
+        .img-box { height: 120px; background: #eee; display: flex; align-items: center; justify-content: center; }
+        .img-label { padding: 10px; font-size: 13px; font-weight: 600; }
+
+        /* --- 2. PALETTE SELECTION --- */
+        .palette-card {
+            background: var(--white);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .palette-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+        .palette-card.selected { border-color: var(--egg-pink); background: #fff0f3; }
+
+        .palette-swatches {
+            height: 120px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .swatch-main { grid-row: span 2; }
+        .swatch { width: 100%; height: 100%; }
+
+        .palette-label {
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* --- 3. SCALE RATING (Updated to 1-10 with Halves) --- */
+        .slider-container {
+            padding: 20px 10px;
+            position: relative;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .slider-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .label-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .scale-value-display {
+            background: var(--text-main);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            min-width: 60px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            background: var(--egg-pink);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 4px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        /* --- 4. MULTI-SELECT --- */
+        .tag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-btn:hover { background: #fdf2f8; }
+        .tag-btn.active { background: var(--text-main); color: white; border-color: var(--text-main); }
+
+        /* --- 5. IMAGE UPLOAD --- */
+        .upload-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--white);
+        }
+
+        .upload-zone:hover { border-color: var(--egg-pink); background: #fffafa; }
+        .upload-zone i { color: var(--text-muted); margin-bottom: 12px; }
+        .upload-zone p { font-size: 14px; font-weight: 600; }
+
+        /* --- 6. FREE TEXT --- */
+        .styled-textarea {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--white);
+            font-size: 15px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .styled-textarea:focus { border-color: var(--egg-pink); }
+
+        /* --- BUTTONS --- */
+        .btn-primary {
+            background: var(--text-main);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            float: right;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- 1. IMAGE CHOICE -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Visual Mood</h3>
+                <p>Which of these color stories feels like your brand's future direction?</p>
+            </div>
+            <div class="component-grid">
+                <div class="image-option selected">
+                    <div class="img-box" style="background: #fdf2f8;"><i data-lucide="palette" size="32" color="#f472b6"></i></div>
+                    <div class="img-label">Pastel Pop</div>
+                </div>
+                <div class="image-option">
+                    <div class="img-box" style="background: #f8fafc;"><i data-lucide="mountain" size="32" color="#94a3b8"></i></div>
+                    <div class="img-label">Earthy Muted</div>
+                </div>
+                <div class="image-option">
+                    <div class="img-box" style="background: #1a1a1a;"><i data-lucide="zap" size="32" color="#ffffff"></i></div>
+                    <div class="img-label">High Contrast</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. PALETTE SELECTION -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Palette Selection</h3>
+                <p>Pick a base theme for your closet organization. This helps me rank merchants.</p>
+            </div>
+            <div class="component-grid">
+                <div class="palette-card selected">
+                    <div class="palette-swatches">
+                        <div class="swatch swatch-main" style="background: #ffb7c5;"></div>
+                        <div class="swatch" style="background: #fbcfe8;"></div>
+                        <div class="swatch" style="background: #ffffff; border-left: 1px solid #eee; border-top: 1px solid #eee;"></div>
+                    </div>
+                    <div class="palette-label">Soft Blush</div>
+                </div>
+                <div class="palette-card">
+                    <div class="palette-swatches">
+                        <div class="swatch swatch-main" style="background: #1a1a1a;"></div>
+                        <div class="swatch" style="background: #4a5568;"></div>
+                        <div class="swatch" style="background: #cbd5e0;"></div>
+                    </div>
+                    <div class="palette-label">Noir Edge</div>
+                </div>
+                <div class="palette-card">
+                    <div class="palette-swatches">
+                        <div class="swatch swatch-main" style="background: #6366f1;"></div>
+                        <div class="swatch" style="background: #a5b4fc;"></div>
+                        <div class="swatch" style="background: #e0e7ff;"></div>
+                    </div>
+                    <div class="palette-label">Electric Sky</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. SCALE RATING (UPDATED TO 1.0 - 10.0) -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Risk Tolerance</h3>
+                <p>How far should I push the boundaries of your current style?</p>
+            </div>
+            <div class="slider-container">
+                <div class="slider-header">
+                    <div class="slider-labels">
+                        <span class="label-text">Intensity level</span>
+                    </div>
+                    <!-- Displaying with one decimal point -->
+                    <div class="scale-value-display" id="risk-value">5.0</div>
+                </div>
+                <!-- Range: 1 to 10, Step: 0.5 -->
+                <input type="range" class="range-slider" id="risk-slider" min="1" max="10" step="0.5" value="5">
+                <div class="slider-header" style="margin-top: 12px; margin-bottom: 0;">
+                    <span class="label-text">Safe & Classic</span>
+                    <span class="label-text">Bold & Experimental</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MULTI-SELECT -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Attributes</h3>
+                <p>Tag the qualities you value most in a new purchase.</p>
+            </div>
+            <div class="tag-container">
+                <button class="tag-btn active">Sustainable</button>
+                <button class="tag-btn">Luxury</button>
+                <button class="tag-btn active">Versatile</button>
+                <button class="tag-btn">Hand-made</button>
+                <button class="tag-btn">Vintage</button>
+                <button class="tag-btn">Waterproof</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. IMAGE UPLOAD -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Inspiration</h3>
+                <p>Upload a photo of an outfit you love or a screenshot of your moodboard.</p>
+            </div>
+            <div class="upload-zone">
+                <i data-lucide="upload-cloud" size="32"></i>
+                <p>Drop image here or click to browse</p>
+                <span style="font-size: 12px; color: var(--text-muted);">Supports JPG, PNG, WEBP</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. FREE TEXT -->
+    <div class="ai-message">
+        <div class="ai-avatar"><i data-lucide="sparkles" size="18"></i></div>
+        <div class="message-content">
+            <div class="bubble">
+                <h3>Context</h3>
+                <p>Tell me a little more about the specific event or goals for this journey.</p>
+            </div>
+            <div class="text-input-wrapper clearfix">
+                <textarea class="styled-textarea" rows="3" placeholder="I'm looking for..."></textarea>
+                <button class="btn-primary">Update Journey</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    lucide.createIcons();
+
+    // Scale Logic: Update the value display (1.0 - 10.0 with halves)
+    const slider = document.getElementById('risk-slider');
+    const valueDisplay = document.getElementById('risk-value');
+
+    slider.oninput = function() {
+        // Ensuring it always shows .0 or .5 for professional look
+        valueDisplay.textContent = parseFloat(this.value).toFixed(1);
+    }
+
+    // Interaction logic
+    document.querySelectorAll('.tag-btn').forEach(btn => {
+        btn.onclick = () => btn.classList.toggle('active');
+    });
+
+    function handleSelection(selector) {
+        document.querySelectorAll(selector).forEach(opt => {
+            opt.onclick = () => {
+                opt.parentElement.querySelectorAll(selector).forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+            }
+        });
+    }
+
+    handleSelection('.image-option');
+    handleSelection('.palette-card');
+</script>
+
+</body>
+</html>

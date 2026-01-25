@@ -13,6 +13,8 @@ import Header from '../components/common/Header/Header';
 import ChatFeed from '../components/consumer/Chat/ChatFeed/ChatFeed';
 import SummaryPanel from '../components/consumer/Chat/SummaryPanel/SummaryPanel';
 import conciergeService from '../services/conciergeService';
+import { ThemeProvider } from '../context/ThemeContext';
+import CONSUMER_THEME from '../config/consumerTheme';
 
 export default function ShoppingConciergePage() {
   const location = useLocation();
@@ -41,10 +43,17 @@ export default function ShoppingConciergePage() {
     budget: null,
     keyPieces: [],
     aesthetic: null,
+    riskTolerance: null,
+    attributes: [],
+    inspirationImage: null,
+    additionalContext: null,
   });
 
-  // Conversation state
-  const [selectedStyle, setSelectedStyle] = useState(null);
+  // Answer tracking state
+  const [currentAnswers, setCurrentAnswers] = useState({});
+
+  // Conversation tracking
+  const [currentStep, setCurrentStep] = useState('aesthetic');
 
   // Generate unique message ID
   const generateMessageId = () => `msg-${Date.now()}-${Math.random()}`;
@@ -63,7 +72,7 @@ export default function ShoppingConciergePage() {
   }, []);
 
   // Add AI message to chat feed
-  const addAIMessage = useCallback(({ title, description, questionType, options }) => {
+  const addAIMessage = useCallback(({ title, description, question, questionType, options }) => {
     setIsTyping(true);
 
     // Simulate AI thinking delay
@@ -75,8 +84,9 @@ export default function ShoppingConciergePage() {
           type: 'ai',
           title,
           description,
-          questionType,
-          options,
+          question, // New structure with question object
+          questionType, // Legacy support
+          options, // Legacy support
           timestamp: new Date(),
         },
       ]);
@@ -115,48 +125,115 @@ export default function ShoppingConciergePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
 
-  // Handle aesthetic/style selection
-  const handleStyleSelection = (aestheticId) => {
-    setSelectedStyle(aestheticId);
-  };
-
-  // Handle next step after aesthetic selection
-  const handleNextStep = () => {
-    if (!selectedStyle) return;
-
-    // Find selected aesthetic label
-    const aestheticOptions = conciergeService.getAestheticOptions();
-    const selectedOption = aestheticOptions.find((opt) => opt.id === selectedStyle);
-
-    // Add user message bubble with selection
-    addUserMessage(selectedOption?.label || 'Selected aesthetic');
-
-    // Update journey context
-    setJourneyContext((prev) => ({
+  // Handle answer submission from QuestionRenderer
+  const handleAnswer = useCallback((answer) => {
+    // Store answer in state
+    setCurrentAnswers((prev) => ({
       ...prev,
-      aesthetic: selectedStyle,
-      status: 'Building Your Journey...',
+      [answer.questionId]: answer,
     }));
 
-    // Reset selection for next interaction
-    setSelectedStyle(null);
+    // Find the question that was answered
+    const currentMessage = messages.find(
+      (msg) => msg.type === 'ai' && msg.question?.id === answer.questionId
+    );
 
-    // Generate next AI response (placeholder - can expand to full flow)
+    if (!currentMessage || !currentMessage.question) return;
+
+    // Format answer for display in user message
+    const displayText = conciergeService.formatAnswerForDisplay(
+      currentMessage.question,
+      answer
+    );
+
+    // Add user message bubble with answer after a short delay
     setTimeout(() => {
-      addAIMessage({
-        title: 'Great choice!',
-        description: `I love the ${selectedOption?.label.toLowerCase()} vibe! Let me curate some perfect pieces for you based on your ${journeyContext.occasion || 'event'}.`,
-        questionType: 'results',
-        options: [],
-      });
+      addUserMessage(displayText);
+    }, 300);
+  }, [messages, addUserMessage]);
 
-      // Update status to complete
+  // Handle next step button click
+  const handleNextStep = useCallback((messageId) => {
+    // Find the message that triggered next step
+    const message = messages.find((msg) => msg.id === messageId);
+    if (!message || !message.question) return;
+
+    const answer = currentAnswers[message.question.id];
+    if (!answer) return;
+
+    // Update journey context based on question type
+    if (message.question.type === 'image-choice' && message.question.id === 'aesthetic-visual-mood') {
+      const aesthetic = conciergeService.processAestheticAnswer(answer);
       setJourneyContext((prev) => ({
         ...prev,
+        aesthetic,
+        status: 'Building Your Journey...',
+      }));
+      setCurrentStep('risk');
+
+      // Generate next AI response
+      setTimeout(() => {
+        const response = conciergeService.generateConversationResponse('risk');
+        addAIMessage(response);
+      }, 500);
+    } else if (message.question.type === 'scale-rating') {
+      const riskTolerance = conciergeService.processRiskAnswer(answer);
+      setJourneyContext((prev) => ({
+        ...prev,
+        riskTolerance,
+      }));
+      setCurrentStep('attributes');
+
+      // Generate next AI response
+      setTimeout(() => {
+        const response = conciergeService.generateConversationResponse('attributes');
+        addAIMessage(response);
+      }, 500);
+    } else if (message.question.type === 'multi-select') {
+      const attributes = conciergeService.processAttributesAnswer(answer);
+      setJourneyContext((prev) => ({
+        ...prev,
+        attributes,
+      }));
+      setCurrentStep('inspiration');
+
+      // Generate next AI response
+      setTimeout(() => {
+        const response = conciergeService.generateConversationResponse('inspiration');
+        addAIMessage(response);
+      }, 500);
+    } else if (message.question.type === 'image-upload') {
+      const inspirationImage = conciergeService.processImageAnswer(answer);
+      setJourneyContext((prev) => ({
+        ...prev,
+        inspirationImage,
+      }));
+      setCurrentStep('context');
+
+      // Generate next AI response
+      setTimeout(() => {
+        const response = conciergeService.generateConversationResponse('context');
+        addAIMessage(response);
+      }, 500);
+    } else if (message.question.type === 'free-text') {
+      const additionalContext = conciergeService.processContextAnswer(answer);
+      setJourneyContext((prev) => ({
+        ...prev,
+        additionalContext,
         status: 'Journey Complete!',
       }));
-    }, 1000);
-  };
+      setCurrentStep('complete');
+
+      // Generate completion message
+      setTimeout(() => {
+        addAIMessage({
+          title: 'Perfect! Your journey is ready.',
+          description: `I've curated the perfect selections based on your ${journeyContext.aesthetic || 'style'} preferences. Let me show you what I found!`,
+          question: null,
+        });
+      }, 500);
+    }
+  }, [messages, currentAnswers, journeyContext.aesthetic, addAIMessage]);
 
   // Handle header search
   const handleHeaderSearch = (query) => {
@@ -222,31 +299,33 @@ export default function ShoppingConciergePage() {
       />
 
       {/* Split Layout: Chat Feed + Summary Panel */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
-          height: 'calc(100vh - 65px)',
-          overflow: 'hidden',
-        }}
-      >
-        {/* LEFT: Chat Feed */}
-        <ChatFeed
-          messages={messages}
-          loading={isTyping}
-          onStyleSelect={handleStyleSelection}
-          selectedStyle={selectedStyle}
-          onNextStep={handleNextStep}
-        />
+      <ThemeProvider theme={CONSUMER_THEME}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '2fr 1fr',
+            height: 'calc(100vh - 65px)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* LEFT: Chat Feed */}
+          <ChatFeed
+            messages={messages}
+            loading={isTyping}
+            onAnswer={handleAnswer}
+            currentAnswers={currentAnswers}
+            onNextStep={handleNextStep}
+          />
 
-        {/* RIGHT: Summary Panel */}
-        <SummaryPanel
-          journey={journeyContext}
-          onEdit={handleEditContext}
-          onSaveJourney={handleSaveJourney}
-          onReturnHome={handleReturnHome}
-        />
-      </div>
+          {/* RIGHT: Summary Panel */}
+          <SummaryPanel
+            journey={journeyContext}
+            onEdit={handleEditContext}
+            onSaveJourney={handleSaveJourney}
+            onReturnHome={handleReturnHome}
+          />
+        </div>
+      </ThemeProvider>
 
       {/* CSS Animations */}
       <style>{`

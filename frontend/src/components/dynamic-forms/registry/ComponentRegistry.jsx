@@ -11,6 +11,7 @@ import MultiSelect from '../MultiSelect.jsx';
 import SingleChoice from '../SingleChoice.jsx';
 import ScaleRating from '../ScaleRating.jsx';
 import ColorPalette from '../ColorPalette.jsx';
+import ImageUpload from '../ImageUpload.jsx';
 
 /**
  * Component Registry Object
@@ -24,8 +25,10 @@ export const COMPONENT_REGISTRY = {
   'scale-rating': ScaleRating,
   'color-palette': ColorPalette,
 
+  // Image upload component (for inspiration photos)
+  'image-upload': ImageUpload,
+
   // Optional components (not implemented in MVP)
-  'image-upload': null,
   'text-with-images': null
 };
 

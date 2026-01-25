@@ -603,7 +603,7 @@ export const getSuggestionChips = () => {
 };
 
 /**
- * Get aesthetic options for chat-based journey flow
+ * Get aesthetic options for chat-based journey flow (DEPRECATED - Use getAestheticQuestion)
  *
  * @returns {Array<Object>} Array of aesthetic option objects
  */
@@ -637,6 +637,119 @@ export const getAestheticOptions = () => [
     bgColor: '#fff7ed'
   }
 ];
+
+/**
+ * Get aesthetic question configuration (Image Choice)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getAestheticQuestion = () => ({
+  id: 'aesthetic-visual-mood',
+  type: 'image-choice',
+  question: 'Which of these styles resonates with you?',
+  layout: 'grid',
+  columns: 2,
+  required: true,
+  options: [
+    {
+      id: 'romantic',
+      label: 'Romantic',
+      description: 'Soft & dreamy',
+      imageUrl: null,
+      imagePrompt: 'Romantic style with soft colors',
+      metadata: { tags: ['romantic', 'soft', 'feminine'] }
+    },
+    {
+      id: 'chic',
+      label: 'Chic',
+      description: 'Modern & polished',
+      imageUrl: null,
+      imagePrompt: 'Chic modern style',
+      metadata: { tags: ['chic', 'modern', 'elegant'] }
+    },
+    {
+      id: 'edgy',
+      label: 'Edgy',
+      description: 'Bold & daring',
+      imageUrl: null,
+      imagePrompt: 'Edgy bold style',
+      metadata: { tags: ['edgy', 'bold', 'dramatic'] }
+    },
+    {
+      id: 'boho',
+      label: 'Boho',
+      description: 'Relaxed & free-spirited',
+      imageUrl: null,
+      imagePrompt: 'Boho relaxed style',
+      metadata: { tags: ['boho', 'relaxed', 'eclectic'] }
+    }
+  ]
+});
+
+/**
+ * Get risk tolerance question configuration (Scale Rating)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getRiskToleranceQuestion = () => ({
+  id: 'risk-tolerance-scale',
+  type: 'scale-rating',
+  question: 'How far should I push the boundaries of your current style?',
+  min: 1,
+  max: 10,
+  step: 0.5,
+  minLabel: 'Safe & Classic',
+  maxLabel: 'Bold & Experimental',
+  required: true
+});
+
+/**
+ * Get attributes question configuration (Multi-Select)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getAttributesQuestion = () => ({
+  id: 'style-attributes',
+  type: 'multi-select',
+  question: 'What style attributes are important to you?',
+  required: false,
+  options: [
+    { id: 'sustainable', label: 'Sustainable', metadata: { tags: ['eco-friendly', 'ethical'] } },
+    { id: 'luxury', label: 'Luxury', metadata: { tags: ['premium', 'high-end'] } },
+    { id: 'versatile', label: 'Versatile', metadata: { tags: ['flexible', 'multi-purpose'] } },
+    { id: 'handmade', label: 'Hand-made', metadata: { tags: ['artisan', 'crafted'] } },
+    { id: 'vintage', label: 'Vintage', metadata: { tags: ['retro', 'classic'] } },
+    { id: 'waterproof', label: 'Waterproof', metadata: { tags: ['weather-resistant', 'durable'] } }
+  ]
+});
+
+/**
+ * Get image upload question configuration (Image Upload)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getImageUploadQuestion = () => ({
+  id: 'inspiration-image',
+  type: 'image-upload',
+  question: 'Upload a photo of an outfit you love or a screenshot of your moodboard',
+  maxFileSize: 5000000, // 5MB
+  required: false
+});
+
+/**
+ * Get additional context question configuration (Free Text)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getContextQuestion = () => ({
+  id: 'additional-context',
+  type: 'free-text',
+  question: 'Tell me a little more about the specific event or goals for this journey',
+  multiline: true,
+  maxLength: 500,
+  placeholder: 'I\'m looking for...',
+  required: false
+});
 
 /**
  * Extract occasion from user query using keyword matching
@@ -702,20 +815,41 @@ export const extractLocation = (query) => {
 };
 
 /**
- * Generate conversational AI response based on conversation step
+ * Generate conversational AI response based on conversation step (NEW VERSION)
  *
  * @param {string} step - Current conversation step
  * @param {Object} previousAnswer - Previous answer from user (optional)
- * @returns {Object} AI response with title, description, questionType, options
+ * @returns {Object} AI response with title, description, question object
  */
 export const generateConversationResponse = (step, previousAnswer = null) => {
   const responses = {
     aesthetic: {
       title: 'Perfect choice. Let\'s set the vibe.',
       description: 'Since it\'s a special occasion, which of these aesthetics resonates most with how you want to feel? I\'ll use this to filter our curated merchant catalog.',
-      questionType: 'aesthetic',
-      options: getAestheticOptions()
+      question: getAestheticQuestion()
     },
+    risk: {
+      title: 'How adventurous are you feeling?',
+      description: 'This helps me understand whether to play it safe or push you out of your comfort zone.',
+      question: getRiskToleranceQuestion()
+    },
+    attributes: {
+      title: 'What matters most to you?',
+      description: 'Select any attributes that are important for this journey.',
+      question: getAttributesQuestion()
+    },
+    inspiration: {
+      title: 'Show me your inspiration',
+      description: 'Upload a photo of an outfit you love, a screenshot from Pinterest, or any visual reference.',
+      question: getImageUploadQuestion()
+    },
+    context: {
+      title: 'Any final details?',
+      description: 'Tell me anything else I should know about this journey or the event.',
+      question: getContextQuestion()
+    },
+
+    // Legacy responses (kept for backwards compatibility)
     occasion: {
       title: 'Tell me about the occasion',
       description: 'What type of event are you attending? This helps me understand the dress code and context.',
@@ -759,6 +893,102 @@ export const generateConversationResponse = (step, previousAnswer = null) => {
   return responses[step] || responses.aesthetic;
 };
 
+/**
+ * Format answer for display in user message bubble
+ *
+ * @param {Object} question - Question object
+ * @param {Object} answer - Answer object from QuestionRenderer
+ * @returns {string} Formatted text for user message
+ */
+export const formatAnswerForDisplay = (question, answer) => {
+  if (!answer || !answer.value) {
+    return 'Skipped';
+  }
+
+  switch (question.type) {
+    case 'image-choice':
+      const selectedOption = question.options?.find(opt => opt.id === answer.value);
+      return `I chose ${selectedOption?.label || 'a style'}`;
+
+    case 'scale-rating':
+      const value = parseFloat(answer.value).toFixed(1);
+      const label = value <= 3.5 ? 'Safe' : value <= 7 ? 'Moderate' : 'Bold';
+      return `Risk tolerance: ${value}/10 (${label})`;
+
+    case 'multi-select':
+      if (!answer.selectedOptions || answer.selectedOptions.length === 0) {
+        return 'No attributes selected';
+      }
+      const selectedLabels = answer.selectedOptions
+        .map(optId => question.options?.find(opt => opt.id === optId)?.label)
+        .filter(Boolean);
+      return selectedLabels.join(', ');
+
+    case 'image-upload':
+      return answer.fileName ? `Uploaded inspiration photo: ${answer.fileName}` : 'Uploaded inspiration photo';
+
+    case 'free-text':
+      return answer.value.length > 100 ? `${answer.value.substring(0, 100)}...` : answer.value;
+
+    default:
+      return String(answer.value);
+  }
+};
+
+/**
+ * Process aesthetic answer
+ *
+ * @param {Object} answer - Answer object
+ * @returns {string} Selected aesthetic ID
+ */
+export const processAestheticAnswer = (answer) => {
+  return answer?.value || null;
+};
+
+/**
+ * Process risk tolerance answer
+ *
+ * @param {Object} answer - Answer object
+ * @returns {number} Risk value (1-10)
+ */
+export const processRiskAnswer = (answer) => {
+  return answer?.value ? parseFloat(answer.value) : 5.0;
+};
+
+/**
+ * Process attributes answer
+ *
+ * @param {Object} answer - Answer object
+ * @returns {Array<string>} Selected attribute IDs
+ */
+export const processAttributesAnswer = (answer) => {
+  return answer?.selectedOptions || [];
+};
+
+/**
+ * Process image upload answer
+ *
+ * @param {Object} answer - Answer object
+ * @returns {Object} Image data { fileName, base64URL }
+ */
+export const processImageAnswer = (answer) => {
+  return {
+    fileName: answer?.fileName || null,
+    base64URL: answer?.value || null,
+    fileSize: answer?.fileSize || null
+  };
+};
+
+/**
+ * Process context answer
+ *
+ * @param {Object} answer - Answer object
+ * @returns {string} Free text context
+ */
+export const processContextAnswer = (answer) => {
+  return answer?.value || '';
+};
+
 export default {
   generateQuestions,
   submitAnswers,
@@ -767,5 +997,20 @@ export default {
   getAestheticOptions,
   extractOccasion,
   extractLocation,
-  generateConversationResponse
+  generateConversationResponse,
+
+  // New question configuration functions
+  getAestheticQuestion,
+  getRiskToleranceQuestion,
+  getAttributesQuestion,
+  getImageUploadQuestion,
+  getContextQuestion,
+
+  // Answer processing functions
+  formatAnswerForDisplay,
+  processAestheticAnswer,
+  processRiskAnswer,
+  processAttributesAnswer,
+  processImageAnswer,
+  processContextAnswer
 };

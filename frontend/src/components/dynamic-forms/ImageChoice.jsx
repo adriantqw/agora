@@ -6,10 +6,8 @@
  */
 
 import { useState } from 'react';
-import STYLE_GUIDE from '../../config/styleGuide.js';
+import { useTheme } from '../../context/ThemeContext';
 import { getCardStyle, getGridStyle, getStackStyle, getImagePlaceholderStyle } from '../../utils/styleHelpers.js';
-
-const { colors, radius, spacing, typography, transitions } = STYLE_GUIDE;
 
 /**
  * @typedef {Object} ImageChoiceProps
@@ -20,6 +18,9 @@ const { colors, radius, spacing, typography, transitions } = STYLE_GUIDE;
  */
 
 export default function ImageChoice({ question, onAnswer, currentAnswer, disabled = false }) {
+  const theme = useTheme();
+  const { colors, radius, spacing, typography, transitions } = theme;
+
   const [hoveredOption, setHoveredOption] = useState(null);
   const [selectedOption, setSelectedOption] = useState(currentAnswer?.value || null);
 
@@ -38,8 +39,8 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
   };
 
   const containerStyle = layout === 'grid'
-    ? getGridStyle(columns)
-    : getStackStyle();
+    ? getGridStyle(columns, theme)
+    : getStackStyle(theme);
 
   return (
     <div style={{ fontFamily: typography.fontFamily }}>
@@ -55,10 +56,10 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled),
+                ...getCardStyle(isSelected, disabled, theme),
                 transform: isHovered && !disabled ? 'translateY(-4px)' : 'translateY(0)',
                 boxShadow: isSelected
-                  ? `0 4px 16px rgba(66, 153, 225, 0.3)`
+                  ? theme.shadows.pink || theme.shadows.blue
                   : isHovered && !disabled
                     ? '0 8px 16px rgba(0,0,0,0.1)'
                     : '0 2px 8px rgba(0,0,0,0.05)'
@@ -76,7 +77,7 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
             >
               {/* Image Section */}
               <div style={{
-                ...getImagePlaceholderStyle(),
+                ...getImagePlaceholderStyle(theme),
                 marginBottom: spacing.md,
                 position: 'relative',
                 overflow: 'hidden'
