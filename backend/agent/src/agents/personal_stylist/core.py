@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import MemorySaver
+from pydantic import BaseModel
 
 from .states import PersonalStylistState
 from .schemas import UIInputType
@@ -31,12 +32,16 @@ class PersonalStylistAgent:
         # Define available tools
         self.tools = [txt2img]
 
+        # Define response format
+        class UIInputTypeList(BaseModel):
+            ui_inputs: list[UIInputType]
+
         # Create react agent with custom state schema
         self.agent = create_agent(
             model=self.model,
             tools=self.tools,
             checkpointer=self.checkpointer,
-            response_format=UIInputType,
+            response_format=UIInputTypeList,
             state_schema=PersonalStylistState,
             system_prompt=self.system_prompt
         )

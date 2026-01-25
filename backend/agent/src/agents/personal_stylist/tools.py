@@ -19,11 +19,13 @@ async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list
         example_img_paths (list[str], optional): List of example image paths to guide the generation. Defaults to [].
 
     Returns:
-        AsyncGenerator: An async generator yielding the image generation events.
+        dict: A dictionary containing the status and path to the generated image.
     """
     # Load model and config
-    model_config = load_config("model")["image_model"]
+    config_data = load_config("model")["image_model"]
+    model_config = config_data.copy()
     if aspect_ratio:
+        model_config["image_config"] = model_config.get("image_config", {}).copy()
         model_config["image_config"]["aspect_ratio"] = aspect_ratio
     model = load_model_from_config(model_config)
 
@@ -80,7 +82,10 @@ async def txt2img(prompt: str, aspect_ratio: str = None, example_img_paths: list
                     with open(path, "wb") as f:
                         f.write(base64.b64decode(base64_str))
 
+                    return {"status": "completed", "image_path": path}
+
                 else:
                     raise ValueError("No image_url found in the output content.")
-
-        return {"status": "completed", "image_path": path}
+                
+    else:
+        raise ValueError("No valid output from the image generation model.")
