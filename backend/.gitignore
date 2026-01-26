@@ -43,6 +43,7 @@ Thumbs.db
 
 .env
 *.db
+*.ipynb
 
 /data/
 
