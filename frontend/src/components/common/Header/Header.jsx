@@ -47,38 +47,24 @@ export default function Header({
             cursor: 'pointer',
           }}
         >
-          {/* Egg icon - white background on pink header */}
+          {/* Egg icon logo */}
           <div style={{
-            width: '40px',
+            width: '48px',
             height: '48px',
-            background: 'white',
-            borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
           }}>
-            {/* Eyes */}
-            <div style={{
-              display: 'flex',
-              gap: '6px',
-              justifyContent: 'center',
-              position: 'absolute',
-              top: '16px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-            }}>
-              <div style={{
-                width: '4px',
-                height: '4px',
-                background: colors.primary.eggPinkDark || '#E8879C',
-                borderRadius: '50%',
-              }} />
-              <div style={{
-                width: '4px',
-                height: '4px',
-                background: colors.primary.eggPinkDark || '#E8879C',
-                borderRadius: '50%',
-              }} />
-            </div>
+            <img 
+              src="/egg-chan.svg" 
+              alt="Egg-chan Logo" 
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain'
+              }}
+            />
           </div>
 
           <span style={{
@@ -143,7 +129,7 @@ export default function Header({
                 style={{
                   width: '36px',
                   height: '36px',
-                  background: 'linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%)',
+                  background: 'linear-gradient(135deg, rgb(248 200 212) 0%, rgb(218 142 158) 100%)',
                   border: 'none',
                   borderRadius: '50%',
                   cursor: searchQuery.trim() ? 'pointer' : 'default',
