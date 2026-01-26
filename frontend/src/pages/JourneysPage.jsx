@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
+import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import Footer from '../components/consumer/Footer/Footer';
 import CollapsibleJourneySection from '../components/consumer/JourneySection/CollapsibleJourneySection';
@@ -12,6 +13,7 @@ const ITEMS_PER_PAGE = 3;
 const JourneysPage = () => {
   const colors = useThemeColors();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   
   // State
   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'completed'
@@ -50,6 +52,116 @@ const JourneysPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header variant="landing" showNav={true} />
+
+        <main style={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: '40px 20px',
+          minHeight: 'calc(100vh - 80px)'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            maxWidth: '500px',
+            padding: '40px',
+            background: colors.card.background,
+            borderRadius: '32px',
+            boxShadow: colors.shadow.md,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '24px',
+            border: `1px solid ${colors.border.subtle}`
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '24px',
+              background: colors.primary.eggPinkLight,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: colors.primary.eggPink,
+              marginBottom: '8px'
+            }}>
+              <Compass size={40} />
+            </div>
+
+            <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: 0 }}>No Journeys Yet</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '16px', lineHeight: '1.6', margin: 0 }}>
+              Your style journeys will appear here once you start exploring. Please log in to save and view your personal journeys.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '8px' }}>
+              <button 
+                onClick={() => navigate('/login')}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: colors.gradient.pink,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'transform 0.1s'
+                }}
+                onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
+                onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <LogIn size={20} />
+                <span>Log In to View</span>
+              </button>
+
+              <button 
+                onClick={() => navigate('/')}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'transparent',
+                  color: colors.text.secondary,
+                  border: `1px solid ${colors.border.color}`,
+                  borderRadius: '9999px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = colors.primary.eggPink;
+                  e.currentTarget.style.color = colors.primary.eggPink;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = colors.border.color;
+                  e.currentTarget.style.color = colors.text.secondary;
+                }}
+              >
+                <span>Back to Home</span>
+              </button>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
