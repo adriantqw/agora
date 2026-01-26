@@ -80,10 +80,10 @@ const Footer = () => {
           </h4>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[
-              { label: 'Journeys', path: '/' },
-              { label: 'My Closets', path: '/browse' },
-              { label: 'Saved Items', path: '/browse' },
-              { label: 'Orders', path: '/browse' },
+              { label: 'Journeys', path: '/journeys' },
+              { label: 'My Closets', path: '/closet' },
+              { label: 'Saved Items', path: '/closet' },
+              { label: 'Orders', path: '/profile' },
             ].map((item) => (
               <li key={item.label} style={{ marginBottom: '12px' }}>
                 <button
