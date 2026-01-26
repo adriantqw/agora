@@ -1,118 +1,509 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shirt, LogIn } from 'lucide-react';
+import { Shirt, LogIn, Filter, Search, Plus, Heart, MoreVertical, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
+import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import Footer from '../components/consumer/Footer/Footer';
+import { mockJourneys } from '../data/mockJourneys';
+
+const ITEMS_PER_PAGE = 16;
 
 const ClosetPage = () => {
   const colors = useThemeColors();
+  const { theme } = useTheme();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
+
+  const [activeTab, setActiveTab] = useState('Outfits'); // 'Outfits' | 'Pieces'
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Flatten all outfits from journeys to simulate pieces with randomized categories
+  const allPieces = useMemo(() => {
+    return mockJourneys.flatMap(journey => journey.outfits.map((outfit, index) => {
+      // Simple randomization based on char code to be deterministic but varied
+      const rand = (outfit.label.charCodeAt(0) + index) % 10;
+      let category = 'Clothing';
+      
+      if (outfit.label.toLowerCase().includes('shoe') || outfit.label.toLowerCase().includes('boot') || outfit.label.toLowerCase().includes('heel') || outfit.label.toLowerCase().includes('flat') || rand === 3) {
+        category = 'Shoes';
+      } else if (outfit.label.toLowerCase().includes('bag') || outfit.label.toLowerCase().includes('clutch') || outfit.label.toLowerCase().includes('earring') || outfit.label.toLowerCase().includes('necklace') || outfit.label.toLowerCase().includes('hat') || outfit.label.toLowerCase().includes('belt') || rand === 5) {
+        category = 'Accessories';
+      } else if (rand > 7) {
+        category = 'Accessories'; // Randomly assign some as accessories
+      }
+
+      return {
+        ...outfit,
+        journeyName: journey.title,
+        category
+      };
+    }));
+  }, []);
+
+  // Use journeys themselves as outfits
+  const allOutfits = useMemo(() => {
+    return mockJourneys.map(journey => ({
+      id: journey.id,
+      label: journey.title,
+      subtext: journey.statusLabel,
+      itemCount: journey.outfits.length,
+      items: journey.outfits,
+      statusColor: journey.statusColor,
+      isAIPick: journey.outfits.some(o => o.isAIPick)
+    }));
+  }, []);
+
+  const filteredItems = useMemo(() => {
+    const source = activeTab === 'Pieces' ? allPieces : allOutfits;
+    return source.filter(item => {
+      const matchesCategory = activeTab === 'Outfits' || activeCategory === 'All' || item.category === activeCategory;
+      const matchesSearch = item.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            (item.subtext && item.subtext.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    });
+  }, [activeTab, activeCategory, searchQuery, allPieces, allOutfits]);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Reset page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, activeCategory, searchQuery]);
+
+  const categories = ['All', 'Clothing', 'Shoes', 'Accessories'];
+  const tabs = [
+    { name: 'Outfits', icon: Wand2 },
+    { name: 'Pieces', icon: Shirt }
+  ];
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header variant="landing" showNav={true} />
+        <main style={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: '40px 20px',
+          minHeight: 'calc(100vh - 80px)'
+        }}>
+          <div style={{
+            textAlign: 'center',
+            maxWidth: '500px',
+            padding: '48px',
+            background: colors.card.background,
+            borderRadius: '32px',
+            boxShadow: colors.shadow.md,
+            border: isDark ? `1px solid ${colors.border.subtle}` : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '24px'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '24px',
+              background: isDark ? 'rgba(245, 165, 184, 0.1)' : colors.primary.eggPinkLight,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: colors.primary.eggPink,
+              marginBottom: '8px'
+            }}>
+              <Shirt size={40} />
+            </div>
+
+            <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: 0 }}>Your Closet is Empty</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '16px', lineHeight: '1.6', margin: 0 }}>
+              Build your virtual closet and see how everything fits together. Please log in to access your saved items and outfits.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '8px' }}>
+              <button 
+                onClick={() => navigate('/login')}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  background: colors.gradient.pink,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '9999px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(242, 148, 170, 0.4)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'transform 0.1s'
+                }}
+              >
+                <LogIn size={20} />
+                <span>Log In to View</span>
+              </button>
+
+              <button 
+                onClick={() => navigate('/')}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: 'transparent',
+                  color: colors.text.secondary,
+                  border: `1px solid ${colors.border.subtle}`,
+                  borderRadius: '9999px',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <span>Back to Home</span>
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header variant="landing" showNav={true} />
 
-      <main style={{ 
-        flexGrow: 1, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        padding: '40px 20px',
-        minHeight: 'calc(100vh - 80px)'
-      }}>
-        <div style={{
-          textAlign: 'center',
-          maxWidth: '500px',
-          padding: '40px',
-          background: 'white',
-          borderRadius: '32px',
-          boxShadow: '0 10px 40px -10px rgba(0,0,0,0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '24px'
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '24px',
-            background: colors.primary.eggPinkLight,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: colors.primary.eggPink,
-            marginBottom: '8px'
-          }}>
-            <Shirt size={40} />
-          </div>
-
-          <h1 style={{ fontSize: '28px', fontWeight: '700', color: '#1F2937', margin: 0 }}>Your Closet is Empty</h1>
-          <p style={{ color: '#6B7280', fontSize: '16px', lineHeight: '1.6', margin: 0 }}>
-            Build your virtual closet and see how everything fits together. Please log in to access your saved items and outfits.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', marginTop: '8px' }}>
-            <button 
-              onClick={() => navigate('/login')}
-              style={{
-                width: '100%',
-                padding: '16px',
-                background: colors.gradient.pink,
+      <main style={{ flexGrow: 1, padding: '32px 20px' }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+          
+          {/* Page Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+            <div>
+              <h1 style={{ fontSize: '32px', fontWeight: '800', color: colors.text.primary, marginBottom: '8px' }}>My Closet</h1>
+              <p style={{ color: colors.text.secondary, fontSize: '16px' }}>
+                {allPieces.length} pieces collected across {allOutfits.length} journeys
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button style={{
+                background: colors.primary.eggPink,
                 color: 'white',
                 border: 'none',
-                borderRadius: '9999px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(242, 148, 170, 0.4)',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'transform 0.1s'
-              }}
-              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <LogIn size={20} />
-              <span>Log In to View</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/')}
-              style={{
-                width: '100%',
-                padding: '14px',
-                background: 'transparent',
-                color: '#9CA3AF',
-                border: `1px solid #E5E7EB`,
-                borderRadius: '9999px',
-                fontSize: '15px',
+                padding: '12px 24px',
+                borderRadius: '99px',
                 fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
-                justifyContent: 'center',
                 alignItems: 'center',
                 gap: '8px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = colors.primary.eggPink;
-                e.currentTarget.style.color = colors.primary.eggPink;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = '#E5E7EB';
-                e.currentTarget.style.color = '#9CA3AF';
-              }}
-            >
-              <span>Back to Home</span>
-            </button>
+                boxShadow: '0 4px 12px rgba(245, 165, 184, 0.4)'
+              }}>
+                <Plus size={20} />
+                Add Item
+              </button>
+            </div>
           </div>
+
+          {/* Tab Switcher & Search */}
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap',
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            gap: '24px', 
+            marginBottom: '32px',
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              background: colors.card.background,
+              padding: '4px',
+              borderRadius: '16px',
+              border: `1px solid ${colors.border.subtle}`,
+              width: 'fit-content',
+              boxShadow: colors.shadow.sm
+            }}>
+              {tabs.map(tab => (
+                <button
+                  key={tab.name}
+                  onClick={() => {
+                    setActiveTab(tab.name);
+                    setActiveCategory('All');
+                  }}
+                  style={{
+                    padding: '12px 28px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontSize: '15px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    background: activeTab === tab.name ? (isDark ? '#831843' : colors.primary.eggPinkLight) : 'transparent',
+                    color: activeTab === tab.name ? (isDark ? 'white' : '#831843') : colors.text.secondary,
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                >
+                  <tab.icon size={18} strokeWidth={activeTab === tab.name ? 2.5 : 2} />
+                  {tab.name}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              background: colors.card.background, 
+              border: `1px solid ${colors.border.subtle}`,
+              borderRadius: '99px',
+              padding: '8px 20px',
+              width: '100%',
+              maxWidth: '400px',
+              boxShadow: colors.shadow.sm
+            }}>
+              <Search size={18} color={colors.text.tertiary} style={{ marginRight: '12px' }} />
+              <input 
+                type="text" 
+                placeholder={`Search ${activeTab.toLowerCase()}...`} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  outline: 'none',
+                  color: colors.text.primary,
+                  fontSize: '15px',
+                  width: '100%'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Sub-categories (Only for Pieces) */}
+          {activeTab === 'Pieces' && (
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', overflowX: 'auto', paddingBottom: '4px' }}>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '99px',
+                    border: activeCategory === cat ? 'none' : `1px solid ${colors.border.subtle}`,
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    background: activeCategory === cat ? colors.text.primary : colors.card.background,
+                    color: activeCategory === cat ? colors.card.background : colors.text.secondary,
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Grid */}
+          {paginatedItems.length > 0 ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '32px', minHeight: '400px' }}>
+                {paginatedItems.map((item, index) => {
+                  const isOutfit = activeTab === 'Outfits';
+                  const Icon = item.icon || (isOutfit ? Wand2 : Shirt);
+                  
+                  return (
+                    <div key={`${item.id}-${index}`} className="group" style={{
+                      background: colors.card.background,
+                      borderRadius: '24px',
+                      overflow: 'hidden',
+                      border: `1px solid ${colors.border.subtle}`,
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      position: 'relative'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.boxShadow = colors.shadow.md;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    >
+                      <div style={{
+                        aspectRatio: '1/1',
+                        background: isDark ? colors.card.backgroundAlt : (item.backgroundColor || '#f8f9fb'),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}>
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ textAlign: 'center' }}>
+                            <Icon size={isOutfit ? 80 : 64} color={item.iconColor || colors.text.tertiary} strokeWidth={1} />
+                            {isOutfit && (
+                              <div style={{ marginTop: '12px', fontSize: '12px', fontWeight: '700', color: colors.text.muted }}>
+                                {item.itemCount} PIECES
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div style={{
+                          position: 'absolute',
+                          top: '16px',
+                          right: '16px',
+                          background: 'rgba(255, 255, 255, 0.9)',
+                          backdropFilter: 'blur(4px)',
+                          borderRadius: '50%',
+                          padding: '10px',
+                          cursor: 'pointer',
+                          opacity: 0,
+                          transform: 'translateY(10px)',
+                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                        className="action-btn"
+                        >
+                          <Heart size={18} color="#EF4444" />
+                        </div>
+                      </div>
+                      
+                      <div style={{ padding: '24px' }}>
+                        <div style={{ marginBottom: '4px' }}>
+                          <h3 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary, margin: 0 }}>{item.label}</h3>
+                        </div>
+                        <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>{item.subtext}</p>
+                        
+                        <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '18px', fontWeight: '800', color: isDark ? colors.primary.eggPink : '#1F2937' }}>
+                            {isOutfit ? `Outfit #${index + 1}` : `$${item.price.toFixed(2)}`}
+                          </span>
+                          
+                          {item.isAIPick && (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: isDark ? 'rgba(124, 58, 237, 0.15)' : '#F5F3FF', padding: '6px 12px', borderRadius: '99px', border: `1px solid ${isDark ? 'rgba(124, 58, 237, 0.3)' : '#DDD6FE'}` }}>
+                              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#7C3AED' }} />
+                              <span style={{ fontSize: '11px', fontWeight: '800', color: '#7C3AED', textTransform: 'uppercase', letterSpacing: '0.02em' }}>AI Pick</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '48px', gap: '16px' }}>
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      border: `1px solid ${colors.border.subtle}`,
+                      background: colors.card.background,
+                      color: colors.text.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+                  
+                  <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text.secondary }}>
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      border: `1px solid ${colors.border.subtle}`,
+                      background: colors.card.background,
+                      color: colors.text.primary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '80px 0', 
+              color: colors.text.secondary 
+            }}>
+              <div style={{ 
+                background: colors.card.background, 
+                width: '80px', 
+                height: '80px', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                margin: '0 auto 24px',
+                border: `1px solid ${colors.border.subtle}`
+              }}>
+                <Search size={32} color={colors.text.tertiary} />
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '8px' }}>No items found</h3>
+              <p>Try adjusting your search or category filters.</p>
+            </div>
+          )}
         </div>
       </main>
 
       <Footer />
+      <style>{`
+        .group:hover .action-btn {
+          opacity: 1 !important;
+          transform: translateY(0) !important;
+        }
+      `}</style>
     </div>
   );
 };
