@@ -9,7 +9,7 @@ import {
   Settings, 
   LogOut, 
   Shirt, 
-  Wand2, 
+  Compass, 
   Leaf, 
   ChevronRight, 
   ChevronLeft,
@@ -154,7 +154,9 @@ const ConsumerProfilePage = () => {
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[
-                    { icon: LayoutGrid, label: 'Overview', active: true },
+                    { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
+                    { icon: Compass, label: 'My Journeys', active: false, path: '/journeys' },
+                    { icon: Shirt, label: 'My Closet', active: false, path: '/closet' },
                     { icon: Sliders, label: 'Style Profile', active: false },
                     { icon: Package, label: 'Orders & Returns', active: false },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false },
@@ -162,17 +164,24 @@ const ConsumerProfilePage = () => {
                   ].map((item, idx) => (
                     <a 
                       key={idx} 
-                      href="#" 
-                      onClick={(e) => e.preventDefault()}
+                      href={item.path || "#"} 
+                      onClick={(e) => {
+                        if (item.path) {
+                          e.preventDefault();
+                          navigate(item.path);
+                        } else {
+                          e.preventDefault();
+                        }
+                      }}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                         padding: '12px 16px',
                         borderRadius: '12px',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
+                        color: item.active ? (isDark ? colors.text.primary : '#1F2937') : colors.text.secondary,
                         background: item.active ? (isDark ? 'rgba(245, 165, 184, 0.15)' : colors.primary.eggPinkLight) : 'transparent',
-                        fontWeight: item.active ? '600' : '500',
+                        fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
                         fontSize: '14px'
@@ -236,22 +245,30 @@ const ConsumerProfilePage = () => {
                 
                 {/* Welcome Banner */}
                 <div style={{
-                  background: `linear-gradient(135deg, ${colors.primary.eggPink} 0%, ${colors.primary.eggPinkDark} 100%)`,
+                  background: isDark 
+                    ? `linear-gradient(135deg, #831843 0%, ${colors.primary.pinkDark} 100%)` 
+                    : `linear-gradient(135deg, ${colors.primary.eggPink} 0%, ${colors.primary.eggPinkLight} 100%)`,
                   borderRadius: '24px',
                   padding: '32px',
-                  color: 'white',
+                  color: isDark ? '#FFFFFF' : '#1F2937',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 10px 30px -10px rgba(245, 165, 184, 0.5)'
+                  boxShadow: isDark ? '0 10px 30px -10px rgba(0, 0, 0, 0.5)' : '0 10px 30px -10px rgba(245, 165, 184, 0.5)'
                 }}>
                   <div style={{ position: 'relative', zIndex: 10 }}>
                     <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Hello, {userName.split(' ')[0]}! ✨</h1>
-                    <p style={{ opacity: 0.9, maxWidth: '480px', marginBottom: '24px', lineHeight: '1.5' }}>
+                    <p style={{ 
+                      opacity: isDark ? 0.9 : 0.8, 
+                      maxWidth: '480px', 
+                      marginBottom: '24px', 
+                      lineHeight: '1.5', 
+                      color: isDark ? '#FFFFFF' : '#374151' 
+                    }}>
                       Your closet analysis is complete. Based on the "Spring Collection" trends, we've found 5 items you might love.
                     </p>
                     <button style={{
-                      background: 'white',
-                      color: colors.primary.eggPinkDark,
+                      background: isDark ? colors.primary.eggPink : 'white',
+                      color: isDark ? '#831843' : '#1F2937',
                       border: 'none',
                       padding: '10px 24px',
                       borderRadius: '99px',
@@ -278,7 +295,7 @@ const ConsumerProfilePage = () => {
                     width: '300px',
                     height: '300px',
                     background: 'white',
-                    opacity: 0.1,
+                    opacity: isDark ? 0.1 : 0.2,
                     transform: 'rotate(12deg)'
                   }} />
                 </div>
@@ -292,16 +309,10 @@ const ConsumerProfilePage = () => {
                     iconColor="#60A5FA" // Blue
                   />
                   <StatCard 
-                    icon={Wand2} 
+                    icon={Compass} 
                     value="28" 
                     label="Journeys" 
                     iconColor="#A78BFA" // Purple
-                  />
-                  <StatCard 
-                    icon={Leaf} 
-                    value="High" 
-                    label="Sustainability" 
-                    iconColor="#34D399" // Green
                   />
                 </div>
 
@@ -331,8 +342,8 @@ const ConsumerProfilePage = () => {
                         fontSize: '14px',
                         fontWeight: idx === 0 ? '600' : '500',
                         background: idx === 0 ? (isDark ? 'rgba(245, 165, 184, 0.15)' : colors.primary.eggPinkLight) : colors.card.backgroundAlt,
-                        color: idx === 0 ? colors.primary.eggPink : colors.text.secondary,
-                        border: `1px solid ${idx === 0 ? colors.primary.eggPink : colors.border.light}`
+                        color: idx === 0 ? (isDark ? colors.primary.eggPink : '#831843') : colors.text.secondary,
+                        border: `1px solid ${idx === 0 ? (isDark ? colors.primary.eggPink : '#831843') : colors.border.light}`
                       }}>
                         {tag}
                       </span>
