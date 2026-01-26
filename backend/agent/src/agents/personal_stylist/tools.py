@@ -1,5 +1,6 @@
 import base64
 import os
+import uuid
 import tempfile
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool, StructuredTool
@@ -198,49 +199,3 @@ class Txt2ImgGenerator:
             StructuredTool.from_function(coroutine=self.generate),
             StructuredTool.from_function(coroutine=self.batch)
         ]
-
-
-class GenerateUIComponentsInput(BaseModel):
-    """Input schema for generate_ui_components tool."""
-    ui_inputs: list[UIInputType] = Field(
-        description="List of UI components to display. Each component has a 'type' field that determines its structure."
-    )
-
-
-@tool(args_schema=GenerateUIComponentsInput)
-def generate_ui_components(ui_inputs: list[UIInputType]) -> dict:
-    """
-    Generate UI components to gather user preferences.
-
-    Call this tool when you want to present questions or options to the user.
-    You should generate 2-3 components per turn to progressively build the user's style profile.
-
-    Args:
-        ui_inputs: List of UI components.
-
-    Returns:
-        dict: Contains status and the ui_components for state update
-    """
-    import uuid
-
-    components = []
-    for comp in ui_inputs:
-        comp_dict = comp.model_dump()
-
-        # Generate ID if not provided
-        if comp_dict.get("id") is None:
-            comp_dict["id"] = uuid.uuid4().hex
-
-        # Handle nested options for image-choice
-        if comp_dict.get("type") == "image-choice" and "options" in comp_dict:
-            for opt in comp_dict["options"]:
-                if opt.get("id") is None:
-                    opt["id"] = uuid.uuid4().hex
-
-        components.append(comp_dict)
-
-    return {
-        "status": "success",
-        "ui_components": components,
-        "count": len(components)
-    }

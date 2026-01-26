@@ -9,7 +9,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 
 from .states import PersonalStylistState
-from .tools import Txt2ImgGenerator, generate_ui_components
+from .tools import Txt2ImgGenerator
+from .schemas import UIInputList
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -57,12 +58,12 @@ class PersonalStylistAgent:
         mlflow.langchain.autolog()
         self.agent_config = load_config("agent")["personal_stylist"]
         self.model = load_model_from_config(self.agent_config["model"])
-        self.system_prompt = load_prompt_templates()["personal_stylist"]
+        self.system_prompt: str = load_prompt_templates()["personal_stylist"]
         self.checkpointer = MemorySaver()
 
         # Define available tools
         image_generator = Txt2ImgGenerator()
-        self.tools = image_generator.get_tools() + [generate_ui_components]
+        self.tools = image_generator.get_tools()
 
         # Create react agent with custom state schema and middleware
         self.agent = create_agent(
@@ -71,7 +72,10 @@ class PersonalStylistAgent:
             checkpointer=self.checkpointer,
             middleware=[capture_ui_components],
             state_schema=PersonalStylistState,
-            system_prompt=self.system_prompt
+            system_prompt=self.system_prompt.format(
+                ui_component_schema=UIInputList.model_json_schema()
+            ),
+            response_format=UIInputList
         )
 
     def invoke(self, message: str, thread_id: str) -> dict:
