@@ -31,19 +31,26 @@ import {
 } from 'lucide-react';
 
 /**
- * Mock Journey Data - Purchased Wardrobe
+ * Mock Journey Data
  * 
- * 7 Outfits total, 4 items each = 28 clothing articles.
+ * Mix of In Progress and Completed journeys for demonstration.
  */
 
 export const mockJourneys = [
+  // IN PROGRESS JOURNEYS
   {
     id: 'office-essentials',
     title: "Office Essentials",
-    status: 'active',
-    statusColor: '#4299e1',
-    statusLabel: 'In Closet',
+    status: 'in_progress',
+    statusColor: '#3182ce',
+    statusLabel: 'Styling in Progress',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Work Event',
+      style: 'Professional & Chic',
+      budget: 'Under $500',
+      weather: 'Indoor / AC',
+    },
     outfits: [
       {
         id: 'off-1',
@@ -91,69 +98,19 @@ export const mockJourneys = [
       },
     ],
   },
-
-  {
-    id: 'corporate-chic',
-    title: 'Corporate Chic',
-    status: 'active',
-    statusColor: '#4299e1',
-    statusLabel: 'In Closet',
-    closetUrl: '/closet',
-    outfits: [
-      {
-        id: 'corp-1',
-        label: 'Checkered Blazer',
-        subtext: 'Professional layering',
-        price: 210,
-        imageUrl: null,
-        icon: Shirt,
-        iconColor: '#4A5568',
-        backgroundColor: '#F7FAFC',
-        isAIPick: true,
-      },
-      {
-        id: 'corp-2',
-        label: 'Pencil Skirt',
-        subtext: 'Navy wool blend',
-        price: 95,
-        imageUrl: null,
-        icon: Shirt,
-        iconColor: '#2C5282',
-        backgroundColor: '#EBF8FF',
-        isAIPick: false,
-      },
-      {
-        id: 'corp-3',
-        label: 'Gold Hoop Earrings',
-        subtext: 'Subtle office shimmer',
-        price: 45,
-        imageUrl: null,
-        icon: Gem,
-        iconColor: '#D69E2E',
-        backgroundColor: '#FFFFF0',
-        isAIPick: false,
-      },
-      {
-        id: 'corp-4',
-        label: 'Pointed Heels',
-        subtext: 'Midnight blue suede',
-        price: 165,
-        imageUrl: null,
-        icon: Wine,
-        iconColor: '#2A4365',
-        backgroundColor: '#EBF8FF',
-        isAIPick: false,
-      },
-    ],
-  },
-
   {
     id: 'wedding-guest',
     title: "Summer Wedding",
-    status: 'active',
-    statusColor: '#F5A5B8',
-    statusLabel: 'In Closet',
+    status: 'in_progress',
+    statusColor: '#d53f8c',
+    statusLabel: 'Refining Options',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Wedding Guest',
+      style: 'Romantic & Floral',
+      budget: '$150 - $300',
+      weather: 'Sunny, 24°C',
+    },
     outfits: [
       {
         id: 'wed-1',
@@ -201,14 +158,19 @@ export const mockJourneys = [
       },
     ],
   },
-
   {
     id: 'gala-dinner',
     title: "Company Event Gala",
-    status: 'active',
+    status: 'in_progress',
     statusColor: '#805ad5',
-    statusLabel: 'In Closet',
+    statusLabel: 'Awaiting Review',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Gala Dinner',
+      style: 'Elegant & Formal',
+      budget: '$300+',
+      weather: 'Evening / Indoor',
+    },
     outfits: [
       {
         id: 'gala-1',
@@ -256,14 +218,19 @@ export const mockJourneys = [
       },
     ],
   },
-
   {
     id: 'midnight-out',
     title: "Saturday Night Out",
-    status: 'active',
-    statusColor: '#ED64A6',
-    statusLabel: 'In Closet',
+    status: 'in_progress',
+    statusColor: '#d53f8c',
+    statusLabel: 'Concept Phase',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Night Out',
+      style: 'Edgy & Fun',
+      budget: 'Under $200',
+      weather: 'Clear Night',
+    },
     outfits: [
       {
         id: 'nite-1',
@@ -311,14 +278,81 @@ export const mockJourneys = [
       },
     ],
   },
-
+  
+  // COMPLETED JOURNEYS (Previously "active/In Closet")
+  {
+    id: 'corporate-chic',
+    title: 'Corporate Chic',
+    status: 'completed',
+    statusColor: '#48BB78',
+    statusLabel: 'Completed',
+    closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Important Meeting',
+      style: 'Structured & Bold',
+      budget: '$200 - $400',
+      weather: 'London, 10°C',
+    },
+    outfits: [
+      {
+        id: 'corp-1',
+        label: 'Checkered Blazer',
+        subtext: 'Professional layering',
+        price: 210,
+        imageUrl: null,
+        icon: Shirt,
+        iconColor: '#4A5568',
+        backgroundColor: '#F7FAFC',
+        isAIPick: true,
+      },
+      {
+        id: 'corp-2',
+        label: 'Pencil Skirt',
+        subtext: 'Navy wool blend',
+        price: 95,
+        imageUrl: null,
+        icon: Shirt,
+        iconColor: '#2C5282',
+        backgroundColor: '#EBF8FF',
+        isAIPick: false,
+      },
+      {
+        id: 'corp-3',
+        label: 'Gold Hoop Earrings',
+        subtext: 'Subtle office shimmer',
+        price: 45,
+        imageUrl: null,
+        icon: Gem,
+        iconColor: '#D69E2E',
+        backgroundColor: '#FFFFF0',
+        isAIPick: false,
+      },
+      {
+        id: 'corp-4',
+        label: 'Pointed Heels',
+        subtext: 'Midnight blue suede',
+        price: 165,
+        imageUrl: null,
+        icon: Wine,
+        iconColor: '#2A4365',
+        backgroundColor: '#EBF8FF',
+        isAIPick: false,
+      },
+    ],
+  },
   {
     id: 'club-luxe',
     title: "After-Hours Edge",
-    status: 'active',
-    statusColor: '#1A202C',
-    statusLabel: 'In Closet',
+    status: 'completed',
+    statusColor: '#48BB78',
+    statusLabel: 'Completed',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Clubbing',
+      style: 'Dark & Moody',
+      budget: '$150 - $300',
+      weather: 'Night',
+    },
     outfits: [
       {
         id: 'club-1',
@@ -366,14 +400,19 @@ export const mockJourneys = [
       },
     ],
   },
-
   {
     id: 'summer-outing',
     title: "Summer Outing",
-    status: 'active',
-    statusColor: '#F6E05E',
-    statusLabel: 'In Closet',
+    status: 'completed',
+    statusColor: '#48BB78',
+    statusLabel: 'Completed',
     closetUrl: '/closet',
+    summaryContext: {
+      occasion: 'Beach Day',
+      style: 'Casual & Breezy',
+      budget: 'Under $150',
+      weather: 'Hot, 30°C',
+    },
     outfits: [
       {
         id: 'sum-1',

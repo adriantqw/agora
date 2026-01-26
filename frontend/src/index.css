@@ -156,8 +156,8 @@ html.dark-theme {
   --color-secondary-pink: #FFB6C1;
 
   /* Egg Pink Palette */
-  --color-egg-pink: #FFB7C5;
-  --color-egg-pink-light: #FFC9D4;
+  --color-egg-pink: #f48fb1;
+  --color-egg-pink-light: #311b1e;
 
   /* Gradients for Fashion Experience */
   --gradient-pink: linear-gradient(135deg, #FF9EB5 0%, #FF85A3 100%);
