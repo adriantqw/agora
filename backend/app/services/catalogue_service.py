@@ -14,7 +14,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from agent.src.agents.catalogue_ingestor import CatalogueIngestor
+from agent.src.agents.catalogue_ingestor.core import CatalogueIngestor
 from agent.src.utils.stream import extract_catalogue_ingestor_metadata
 from app.models.catalogue import Catalogue, CatalogueItem
 from app.schemas.product import ProductCreate
