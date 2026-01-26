@@ -309,6 +309,27 @@ const ConsumerLoginPage = () => {
               </button>
             </form>
 
+            <div style={{ 
+              marginTop: '32px', 
+              padding: '16px', 
+              background: isDark ? 'rgba(255, 255, 255, 0.05)' : '#F9FAFB', 
+              borderRadius: '16px',
+              border: `1px dashed ${isDark ? colors.border.subtle : '#E5E7EB'}`,
+              textAlign: 'center'
+            }}>
+              <p style={{ fontSize: '11px', color: colors.text.secondary, marginBottom: '8px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Testing Credentials
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <p style={{ fontSize: '13px', color: colors.text.primary, margin: 0 }}>
+                  Email: <span style={{ fontWeight: '700', color: colors.primary.eggPink }}>demo@consumer.com</span>
+                </p>
+                <p style={{ fontSize: '13px', color: colors.text.primary, margin: 0 }}>
+                  Password: <span style={{ fontWeight: '700', color: colors.primary.eggPink }}>password123</span>
+                </p>
+              </div>
+            </div>
+
             <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: colors.text.secondary }}>
               New to Agora? 
               <a href="#" style={{ color: colors.primary.eggPink, fontWeight: '600', textDecoration: 'none', marginLeft: '4px' }}>

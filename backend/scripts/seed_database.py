@@ -157,51 +157,111 @@ def seed_journeys():
         existing_count = db.query(Journey).filter(Journey.consumer_id == consumer_id).count()
         if existing_count > 0:
             print(f"Journeys already exist ({existing_count} items). Skipping seed.")
-            return
+            # return # Disabled return to allow updating existing data if needed, or delete and re-seed
+            # For simplicity, we'll just delete existing for this user and re-seed
+            db.query(Journey).filter(Journey.consumer_id == consumer_id).delete()
+            db.commit()
+            print("Deleted existing journeys to re-seed with new data.")
 
         journeys_data = [
-            {
-                "id": "valentines-day",
-                "title": "Valentine's Day Date",
-                "status": "active",
-                "status_color": "#F5A5B8",
-                "status_label": "Ongoing Journey",
-                "closet_url": "/browse",
-                "outfits": [
-                    {"label": "Candlelight Elegance", "subtext": "Romantic dinner dress", "price": 145, "icon_name": "Heart", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": True},
-                    {"label": "Gallery Night Out", "subtext": "Art exhibition chic", "price": 210, "icon_name": "GlassWater", "icon_color": "#4299e1", "background_color": "#EBF8FF", "is_ai_pick": False},
-                    {"label": "Soft Romance", "subtext": "Casual brunch outfit", "price": 120, "icon_name": "Flower", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": False},
-                    {"label": "Modern Minimalist", "subtext": "Evening cocktails", "price": 165, "icon_name": "Moon", "icon_color": "#805ad5", "background_color": "#FAF5FF", "is_ai_pick": False},
-                ]
-            },
-            {
-                "id": "office-edit",
-                "title": "The Office Edit",
-                "status": "in-progress",
-                "status_color": "#F5A5B8",
-                "status_label": "Ongoing Journey",
-                "closet_url": "/browse",
-                "outfits": [
-                    {"label": "The Power Suit", "subtext": "Executive meeting", "price": 285, "icon_name": "Briefcase", "icon_color": "#1a202c", "background_color": "#F7FAFC", "is_ai_pick": False},
-                    {"label": "Creative Agency Look", "subtext": "Startup casual Friday", "price": 110, "icon_name": "PenTool", "icon_color": "#667eea", "background_color": "#EBF4FF", "is_ai_pick": True},
-                    {"label": "Polished Essential", "subtext": "Daily office staple", "price": 150, "icon_name": "Shirt", "icon_color": "#4299e1", "background_color": "#EBF8FF", "is_ai_pick": False},
-                    {"label": "Business Casual Midi", "subtext": "Client presentation", "price": 195, "icon_name": "Calendar", "icon_color": "#718096", "background_color": "#F7FAFC", "is_ai_pick": False},
-                ]
-            },
-            {
-                "id": "girls-night",
-                "title": "Girls' Night Out",
-                "status": "ideation",
-                "status_color": "#4299e1",
-                "status_label": "Ideation Stage",
-                "closet_url": "/browse",
-                "outfits": [
-                    {"label": "Cocktail Hour Sparkle", "subtext": "Rooftop bar glam", "price": 175, "icon_name": "Music", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": True},
-                    {"label": "Urban Edge Set", "subtext": "Club-ready outfit", "price": 130, "icon_name": "PartyPopper", "icon_color": "#805ad5", "background_color": "#FAF5FF", "is_ai_pick": False},
-                    {"label": "The 'It' Girl Midi", "subtext": "Dinner & dancing", "price": 95, "icon_name": "Stars", "icon_color": "#F59E0B", "background_color": "#FFFBEB", "is_ai_pick": False},
-                    {"label": "After-Hours Chic", "subtext": "Late night lounge", "price": 155, "icon_name": "Wine", "icon_color": "#DC2626", "background_color": "#FEF2F2", "is_ai_pick": False},
-                ]
-            }
+          {
+            "id": "office-essentials",
+            "title": "Office Essentials",
+            "status": "active",
+            "status_color": "#4299e1",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Silk Button-Down", "subtext": "Cream tailored blouse", "price": 120, "icon_name": "Shirt", "icon_color": "#4A5568", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Tailored Trousers", "subtext": "High-waisted charcoal", "price": 150, "icon_name": "Shirt", "icon_color": "#2D3748", "background_color": "#EDF2F7", "is_ai_pick": True},
+              {"label": "Leather Loafers", "subtext": "Classic black leather", "price": 180, "icon_name": "Watch", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Structured Tote", "subtext": "Daily work carry-all", "price": 250, "icon_name": "Briefcase", "icon_color": "#718096", "background_color": "#F8FAFC", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "corporate-chic",
+            "title": "Corporate Chic",
+            "status": "active",
+            "status_color": "#4299e1",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Checkered Blazer", "subtext": "Professional layering", "price": 210, "icon_name": "Shirt", "icon_color": "#4A5568", "background_color": "#F7FAFC", "is_ai_pick": True},
+              {"label": "Pencil Skirt", "subtext": "Navy wool blend", "price": 95, "icon_name": "Shirt", "icon_color": "#2C5282", "background_color": "#EBF8FF", "is_ai_pick": False},
+              {"label": "Gold Hoop Earrings", "subtext": "Subtle office shimmer", "price": 45, "icon_name": "Gem", "icon_color": "#D69E2E", "background_color": "#FFFFF0", "is_ai_pick": False},
+              {"label": "Pointed Heels", "subtext": "Midnight blue suede", "price": 165, "icon_name": "Wine", "icon_color": "#2A4365", "background_color": "#EBF8FF", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "wedding-guest",
+            "title": "Summer Wedding",
+            "status": "active",
+            "status_color": "#F5A5B8",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Floral Midi Dress", "subtext": "Wedding guest attire", "price": 245, "icon_name": "Flower", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": True},
+              {"label": "Pearl Clutch", "subtext": "Evening evening bag", "price": 85, "icon_name": "ShoppingBag", "icon_color": "#CBD5E0", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Strappy Sandals", "subtext": "Nude block heels", "price": 120, "icon_name": "Heart", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": False},
+              {"label": "Silk Scarf", "subtext": "Matching floral print", "price": 40, "icon_name": "Stars", "icon_color": "#ED64A6", "background_color": "#FFF5F7", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "gala-dinner",
+            "title": "Company Event Gala",
+            "status": "active",
+            "status_color": "#805ad5",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Silk Slip Dress", "subtext": "Formal dinner attire", "price": 280, "icon_name": "Sparkles", "icon_color": "#805ad5", "background_color": "#FAF5FF", "is_ai_pick": True},
+              {"label": "Velvet Blazer", "subtext": "Structured evening layer", "price": 195, "icon_name": "Shirt", "icon_color": "#44337A", "background_color": "#F3E8FF", "is_ai_pick": False},
+              {"label": "Silver Pumps", "subtext": "Metallic statement", "price": 155, "icon_name": "Crown", "icon_color": "#718096", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Crystal Drop Earrings", "subtext": "Gala-ready accessories", "price": 75, "icon_name": "Gem", "icon_color": "#805ad5", "background_color": "#FAF5FF", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "midnight-out",
+            "title": "Saturday Night Out",
+            "status": "active",
+            "status_color": "#ED64A6",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Sequin Mini Skirt", "subtext": "Party-ready sparkle", "price": 110, "icon_name": "Music", "icon_color": "#ED64A6", "background_color": "#FFF5F7", "is_ai_pick": True},
+              {"label": "Lace Bodysuit", "subtext": "Midnight black layering", "price": 75, "icon_name": "Heart", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Platform Boots", "subtext": "Dancing-all-night shoes", "price": 140, "icon_name": "Zap", "icon_color": "#ED64A6", "background_color": "#FFF5F7", "is_ai_pick": False},
+              {"label": "Chain Belt", "subtext": "Silver accent piece", "price": 35, "icon_name": "Activity", "icon_color": "#718096", "background_color": "#F7FAFC", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "club-luxe",
+            "title": "After-Hours Edge",
+            "status": "active",
+            "status_color": "#1A202C",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Leather Trousers", "subtext": "Night out attire", "price": 195, "icon_name": "Flame", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": True},
+              {"label": "Statement Choker", "subtext": "Bold metallic accessory", "price": 55, "icon_name": "Crown", "icon_color": "#D69E2E", "background_color": "#FFFFF0", "is_ai_pick": False},
+              {"label": "Ankle Boots", "subtext": "Patent leather finish", "price": 130, "icon_name": "Zap", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": False},
+              {"label": "Micro Bag", "subtext": "Club-ready essential", "price": 90, "icon_name": "ShoppingBag", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": False},
+            ],
+          },
+          {
+            "id": "summer-outing",
+            "title": "Summer Outing",
+            "status": "active",
+            "status_color": "#F6E05E",
+            "status_label": "In Closet",
+            "closet_url": "/closet",
+            "outfits": [
+              {"label": "Linen Sundress", "subtext": "Island-bound attire", "price": 110, "icon_name": "Sun", "icon_color": "#F6E05E", "background_color": "#FFFFF0", "is_ai_pick": True},
+              {"label": "Woven Sun Hat", "subtext": "Beach day essential", "price": 45, "icon_name": "Camera", "icon_color": "#78350F", "background_color": "#FFF7ED", "is_ai_pick": False},
+              {"label": "Espadrilles", "subtext": "Comfortable summer flats", "price": 85, "icon_name": "Map", "icon_color": "#F6E05E", "background_color": "#FFFFF0", "is_ai_pick": False},
+              {"label": "Bamboo Handbag", "subtext": "Natural fiber clutch", "price": 65, "icon_name": "Coffee", "icon_color": "#78350F", "background_color": "#FFF7ED", "is_ai_pick": False},
+            ],
+          }
         ]
 
         count = 0

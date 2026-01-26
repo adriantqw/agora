@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shirt, LogIn, Filter, Search, Plus, Heart, MoreVertical, Wand2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
@@ -6,7 +6,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import Footer from '../components/consumer/Footer/Footer';
-import { mockJourneys } from '../data/mockJourneys';
+import journeyService from '../services/journeyService';
+import { getIconByName } from '../utils/iconMapper';
 
 const ITEMS_PER_PAGE = 16;
 
@@ -21,10 +22,48 @@ const ClosetPage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [journeys, setJourneys] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch journeys from backend
+  useEffect(() => {
+    const fetchJourneys = async () => {
+      if (isAuthenticated) {
+        try {
+          const data = await journeyService.getJourneys();
+          if (data) {
+            const processed = data.map(j => ({
+              ...j,
+              // Map backend snake_case to frontend camelCase expectation or keep snake_case and map later
+              // For consistency with existing component logic, let's map to camelCase here
+              statusColor: j.status_color,
+              statusLabel: j.status_label,
+              outfits: j.outfits.map(o => ({
+                ...o,
+                imageUrl: o.image_url,
+                icon: getIconByName(o.icon_name),
+                iconColor: o.icon_color,
+                backgroundColor: o.background_color,
+                isAIPick: o.is_ai_pick
+              }))
+            }));
+            setJourneys(processed);
+          }
+        } catch (err) {
+          console.error("Failed to fetch closet data", err);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchJourneys();
+  }, [isAuthenticated]);
 
   // Flatten all outfits from journeys to simulate pieces with randomized categories
   const allPieces = useMemo(() => {
-    return mockJourneys.flatMap(journey => journey.outfits.map((outfit, index) => {
+    return journeys.flatMap(journey => journey.outfits.map((outfit, index) => {
       // Simple randomization based on char code to be deterministic but varied
       const rand = (outfit.label.charCodeAt(0) + index) % 10;
       let category = 'Clothing';
@@ -43,11 +82,11 @@ const ClosetPage = () => {
         category
       };
     }));
-  }, []);
+  }, [journeys]);
 
   // Use journeys themselves as outfits
   const allOutfits = useMemo(() => {
-    return mockJourneys.map(journey => ({
+    return journeys.map(journey => ({
       id: journey.id,
       label: journey.title,
       subtext: journey.statusLabel,
@@ -56,7 +95,7 @@ const ClosetPage = () => {
       statusColor: journey.statusColor,
       isAIPick: journey.outfits.some(o => o.isAIPick)
     }));
-  }, []);
+  }, [journeys]);
 
   const filteredItems = useMemo(() => {
     const source = activeTab === 'Pieces' ? allPieces : allOutfits;

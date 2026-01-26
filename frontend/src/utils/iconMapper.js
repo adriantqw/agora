@@ -20,7 +20,19 @@ import {
   Watch,
   Smartphone,
   Headphones,
-  Star
+  Star,
+  Map,
+  Camera,
+  Gem,
+  Gift,
+  Crown,
+  Dumbbell,
+  Activity,
+  Snowflake,
+  CloudSnow,
+  Armchair,
+  Sparkles,
+  ShoppingBag
 } from 'lucide-react';
 
 const iconMap = {
@@ -45,7 +57,19 @@ const iconMap = {
   Watch,
   Smartphone,
   Headphones,
-  Star
+  Star,
+  Map,
+  Camera,
+  Gem,
+  Gift,
+  Crown,
+  Dumbbell,
+  Activity,
+  Snowflake,
+  CloudSnow,
+  Armchair,
+  Sparkles,
+  ShoppingBag
 };
 
 export const getIconByName = (name) => {
