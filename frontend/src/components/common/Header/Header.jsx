@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Compass, LayoutGrid, UserCircle } from 'lucide-react';
 import ThemeToggle from '../../ThemeToggle';
 import { useThemeColors } from '../../../hooks/useThemeColors';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export default function Header({
   variant = 'full',
@@ -12,6 +13,14 @@ export default function Header({
 }) {
   const navigate = useNavigate();
   const colors = useThemeColors();
+  const { user, isAuthenticated } = useAuth();
+
+  const getDisplayName = () => {
+    if (!isAuthenticated || !user) return 'Profile';
+    // Split first name for brevity if it's long?
+    const name = user.full_name || user.merchant_name || 'Profile';
+    return name.split(' ')[0]; // Display first name
+  };
 
   return (
     <header style={{
@@ -265,7 +274,7 @@ export default function Header({
                 }}
               >
                 <UserCircle size={18} strokeWidth={2} />
-                <span className="nav-label-landing">Profile</span>
+                <span className="nav-label-landing">{getDisplayName()}</span>
               </button>
             </>
           ) : variant === 'journey' ? (
@@ -323,6 +332,7 @@ export default function Header({
 
               <button
                 onClick={() => navigate('/login')}
+                title={getDisplayName()}
                 style={{
                   width: '36px',
                   height: '36px',
@@ -381,6 +391,7 @@ export default function Header({
 
               {/* User icon */}
               <button
+                title={getDisplayName()}
                 style={{
                   width: '40px',
                   height: '40px',
