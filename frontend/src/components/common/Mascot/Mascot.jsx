@@ -7,6 +7,7 @@ export default function Mascot({
   isSearching = false,
   position = 'bottom-right',
   onClick,
+  size,
 }) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
@@ -29,6 +30,37 @@ export default function Mascot({
         position: 'relative',
         display: 'inline-block',
       };
+
+  // Avatar variant - Full character icon without background box
+  if (variant === 'avatar') {
+    const avatarSize = size || 40;
+
+    return (
+      <div 
+        className="mascot-avatar"
+        style={{
+          width: `${avatarSize}px`,
+          height: `${avatarSize}px`,
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <img 
+          src="/egg-chan.svg" 
+          alt="Egg-chan Mascot"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            animation: isSearching ? 'mascot-bounce 1s infinite ease-in-out' : 'none',
+          }}
+        />
+      </div>
+    );
+  }
 
   // FAB variant - Simple floating action button
   if (variant === 'fab') {
@@ -119,80 +151,15 @@ export default function Mascot({
         position: 'relative',
         animation: isSearching ? 'mascot-bounce 1s infinite ease-in-out' : 'none',
       }}>
-        {/* Egg body */}
-        <div style={{
-          width: '80px',
-          height: '80px',
-          background: 'linear-gradient(135deg, #F5A5B8 0%, #FFB6C1 100%)',
-          borderRadius: '50% 50% 50% 50% / 60% 60% 40% 40%',
-          position: 'absolute',
-          bottom: '0',
-          left: '0',
-          boxShadow: '0 8px 24px rgba(245, 165, 184, 0.4)',
-          animation: isSearching ? 'mascot-wobble 1s infinite ease-in-out' : 'none',
-        }}>
-          {/* Eyes */}
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            justifyContent: 'center',
-            position: 'absolute',
-            top: '28px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }}>
-            <div style={{
-              width: '8px',
-              height: '8px',
-              background: '#1a202c',
-              borderRadius: '50%',
-            }} />
-            <div style={{
-              width: '8px',
-              height: '8px',
-              background: '#1a202c',
-              borderRadius: '50%',
-            }} />
-          </div>
-
-          {/* Smile */}
-          <div style={{
-            width: '24px',
-            height: '12px',
-            border: '2px solid #1a202c',
-            borderTop: 'none',
-            borderRadius: '0 0 24px 24px',
-            position: 'absolute',
-            top: '44px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }} />
-        </div>
-
-        {/* Cap/Lid */}
-        <div style={{
-          width: '48px',
-          height: '20px',
-          background: '#E8879C',
-          borderRadius: '50% 50% 0 0 / 100% 100% 0 0',
-          position: 'absolute',
-          top: '0',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          boxShadow: '0 2px 8px rgba(232, 135, 156, 0.3)',
-        }}>
-          {/* Knob on top */}
-          <div style={{
-            width: '16px',
-            height: '8px',
-            background: '#E8879C',
-            borderRadius: '50%',
-            position: 'absolute',
-            top: '-4px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-          }} />
-        </div>
+        <img 
+          src="/egg-chan.svg" 
+          alt="Egg-chan Mascot"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+          }}
+        />
       </div>
 
       <style>{`

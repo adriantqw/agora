@@ -1,8 +1,8 @@
 import { useRef, useEffect, useCallback } from 'react';
-import { Loader } from 'lucide-react';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
 import UserMessage from '../UserMessage/UserMessage';
 import AIMessage from '../AIMessage/AIMessage';
+import AIAvatar from '../AIAvatar/AIAvatar';
 import QuestionRenderer from '../../../dynamic-forms/QuestionRenderer';
 
 export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, onBatchSubmit }) {
@@ -156,22 +156,7 @@ export default function ChatFeed({ messages, loading, onAnswer, batchAnswers, on
             animation: 'fadeIn 0.4s ease',
           }}
         >
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              background: colors.primary.eggPink,
-              color: 'white',
-              borderRadius: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 4px 12px rgba(255, 183, 197, 0.3)',
-            }}
-          >
-            <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} />
-          </div>
+          <AIAvatar size={40} isSearching={true} />
           <div
             style={{
               background: colors.card.background,

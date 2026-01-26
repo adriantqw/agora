@@ -135,9 +135,18 @@ export default function ShoppingConciergePage() {
 
   // Initialize conversation on mount if query exists
   useEffect(() => {
-    if (initialQuery && !hasInitialized.current) {
+    if (!hasInitialized.current) {
       hasInitialized.current = true;
-      handleInitialQuery(initialQuery);
+      if (initialQuery) {
+        handleInitialQuery(initialQuery);
+      } else {
+        // No initial query - start with greeting
+        const greetingBatch = conciergeService.generateGreetingBatch();
+        addAIMessage(greetingBatch);
+        // Set a special batch number to identify this as the greeting
+        setBatchNumber(0); 
+        setJourneyContext(prev => ({ ...prev, status: 'Starting...' }));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
@@ -193,7 +202,20 @@ export default function ShoppingConciergePage() {
       if (!answer) return;
 
       // Update journey context based on question type
-      if (question.id === 'aesthetic-visual-mood') {
+      if (question.id === 'greeting-query') {
+        // Special handling for greeting query
+        const query = answer.value;
+        const extractedOccasion = conciergeService.extractOccasion(query);
+        const extractedLocation = conciergeService.extractLocation(query);
+        
+        setJourneyContext((prev) => ({
+          ...prev,
+          title: extractedOccasion || 'New Journey',
+          occasion: extractedOccasion,
+          weather: extractedLocation,
+          status: 'Creating Style Profile...'
+        }));
+      } else if (question.id === 'aesthetic-visual-mood') {
         const aesthetic = conciergeService.processAestheticAnswer(answer);
         setJourneyContext(prev => ({ ...prev, aesthetic }));
       } else if (question.id === 'risk-tolerance-scale') {
@@ -222,7 +244,14 @@ export default function ShoppingConciergePage() {
     setBatchAnswers({});
 
     // Progress to next batch
-    if (batchNumber === 1) {
+    if (batchNumber === 0) {
+      // Transition from Greeting to Batch 1
+      setBatchNumber(1);
+      setTimeout(() => {
+        const batch1 = conciergeService.generateBatch1();
+        addAIMessage(batch1);
+      }, 500);
+    } else if (batchNumber === 1) {
       setBatchNumber(2);
       setJourneyContext(prev => ({ ...prev, status: 'Refining Preferences...' }));
       setTimeout(() => {

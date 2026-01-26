@@ -752,6 +752,45 @@ export const getContextQuestion = () => ({
 });
 
 /**
+ * Get greeting question configuration (Free Text)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getGreetingQuestion = () => ({
+  id: 'greeting-query',
+  type: 'free-text',
+  question: 'What are we looking for today?',
+  multiline: false,
+  maxLength: 100,
+  placeholder: 'e.g. A dress for a summer wedding, sneakers for running...',
+  required: true
+});
+
+/**
+ * Generate Greeting Batch: Initial Prompt
+ *
+ * @returns {Object} Batch configuration with title, description, questions array
+ */
+export const generateGreetingBatch = () => {
+  const greetings = [
+    'Welcome back!',
+    'Hello! Ready to style?',
+    'Hi there! What\'s the occasion?',
+    'Welcome! Let\'s find your look.'
+  ];
+  const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+
+  return {
+    title: randomGreeting,
+    description: 'I\'m your personal AI stylist. I can help you find the perfect outfit for any occasion.',
+    questions: [
+      getGreetingQuestion()
+    ],
+    submitLabel: 'Start Journey'
+  };
+};
+
+/**
  * Extract occasion from user query using keyword matching
  *
  * @param {string} query - User's search query
@@ -1179,11 +1218,13 @@ export default {
   getAttributesQuestion,
   getImageUploadQuestion,
   getContextQuestion,
+  getGreetingQuestion,
 
   // Batch generation functions
   generateBatch1,
   generateBatch2,
   generateBatch3,
+  generateGreetingBatch,
   generateCompletionMessage,
 
   // Answer processing functions
