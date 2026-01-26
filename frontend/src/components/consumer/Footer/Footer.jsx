@@ -60,7 +60,7 @@ const Footer = () => {
               maxWidth: '280px',
             }}
           >
-            Your personal AI stylist for every occasion. Curate, discover, and express your unique style journey.
+            Your personal AI shopping assistant for every occasion. Curate, discover, and express your unique style journey.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ const Footer = () => {
               { label: 'Start a Journey', path: '/journey' },
               { label: 'Browse Styles', path: '/browse' },
               { label: 'Virtual Fitting Room', path: '/fitting-room' },
-              { label: 'AI Stylist', path: '/journey' },
+              { label: 'AI Shopping Assistant', path: '/journey' },
             ].map((item) => (
               <li key={item.label} style={{ marginBottom: '12px' }}>
                 <button

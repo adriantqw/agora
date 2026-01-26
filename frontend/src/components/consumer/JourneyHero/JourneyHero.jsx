@@ -129,7 +129,7 @@ const JourneyHero = ({ onSearch }) => {
             lineHeight: '1.2',
           }}
         >
-          Your Personal AI Stylist
+          Your Personal AI Shopping Assistant
         </h1>
         <p
           style={{
