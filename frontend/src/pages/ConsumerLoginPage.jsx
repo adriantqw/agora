@@ -51,8 +51,8 @@ const ConsumerLoginPage = () => {
     
     try {
       await loginConsumer(email, password);
-      // Navigate to home after successful login
-      navigate('/');
+      // Navigate to profile after successful login
+      navigate('/profile');
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
