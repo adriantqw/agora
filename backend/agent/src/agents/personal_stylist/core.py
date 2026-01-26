@@ -1,17 +1,47 @@
+import json
+import mlflow
+
 from dotenv import load_dotenv
 from langchain.agents import create_agent
+from langchain.agents.middleware import wrap_tool_call
+from langchain_core.messages import ToolMessage
 from langgraph.checkpoint.memory import MemorySaver
-from pydantic import BaseModel
+from langgraph.types import Command
 
 from .states import PersonalStylistState
-from .schemas import UIInputType
-from .tools import txt2img
+from .tools import Txt2ImgGenerator, generate_ui_components
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
 
 RECURSION_LIMIT = 50
+
+
+@wrap_tool_call
+async def capture_ui_components(request, handler):
+    """
+    Intercept generate_ui_components tool results and update ui_inputs state.
+    """
+    result = await handler(request)
+
+    if isinstance(result, ToolMessage):
+        try:
+            content = result.content
+            if isinstance(content, str):
+                content = json.loads(content)
+
+            if isinstance(content, dict) and "ui_components" in content:
+                return Command(
+                    update={
+                        "ui_inputs": content["ui_components"],
+                        "messages": [result]
+                    }
+                )
+        except (json.JSONDecodeError, KeyError, TypeError):
+            pass
+
+    return result
 
 
 class PersonalStylistAgent:
@@ -24,24 +54,22 @@ class PersonalStylistAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
+        mlflow.langchain.autolog()
         self.agent_config = load_config("agent")["personal_stylist"]
         self.model = load_model_from_config(self.agent_config["model"])
         self.system_prompt = load_prompt_templates()["personal_stylist"]
         self.checkpointer = MemorySaver()
 
         # Define available tools
-        self.tools = [txt2img]
+        image_generator = Txt2ImgGenerator()
+        self.tools = image_generator.get_tools() + [generate_ui_components]
 
-        # Define response format
-        class UIInputTypeList(BaseModel):
-            ui_inputs: list[UIInputType]
-
-        # Create react agent with custom state schema
+        # Create react agent with custom state schema and middleware
         self.agent = create_agent(
             model=self.model,
             tools=self.tools,
             checkpointer=self.checkpointer,
-            response_format=UIInputTypeList,
+            middleware=[capture_ui_components],
             state_schema=PersonalStylistState,
             system_prompt=self.system_prompt
         )

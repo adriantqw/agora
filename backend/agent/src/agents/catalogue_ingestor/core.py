@@ -1,4 +1,5 @@
 import base64
+import mlflow
 import logging
 from PIL import Image
 import pypdfium2 as pdfium
@@ -28,6 +29,7 @@ class CatalogueIngestor:
     
     def __init__(self):
         """Initialize the agent."""
+        mlflow.langchain.autolog()
         self.agent_config = load_config("agent")["catalogue_ingestor"]
         self.model = load_model_from_config(self.agent_config["model"])
         self.templates = load_prompt_templates()["catalogue_ingestor"]

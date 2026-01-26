@@ -7,6 +7,7 @@ Usage:
 """
 
 import asyncio
+import traceback
 import uuid
 from agent.src.agents.personal_stylist.core import PersonalStylistAgent
 from agent.src.utils.stream import extract_personal_stylist_metadata
@@ -52,3 +53,4 @@ if __name__ == "__main__":
         asyncio.run(test_streaming())
     except Exception as e:
         print(f"\nError during agent test: {e}")
+        traceback.print_exc()
