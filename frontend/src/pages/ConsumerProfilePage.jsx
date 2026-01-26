@@ -47,7 +47,7 @@ const ConsumerProfilePage = () => {
     { id: 4, name: 'Retro Frames', price: 85.00, icon: Glasses },
   ];
 
-  const StatCard = ({ icon: Icon, value, label, colorClass, iconColor }) => (
+  const StatCard = ({ icon: Icon, value, label, colorClass, iconColor, onClick }) => (
     <div style={{
       background: colors.card.background,
       padding: '20px',
@@ -59,9 +59,10 @@ const ConsumerProfilePage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       textAlign: 'center',
-      cursor: 'pointer',
+      cursor: onClick ? 'pointer' : 'default',
       transition: 'all 0.2s ease',
     }}
+    onClick={onClick}
     onMouseEnter={(e) => {
       e.currentTarget.style.borderColor = colors.primary.eggPink;
       e.currentTarget.style.transform = 'translateY(-2px)';
@@ -154,9 +155,7 @@ const ConsumerProfilePage = () => {
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[
-                    { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
-                    { icon: Compass, label: 'My Journeys', active: false, path: '/journeys' },
-                    { icon: Shirt, label: 'My Closet', active: false, path: '/closet' },
+                    { icon: LayoutGrid, label: 'Overview', active: true },
                     { icon: Sliders, label: 'Style Profile', active: false },
                     { icon: Package, label: 'Orders & Returns', active: false },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false },
@@ -164,15 +163,8 @@ const ConsumerProfilePage = () => {
                   ].map((item, idx) => (
                     <a 
                       key={idx} 
-                      href={item.path || "#"} 
-                      onClick={(e) => {
-                        if (item.path) {
-                          e.preventDefault();
-                          navigate(item.path);
-                        } else {
-                          e.preventDefault();
-                        }
-                      }}
+                      href="#" 
+                      onClick={(e) => e.preventDefault()}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -307,12 +299,14 @@ const ConsumerProfilePage = () => {
                     value="142" 
                     label="Closet Items" 
                     iconColor="#60A5FA" // Blue
+                    onClick={() => navigate('/closet')}
                   />
                   <StatCard 
                     icon={Compass} 
                     value="28" 
                     label="Journeys" 
                     iconColor="#A78BFA" // Purple
+                    onClick={() => navigate('/journeys')}
                   />
                 </div>
 
@@ -398,7 +392,12 @@ const ConsumerProfilePage = () => {
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
                     {recentSaves.map((item) => (
-                      <div key={item.id} style={{ cursor: 'pointer' }} className="group">
+                      <div 
+                        key={item.id} 
+                        style={{ cursor: 'pointer' }} 
+                        className="group"
+                        onClick={() => navigate('/closet')}
+                      >
                         <div style={{
                           aspectRatio: '3/4',
                           background: colors.card.backgroundAlt,
