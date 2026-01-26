@@ -10,7 +10,7 @@ from langgraph.graph import END
 
 from .states import PersonalStylistState
 from .tools import Txt2ImgGenerator
-from .schemas import UIInputList, JourneySchema
+from .schemas import UIInputList, JourneySchema, UserResponse
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -47,7 +47,7 @@ class PersonalStylistAgent:
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
-    def invoke(self, message: str, thread_id: str) -> dict:
+    def chat(self, message: str, thread_id: str) -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity.
 
@@ -60,10 +60,24 @@ class PersonalStylistAgent:
         """
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
         return self.agent.invoke({"messages": [("user", message)]}, config=config)
-
-    async def stream(self, message: str, thread_id: str):
+    
+    def submit_answers(self, thread_id: str, answers: list[UserResponse]) -> dict:
         """
-        Stream agent responses for real-time updates.
+        Submit UI answers to update the journey.
+        
+        Args:
+            thread_id: Unique identifier for the conversation thread
+            answers: List of UserResponse objects with answers to UI questions
+        
+        Returns:
+            dict: Updated agent state
+        """
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        return self.agent.invoke({"ui_answers": answers}, config=config)
+
+    async def chat_stream(self, message: str, thread_id: str):
+        """
+        Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             message: User message to process
@@ -74,6 +88,20 @@ class PersonalStylistAgent:
         """
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
         return self.agent.astream_events({"messages": [("user", message)]}, config=config, version="v2")
+    
+    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse]) -> dict:
+        """
+        Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
+        
+        Args:
+            thread_id: Unique identifier for the conversation thread
+            answers: List of UserResponse objects with answers to UI questions
+        
+        Returns:
+            dict: Updated agent state
+        """
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        return self.agent.astream_events({"ui_answers": answers}, config=config, version="v2")
 
     def get_state(self, thread_id: str):
         """
@@ -87,19 +115,6 @@ class PersonalStylistAgent:
         """
         config = {"configurable": {"thread_id": thread_id}}
         return self.agent.get_state(config)
-
-    def get_state_values(self, thread_id: str) -> dict:
-        """
-        Get the state values (without metadata) for a thread.
-
-        Args:
-            thread_id: Unique identifier for the conversation thread
-
-        Returns:
-            dict: State values including ui_inputs, ui_answers, journey
-        """
-        state = self.get_state(thread_id)
-        return state.values if state else {}
     
     def _has_pending_user_input(self, state: PersonalStylistState) -> str:
         """Check if there are pending answers or user messages to process."""
