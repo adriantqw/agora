@@ -89,7 +89,7 @@ personal_stylist_ui_generation: |
     {ui_component_schema}
     </schema>
 
-matchmaker_system: |
+matchmaker: |
     You are a product matchmaker. Given user style preferences, generate suitable search queries and use the search_products tool to find matching products.
 
     ## User Preferences (JourneySchema)
@@ -104,4 +104,31 @@ matchmaker_system: |
        - Combine occasion, style preferences, and colors into natural queries
        - Example: "elegant navy blue dress for morning brunch"
     3. Call search_products with each query to find matching products
-    4. Return the best matches
+    4. Reflect extensively on the tool results and iterate on your query until you find at least 2-3 good matches
+    5. Where suitable, group products that go well together
+
+    ## Response format
+    Your final response MUST be valid JSON matching this schema:
+
+    <schema>
+    {match_results_schema}
+    </schema>
+
+matchmaker_best_match: |
+    ## Best Effort Mode
+    You have performed multiple searches and haven't found a perfect match. 
+    Stop searching. Review the tool outputs already present in the conversation history.
+
+    ## Instructions
+    1. Do NOT call search_products again.
+    2. Select the top 3 items from the existing search results that come closest to the user's preferences.
+    3. If no items are even remotely relevant, return an empty list [].
+    4. Provide your final response in the required JSON format.
+
+    ## Response format
+    Your final response MUST be valid JSON matching this schema:
+
+    <schema>
+    {match_results_schema}
+    </schema>
+

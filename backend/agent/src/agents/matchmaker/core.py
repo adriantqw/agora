@@ -2,14 +2,14 @@ import json
 import mlflow
 from dotenv import load_dotenv
 
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
 from langgraph.graph import END
 
 from .states import MatchmakerState
-from .schemas import ProductMatch
+from .schemas import MatchResult
 from .tools import search_products
 from ..personal_stylist.schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
@@ -35,7 +35,8 @@ class MatchMakerAgent:
         self.model = load_model_from_config(self.agent_config["model"])
 
         templates = load_prompt_templates()
-        self.system_prompt = templates["matchmaker_system"]
+        self.system_prompt = templates["matchmaker"]
+        self.system_prompt_best_effort = templates["matchmaker_best_effort"]
 
         self.checkpointer = MemorySaver()
         self.tools = [search_products]
@@ -57,6 +58,23 @@ class MatchMakerAgent:
             "journey": journey,
             "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
         }, config=config)
+    
+    def match_stream(self, journey: JourneySchema, thread_id: str) -> dict:
+        """
+        Find products matching journey preferences in streaming mode.
+
+        Args:
+            journey: JourneySchema with user preferences
+            thread_id: Unique identifier for the conversation thread
+
+        Returns:
+            dict: Agent state including messages and matches
+        """
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        return self.agent.astream_events({
+            "journey": journey,
+            "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
+        }, config=config, version="v2")
 
     def get_state(self, thread_id: str):
         """
@@ -74,13 +92,25 @@ class MatchMakerAgent:
     def _invoke_model(self, state: MatchmakerState):
         """Invoke the model to generate search queries."""
         journey = state.get("journey")
-        prompt = self.system_prompt.format(
-            journey=journey.model_dump_json() if journey else "No preferences",
-            journey_schema=JourneySchema.model_json_schema()
-        )
+        iteration_count = state.get("iteration_count")
+
+        # If approaching recursion limit use best effort system prompt
+        if iteration_count >= (RECURSION_LIMIT-1):
+            prompt = self.system_prompt_best_effort.format(
+                journey=journey.model_dump_json() if journey else "No preferences",
+                journey_schema=JourneySchema.model_json_schema()
+            )
+            model = self.model
+        else:
+            prompt = self.system_prompt.format(
+                journey=journey.model_dump_json() if journey else "No preferences",
+                journey_schema=JourneySchema.model_json_schema()
+            )
+            model = self.model.bind_tools(self.tools)
+
         messages = [SystemMessage(content=prompt)] + state["messages"]
-        response = self.model.bind_tools(self.tools).invoke(messages)
-        return {"messages": [response]}
+        response = model.bind_tools(self.tools).invoke(messages)
+        return {"messages": [response], "iteration_count": iteration_count}
 
     def _should_continue(self, state: MatchmakerState):
         """Determine whether to continue processing."""
@@ -92,16 +122,8 @@ class MatchMakerAgent:
     def _parse_matches(self, state: MatchmakerState):
         """Extract matches from tool results in messages."""
         matches = []
-        for msg in state["messages"]:
-            if hasattr(msg, "content") and isinstance(msg.content, str):
-                try:
-                    data = json.loads(msg.content)
-                    if isinstance(data, list):
-                        for item in data:
-                            if isinstance(item, dict) and "id" in item:
-                                matches.append(ProductMatch(**item))
-                except:
-                    pass
+        structured_model = self.model.with_structured_output(MatchResult)
+        matches = structured_model.invoke(state["messages"])
         return {"matches": matches}
 
     def _compile_graph(self):

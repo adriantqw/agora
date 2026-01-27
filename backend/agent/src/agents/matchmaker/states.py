@@ -10,3 +10,4 @@ class MatchmakerState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     journey: Optional[JourneySchema]
     matches: Annotated[list[ProductMatch], operator.add]
+    iteration_count: int = 0
