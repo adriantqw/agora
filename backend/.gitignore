@@ -42,7 +42,6 @@ venv.bak/
 Thumbs.db
 
 .env
-*.db
 
 /data/
 

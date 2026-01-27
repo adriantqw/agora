@@ -1,7 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
-import StorefrontLandingPage from './pages/StorefrontLandingPage'
+import { SearchProvider } from './contexts/SearchContext'
+import { FittingRoomProvider } from './contexts/FittingRoomContext'
+import ConsumerLandingPage from './pages/ConsumerLandingPage'
+import ShoppingConciergePage from './pages/ShoppingConciergePage'
+import SearchResultsPage from './pages/SearchResultsPage'
+import FittingRoomPage from './pages/FittingRoomPage'
+import BrowsePage from './pages/BrowsePage'
+import ConsumerLoginPage from './pages/ConsumerLoginPage'
+import ConsumerProfilePage from './pages/ConsumerProfilePage'
+import JourneysPage from './pages/JourneysPage'
+import ClosetPage from './pages/ClosetPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -9,7 +19,7 @@ import OrdersPage from './pages/MerchantOrdersPage'
 import BulkImportPage from './pages/MerchantBulkImportPage'
 
 function AppRoutes() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, userType, loading } = useAuth()
 
   // Show loading state while checking authentication
   if (loading) {
@@ -33,14 +43,40 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* Public Route */}
-      <Route path="/" element={<StorefrontLandingPage />} />
+      {/* Public Routes */}
+      <Route path="/" element={<ConsumerLandingPage />} />
+      <Route path="/journey" element={<ShoppingConciergePage />} />
+      <Route path="/search" element={<SearchResultsPage />} />
+      <Route path="/fitting-room" element={<FittingRoomPage />} />
+      <Route path="/browse" element={<BrowsePage />} />
+      <Route path="/browse/:category" element={<BrowsePage />} />
+      
+      <Route 
+        path="/login" 
+        element={
+          isAuthenticated && userType === 'consumer' 
+            ? <Navigate to="/profile" replace /> 
+            : <ConsumerLoginPage />
+        } 
+      />
+      
+      <Route 
+        path="/profile" 
+        element={
+          isAuthenticated 
+            ? <ConsumerProfilePage /> 
+            : <Navigate to="/login" replace />
+        } 
+      />
+
+      <Route path="/journeys" element={<JourneysPage />} />
+      <Route path="/closet" element={<ClosetPage />} />
 
       {/* Merchant Routes */}
       <Route
         path="/merchant/login"
         element={
-          isAuthenticated
+          isAuthenticated && userType === 'merchant'
             ? <Navigate to="/merchant" replace />
             : <LoginPage />
         }
@@ -48,7 +84,7 @@ function AppRoutes() {
       <Route
         path="/merchant"
         element={
-          isAuthenticated
+          isAuthenticated && userType === 'merchant'
             ? <MerchantHomePage />
             : <Navigate to="/merchant/login" replace />
         }
@@ -56,7 +92,7 @@ function AppRoutes() {
       <Route
         path="/merchant/inventory"
         element={
-          isAuthenticated
+          isAuthenticated && userType === 'merchant'
             ? <DashboardPage />
             : <Navigate to="/merchant/login" replace />
         }
@@ -64,7 +100,7 @@ function AppRoutes() {
       <Route
         path="/merchant/orders"
         element={
-          isAuthenticated
+          isAuthenticated && userType === 'merchant'
             ? <OrdersPage />
             : <Navigate to="/merchant/login" replace />
         }
@@ -72,7 +108,7 @@ function AppRoutes() {
       <Route
         path="/merchant/import"
         element={
-          isAuthenticated
+          isAuthenticated && userType === 'merchant'
             ? <BulkImportPage />
             : <Navigate to="/merchant/login" replace />
         }
@@ -85,7 +121,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AppRoutes />
+        <SearchProvider>
+          <FittingRoomProvider>
+            <AppRoutes />
+          </FittingRoomProvider>
+        </SearchProvider>
       </AuthProvider>
     </ThemeProvider>
   )
