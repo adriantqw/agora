@@ -45,17 +45,22 @@ const ConsumerLandingPage = () => {
         zIndex: 10,
       }}>
         
-        {/* Mascot & Greeting */}
+        {/* Hero Header Section */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '24px',
-          marginBottom: '20px',
+          justifyContent: 'center',
+          gap: '48px',
+          width: '100%',
+          maxWidth: '1000px',
+          marginBottom: '10px',
+          textAlign: 'left',
         }}>
-          {/* Mascot */}
+          {/* Mascot (Bigger) */}
           <div style={{
-            width: '120px',
-            height: '140px',
+            width: '200px',
+            height: '240px',
+            flexShrink: 0,
             animation: 'float 6s ease-in-out infinite',
           }}>
              <img 
@@ -65,38 +70,37 @@ const ConsumerLandingPage = () => {
             />
           </div>
 
-          {/* Text */}
-          <div style={{ textAlign: 'left' }}>
+          {/* Text Content */}
+          <div>
             <h1 style={{
-              fontSize: '32px',
+              fontSize: '42px',
               fontWeight: '800',
               color: '#2D3748',
-              margin: '0 0 8px 0',
-              lineHeight: '1.2',
+              margin: '0 0 16px 0',
+              lineHeight: '1.1',
             }}>
               Hi, I'm Eggora-chan!<br/>
               <span style={{ color: '#4C1D95' }}>Your personal shopping assistant...</span>
             </h1>
+            
+            <p style={{
+              fontSize: '18px',
+              color: '#4A5568',
+              maxWidth: '560px',
+              margin: 0,
+              lineHeight: '1.6',
+            }}>
+              Tell me about an event, outfit or idea you want to shop for, and I can come back with curated suggestions just for you!
+            </p>
           </div>
         </div>
-
-        {/* Description */}
-        <p style={{
-          fontSize: '16px',
-          color: '#4A5568',
-          maxWidth: '520px',
-          marginBottom: '40px',
-          lineHeight: '1.6',
-        }}>
-          Tell me about an event, outfit or idea you want to shop for, and I can come back with curated suggestions just for you!
-        </p>
 
         {/* Search Bar */}
         <form 
           onSubmit={handleSearch}
           style={{
             width: '100%',
-            maxWidth: '600px',
+            maxWidth: '1000px',
             position: 'relative',
             marginBottom: '60px',
           }}
@@ -184,7 +188,7 @@ const ConsumerLandingPage = () => {
            <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '210px', transform: 'rotate(2deg)', animation: 'float 7.5s ease-in-out infinite 0.2s' }} />
            <div style={{ width: '130px', height: '20px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(10px)', marginTop: '18px', animation: 'shadow 7.5s ease-in-out infinite 0.2s' }} />
         </div>
-        <div style={{ position: 'absolute', bottom: '15%', left: '26%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+        <div style={{ position: 'absolute', bottom: '15%', left: '28%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
            <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '150px', transform: 'rotate(-3deg)', animation: 'float 6.5s ease-in-out infinite 1s' }} />
            <div style={{ width: '100px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', marginTop: '15px', animation: 'shadow 6.5s ease-in-out infinite 1s' }} />
         </div>
@@ -212,11 +216,11 @@ const ConsumerLandingPage = () => {
         </div>
 
         {/* Right Group (Bunched) */}
-        <div style={{ position: 'absolute', bottom: '14%', right: '15%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+        <div style={{ position: 'absolute', bottom: '12%', right: '15%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
            <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '180px', transform: 'rotate(-6deg)', animation: 'float 8s ease-in-out infinite 1.5s' }} />
            <div style={{ width: '120px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '18px', animation: 'shadow 8s ease-in-out infinite 1.5s' }} />
         </div>
-        <div style={{ position: 'absolute', bottom: '8%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+        <div style={{ position: 'absolute', bottom: '11%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
            <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(3deg)', animation: 'float 6s ease-in-out infinite 2s' }} />
            <div style={{ width: '90px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '15px', animation: 'shadow 6s ease-in-out infinite 2s' }} />
         </div>
