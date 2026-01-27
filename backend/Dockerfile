@@ -1,6 +1,4 @@
-# Multi-stage Dockerfile for FastAPI backend optimized for Cloud Run
-
-# Stage 1: Builder - Install dependencies with uv
+# Stage 1: Builder
 FROM python:3.11-slim AS builder
 
 # Set working directory
@@ -12,22 +10,20 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+# --- FIX 1: Use the official uv binary instead of the curl script ---
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Copy dependency files from backend root
-COPY pyproject.toml pyproject.toml
-COPY uv.lock uv.lock 2>/dev/null || true
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
 
-# Create virtual environment and install dependencies
-RUN uv venv /opt/venv
-RUN uv sync --frozen 2>/dev/null || uv sync
+# --- FIX 2: Create the venv properly using uv ---
+# We set UV_PROJECT_ENVIRONMENT so uv knows exactly where to put the venv
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+RUN uv sync --frozen --no-install-project
 
-# Stage 2: Runtime - Minimal production image with Tesseract
+# Stage 2: Runtime
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
 # Install Tesseract OCR and runtime dependencies
@@ -45,7 +41,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     TESSERACT_PATH=/usr/bin/tesseract
 
-# Create non-root user for security
+# Create non-root user
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
@@ -54,19 +50,15 @@ COPY --chown=appuser:appuser app ./app
 COPY --chown=appuser:appuser agent ./agent
 COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser run.py .
-# Copy pre-seeded database file from repository
 COPY --chown=appuser:appuser agora.db ./agora.db
 
-# Switch to non-root user
 USER appuser
-
-# Expose port 8080 (Cloud Run default)
 EXPOSE 8080
 
-# Health check
+# Health check (Ensure 'requests' is in your pyproject.toml)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8080/health', timeout=5)" || exit 1
 
-# Start server (database is pre-seeded in image)
-# Cloud Run provides PORT environment variable, default to 8080
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --no-access-log
+# --- FIX 3: Solve the JSONArgsRecommended warning ---
+# To use environment variables like ${PORT} in JSON format, we call the shell explicitly
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1 --no-access-log"]

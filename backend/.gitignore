@@ -42,7 +42,7 @@ venv.bak/
 Thumbs.db
 
 .env
-*.db
+mlflow.db
 *.ipynb
 
 /data/

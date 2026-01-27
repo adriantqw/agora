@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora - My Profile</title>
+    
+    <!-- Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        agora: {
+                            pink: '#F294AA',
+                            pinkDark: '#E07D94',
+                            bg: '#F8F9FB',
+                            text: '#1F2937',
+                            muted: '#6B7280',
+                            accent: '#FDF2F4'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8F9FB; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-gray-800">
+
+    <!-- HEADER -->
+    <header class="bg-agora-pink h-16 flex items-center justify-between px-6 md:px-10 shadow-sm sticky top-0 z-50">
+        <!-- Logo Area -->
+        <a href="index.html" class="flex items-center space-x-2 text-white cursor-pointer hover:opacity-90 transition">
+            <i class="ph-fill ph-smiley text-3xl"></i>
+            <span class="text-xl font-bold tracking-tight">Agora</span>
+        </a>
+
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 w-96 mx-4 border border-white/30">
+            <i class="ph ph-magnifying-glass text-white text-lg"></i>
+            <input type="text" placeholder="Search your closet or journeys..." class="bg-transparent border-none outline-none text-white placeholder-white/80 ml-2 w-full text-sm">
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex items-center space-x-6 text-white/90">
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-flag text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Journeys</span>
+            </a>
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-t-shirt text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Closet</span>
+            </a>
+            <a href="#" class="flex flex-col items-center group opacity-100 font-semibold cursor-pointer">
+                <div class="bg-white/20 p-1.5 rounded-full mb-0.5 relative">
+                    <i class="ph-fill ph-user text-lg"></i>
+                    <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-400 rounded-full border-2 border-agora-pink"></div>
+                </div>
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+            </a>
+        </nav>
+    </header>
+
+    <!-- DASHBOARD CONTENT -->
+    <main class="flex-grow bg-agora-bg p-4 md:p-8">
+        <div class="container mx-auto max-w-6xl">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+                <a href="index.html" class="hover:text-agora-pink">Home</a>
+                <i class="ph ph-caret-right text-xs"></i>
+                <span class="text-gray-800 font-medium">My Account</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-3xl shadow-sm p-6 sticky top-24 fade-in">
+                        <div class="flex flex-col items-center mb-8">
+                            <div class="w-24 h-24 rounded-full bg-pink-50 p-1 mb-3 relative">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=ffdfbf" alt="Profile" class="w-full h-full rounded-full">
+                                <div class="absolute bottom-1 right-1 w-6 h-6 bg-agora-pink rounded-full flex items-center justify-center text-white border-2 border-white">
+                                    <i class="ph-bold ph-pencil-simple text-xs"></i>
+                                </div>
+                            </div>
+                            <h2 class="text-lg font-bold text-gray-900">Sarah Jenkins</h2>
+                            <p class="text-xs text-gray-500">Member since 2023</p>
+                        </div>
+
+                        <nav class="space-y-1">
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-pink-50 text-agora-pink rounded-xl font-semibold transition-colors">
+                                <i class="ph-fill ph-squares-four text-lg"></i>
+                                Overview
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-sliders text-lg"></i>
+                                Style Profile
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-package text-lg"></i>
+                                Orders & Returns
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-heart text-lg"></i>
+                                Wishlist
+                                <span class="ml-auto bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">12</span>
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-gear text-lg"></i>
+                                Settings
+                            </a>
+                        </nav>
+                        
+                        <div class="mt-8 pt-6 border-t border-gray-100">
+                            <a href="index.html" class="flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-500 font-medium text-sm transition-colors w-full">
+                                <i class="ph ph-sign-out text-lg"></i>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Welcome Banner -->
+                    <div class="bg-gradient-to-r from-agora-pink to-pink-400 rounded-3xl p-8 text-white shadow-lg shadow-pink-200 relative overflow-hidden fade-in" style="animation-delay: 0.1s;">
+                        <div class="absolute right-0 top-0 h-full w-1/2 bg-white opacity-10 transform skew-x-12 translate-x-12"></div>
+                        <div class="relative z-10">
+                            <h1 class="text-3xl font-bold mb-2">Hello, Sarah! ✨</h1>
+                            <p class="opacity-90 max-w-md mb-6">Your closet analysis is complete. Based on the "Spring Collection" trends, we've found 5 items you might love.</p>
+                            <button class="bg-white text-agora-pink px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:bg-pink-50 transition-colors inline-flex items-center gap-2">
+                                View Recommendations <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Row -->
+                    <div class="grid grid-cols-3 gap-4 fade-in" style="animation-delay: 0.2s;">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-pink-100 transition-colors cursor-pointer group">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="ph-fill ph-t-shirt text-xl"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">142</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Closet Items</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-pink-100 transition-colors cursor-pointer group">
+                            <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="ph-fill ph-magic-wand text-xl"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">28</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Journeys</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center justify-center text-center hover:border-pink-100 transition-colors cursor-pointer group">
+                            <div class="w-10 h-10 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <i class="ph-fill ph-leaf text-xl"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">High</div>
+                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wide">Sustainability</div>
+                        </div>
+                    </div>
+
+                    <!-- Style Profile Section -->
+                    <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 fade-in" style="animation-delay: 0.3s;">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Your Style DNA</h3>
+                                <p class="text-sm text-gray-500">Based on your recent interactions</p>
+                            </div>
+                            <button class="text-agora-pink text-sm font-semibold hover:underline">Edit Profile</button>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="px-4 py-2 rounded-xl bg-pink-50 text-agora-pink font-semibold text-sm border border-pink-100">Romantic Chic</span>
+                            <span class="px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-medium text-sm border border-gray-100">Minimalist</span>
+                            <span class="px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-medium text-sm border border-gray-100">Neutral Palette</span>
+                            <span class="px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-medium text-sm border border-gray-100">Sustainable Fabrics</span>
+                        </div>
+
+                        <!-- Progress Bar Block -->
+                        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-bold uppercase text-gray-400">Profile Completeness</span>
+                                <span class="text-xs font-bold text-agora-pink">85%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                                <div class="bg-agora-pink h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex-grow">
+                                    <p class="text-sm font-medium text-gray-800">Add a body photo for better sizing accuracy.</p>
+                                    <p class="text-xs text-gray-500">Only visible to your AI stylist.</p>
+                                </div>
+                                <button class="px-4 py-2 bg-white border border-gray-200 shadow-sm rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50">Upload</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Favorites -->
+                    <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 fade-in" style="animation-delay: 0.4s;">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Recent Saves</h3>
+                            <div class="flex gap-2">
+                                <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="ph-bold ph-caret-left"></i></button>
+                                <button class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><i class="ph-bold ph-caret-right"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- Items -->
+                            <div class="group relative">
+                                <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden mb-3">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+                                        <i class="ph-duotone ph-dress text-4xl"></i>
+                                    </div>
+                                    <div class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <i class="ph-fill ph-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 truncate">Silk Midi Dress</div>
+                                <div class="text-xs text-gray-500">$245.00</div>
+                            </div>
+                            <div class="group relative">
+                                <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden mb-3">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+                                        <i class="ph-duotone ph-handbag text-4xl"></i>
+                                    </div>
+                                    <div class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <i class="ph-fill ph-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 truncate">Leather Tote</div>
+                                <div class="text-xs text-gray-500">$180.00</div>
+                            </div>
+                            <div class="group relative">
+                                <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden mb-3">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+                                        <i class="ph-duotone ph-sneaker text-4xl"></i>
+                                    </div>
+                                    <div class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <i class="ph-fill ph-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 truncate">Urban Runners</div>
+                                <div class="text-xs text-gray-500">$120.00</div>
+                            </div>
+                            <div class="group relative">
+                                <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden mb-3">
+                                    <div class="absolute inset-0 flex items-center justify-center text-gray-300">
+                                        <i class="ph-duotone ph-sunglasses text-4xl"></i>
+                                    </div>
+                                    <div class="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                        <i class="ph-fill ph-heart"></i>
+                                    </div>
+                                </div>
+                                <div class="text-sm font-bold text-gray-800 truncate">Retro Frames</div>
+                                <div class="text-xs text-gray-500">$85.00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white py-12 border-t border-gray-100 text-xs mt-auto">
+        <div class="container mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="col-span-2 md:col-span-1">
+                <div class="flex items-center space-x-2 text-agora-pink mb-4">
+                    <i class="ph-fill ph-smiley text-2xl"></i>
+                    <span class="text-lg font-bold">Agora</span>
+                </div>
+                <p class="text-gray-400 leading-relaxed mb-4">
+                    Your personal AI stylist for every occasion. Start a journey, build your closet, and let AI help you look your best.
+                </p>
+                <div class="text-gray-300">
+                    © 2024 Agora. All rights reserved.
+                </div>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">My Activity</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Journeys</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">My Closet</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Saved Items</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Experience</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Start a Journey</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Browse Styles</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">AI Stylist</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Help Center</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Size Guide</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Returns</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -59,28 +59,51 @@
   --gradient-blue: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   --gradient-purple: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
   --gradient-ai: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* Pink Color Palette for Consumer Pages */
+  --color-primary-pink: #F5A5B8;
+  --color-primary-pink-dark: #E8879C;
+  --color-primary-pink-light: #FDD5DD;
+  --color-secondary-pink: #FFB6C1;
+
+  /* Egg Pink Palette for Journey Homepage */
+  --color-egg-pink: #ffb7c5;
+  --color-egg-pink-light: #ff9fb0;
+
+  /* Gradients for Fashion Experience (Consumer) */
+  --gradient-pink: linear-gradient(135deg, #F5A5B8 0%, #E8879C 100%);
+  --gradient-fitting-room: linear-gradient(180deg, #FFB6C1 0%, #FFA07A 100%);
+
+  /* Surface Colors for Consumer Pages */
+  --color-surface-light: #F9F9F9;
+  --color-border-subtle: #EEEEEE;
+  --section-divider: #1a202c;
 }
 
 html.dark-theme {
-  /* Dark theme overrides */
-  --page-background: #0f1419;
-  --card-background: #1a1f2e;
-  --card-background-alt: #232938;
+  /* Dark theme overrides - Modern Deep Charcoal */
+  --page-background: #0f1115;
+  --card-background: #181b21;
+  --card-background-alt: #22262e;
 
-  --text-primary: #e2e8f0;
-  --text-secondary: #a0aec0;
-  --text-tertiary: #8892a6;
-  --text-muted: #6b7280;
+  /* Text - High Contrast for Readability */
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-tertiary: #6b7280;
+  --text-muted: #4b5563;
 
-  --border-color: #2d3748;
+  /* Borders - Subtle & Refined */
+  --border-color: #2d333b;
   --border-color-light: #374151;
 
-  --primary-blue: #63b3ed;
-  --primary-blue-dark: #4299e1;
-  --primary-blue-light: #90cdf4;
-  --primary-purple: #9f7aea;
-  --primary-purple-dark: #805ad5;
+  /* Primary Brand Colors - Adjusted for Dark Mode */
+  --primary-blue: #60a5fa;
+  --primary-blue-dark: #3b82f6;
+  --primary-blue-light: #93c5fd;
+  --primary-purple: #a78bfa;
+  --primary-purple-dark: #8b5cf6;
 
+  /* Status Colors - Slightly Desaturated to reduce eye strain */
   --success-bg: #064e3b;
   --success-text: #6ee7b7;
   --success-icon: #34d399;
@@ -100,28 +123,50 @@ html.dark-theme {
   --pending-bg: #831843;
   --pending-text: #f9a8d4;
 
-  --icon-bg-blue: #1e3a8a;
-  --icon-bg-red: #7f1d1d;
-  --icon-bg-green: #064e3b;
-  --icon-bg-yellow: #78350f;
-  --icon-bg-purple: #5b21b6;
+  /* Icon Backgrounds - Darker & Translucent */
+  --icon-bg-blue: rgba(59, 130, 246, 0.15);
+  --icon-bg-red: rgba(239, 68, 68, 0.15);
+  --icon-bg-green: rgba(16, 185, 129, 0.15);
+  --icon-bg-yellow: rgba(245, 158, 11, 0.15);
+  --icon-bg-purple: rgba(139, 92, 246, 0.15);
 
+  /* Inputs */
   --input-border: #374151;
   --input-border-focus: #60a5fa;
-  --input-background: #1f2937;
-  --input-placeholder: #6b7280;
+  --input-background: #111318;
+  --input-placeholder: #4b5563;
 
   --button-text: #9ca3af;
   --button-border: #374151;
 
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-blue: 0 4px 12px rgba(99, 179, 237, 0.2);
-  --shadow-purple: 0 4px 12px rgba(159, 122, 234, 0.2);
+  /* Shadows - Smoother Dark Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-blue: 0 4px 12px rgba(96, 165, 250, 0.2);
+  --shadow-purple: 0 4px 12px rgba(167, 139, 250, 0.2);
 
-  --gradient-blue: linear-gradient(135deg, #3182ce 0%, #2563eb 100%);
-  --gradient-purple: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-  --gradient-ai: linear-gradient(135deg, #7c3aed 0%, #6b21a8 100%);
+  --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --gradient-ai: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+
+  /* Pink Color Palette - Vibrant & Glowing for Dark Mode */
+  --color-primary-pink: #FF9EB5;
+  --color-primary-pink-dark: #FF85A3;
+  --color-primary-pink-light: #5e2c35;
+  --color-secondary-pink: #FFB6C1;
+
+  /* Egg Pink Palette */
+  --color-egg-pink: #f48fb1;
+  --color-egg-pink-light: #311b1e;
+
+  /* Gradients for Fashion Experience */
+  --gradient-pink: linear-gradient(135deg, #FF9EB5 0%, #FF85A3 100%);
+  --gradient-fitting-room: linear-gradient(180deg, #FFB6C1 0%, #FB923C 100%);
+
+  /* Surface Colors */
+  --color-surface-light: #181b21;
+  --color-border-subtle: #2d333b;
+  --section-divider: #f3f4f6;
 }
 
 * {
@@ -131,7 +176,7 @@ html.dark-theme {
 }
 
 body {
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--background-color);

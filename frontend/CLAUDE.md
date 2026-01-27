@@ -40,7 +40,7 @@ interface Product {
 ```
 
 **Implemented Screens:**
-1. ✅ `src/pages/StorefrontLandingPage.jsx` - Customer-facing storefront (public)
+1. ✅ `src/pages/ConsumerLandingPage.jsx` - Journey-based consumer homepage with AI stylist (public)
 2. ✅ `src/pages/MerchantLoginPage.jsx` - Login with demo credentials
 3. ✅ `src/pages/MerchantHomePage.jsx` - Dashboard home with metrics and quick actions
 4. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
@@ -77,6 +77,34 @@ From `merchant-login-page.jsx`, the established design system uses:
 - Inputs: 2px border, `#e2e8f0` default, `#63b3ed` on focus
 - Buttons: Gradient backgrounds, box-shadow on enabled state
 - Inline styles (no CSS framework currently)
+
+**Consumer Homepage Colors (Journey-Based Design):**
+- Egg pink: `#ffb7c5`, `#ff9fb0` (primary accent for AI features and CTAs)
+- Pink gradients for hero sections and interactive elements
+- Inter font family for consumer-facing pages
+- Icons from lucide-react package
+
+## Consumer Homepage Design
+
+**Journey-Based Architecture:**
+The consumer homepage follows a journey-centric design pattern:
+- **Hero Section**: AI-powered search with typewriter placeholder effect
+- **Journey Sections**: Three pre-curated journeys (Valentine's Day, Office Edit, Girls' Night Out)
+- **Outfit Cards**: 4 cards per journey with 3:4 aspect ratio, hover effects
+- **AI Integration**: FAB (floating action button) for future AI chat functionality
+
+**Key Components:**
+- `JourneyHero`: Search bar with animated typewriter placeholders, status pills
+- `JourneySection`: Grid of outfit cards with journey title and status badge
+- `OutfitCard`: Product card with icon placeholder, AI Pick badge, price, add button
+- `Footer`: 4-column responsive footer with navigation links
+- `Header` (journey variant): Navigation buttons (Journeys, My Inventory, Account) with Lucide icons
+- `Mascot` (fab variant): Simple 60px circular button with Sparkles icon
+
+**Responsive Breakpoints:**
+- Desktop (>1280px): 4-column outfit grid
+- Tablet (768-1024px): 2-column outfit grid
+- Mobile (<768px): 1-column outfit grid, icon-only navigation
 
 ## Navigation Pattern
 
@@ -171,14 +199,29 @@ See `README.docker.md` for comprehensive Docker documentation.
 ```
 src/
   pages/
-    StorefrontLandingPage.jsx  # Customer storefront
+    ConsumerLandingPage.jsx    # Journey-based consumer homepage with AI stylist
     MerchantHomePage.jsx       # Merchant dashboard home with metrics
     MerchantLoginPage.jsx      # Merchant login page
     MerchantDashboardPage.jsx  # Inventory dashboard with full-page edit view
     MerchantBulkImportPage.jsx # Bulk import wizard
+  components/
+    consumer/
+      JourneyHero/             # Hero section with AI search and typewriter effect
+      JourneySection/          # Journey section with outfit cards grid
+      OutfitCard/              # Individual outfit card component
+      Footer/                  # Consumer footer with links
+    common/
+      Header/                  # Header with journey/full/compact variants
+      Mascot/                  # Mascot with default/fab variants
+    dynamic-forms/             # AI-driven question components (See DynamicForms.md)
+      registry/                # Component registry
+      QuestionRenderer.jsx     # Main renderer component
+      ...                      # Individual form components (ImageChoice, FreeText, etc.)
+  data/
+    mockJourneys.js            # Mock journey and outfit data
   App.jsx                      # Main app with routing & auth
   main.jsx                     # App entry point
-  index.css                    # Global styles
+  index.css                    # Global styles with egg pink palette
 wireframe/                     # Original wireframe components (reference)
 public/                        # Static assets
   favicon.svg                  # SVG favicon (primary)
@@ -214,7 +257,11 @@ To regenerate PNG favicons:
 ## Routes
 
 **Public Routes:**
-- `/` - Customer storefront landing page (public)
+- `/` - Journey-based consumer homepage with AI stylist (public)
+- `/journey` - Shopping quiz for outfit curation
+- `/fitting-room` - Virtual fitting room
+- `/browse` - Browse products by category
+- `/search` - Search results page
 
 **Merchant Routes:**
 - `/merchant/login` - Merchant login (redirects to home if authenticated)
@@ -404,6 +451,78 @@ POST /api/catalogues/{id}/create-products - Convert items to products
 - Price/quantity input for batch product creation
 - Cropped item image display from R2 storage
 - Extraction progress indicators
+
+### January 25, 2026
+
+**Shopping Concierge Chat Interface (Consumer Journey Flow)**
+- ✅ Rebuilt `ShoppingConciergePage.jsx` from 3-step wizard to chat-based conversational interface
+- ✅ Created modular Chat component architecture:
+  - `AIAvatar` - 40px egg pink avatar with Sparkles icon
+  - `UserMessage` - Right-aligned dark message bubbles
+  - `AIMessage` - Left-aligned white bubbles with title/description
+  - `StyleCard` - Interactive aesthetic selection cards
+  - `SummaryPanel` - Right sidebar (responsive 1/3 width) with journey context, scrollable content, fixed action buttons
+  - `ChatFeed` - Scrollable message feed with auto-scroll
+- ✅ Updated `conciergeService.js` with conversation flow methods:
+  - `getAestheticOptions()` - Returns 4 aesthetic choices
+  - `extractOccasion(query)` - Keyword-based occasion detection
+  - `extractLocation(query)` - Location/weather extraction
+  - `generateConversationResponse(step)` - AI response generator
+- ✅ Implemented split layout matching `wireframe/journey_v2.html` design
+- ✅ Replaced STYLE_GUIDE with `useThemeColors` hook (egg pink palette)
+- ✅ Added real-time journey context updates in summary panel
+- ✅ Responsive design with mobile breakpoint (< 900px stacks vertically)
+- ✅ Route changed from `/quiz` to `/journey` across all files
+- ✅ Header component variants: `landing` (icon + text) vs `journey` (icon-only with search bar)
+- ✅ Journey rename feature with inline edit popup
+- ✅ Summary panel action buttons: "Save Journey" and "Return to Home"
+
+**Current Implementation:**
+- User submits query from landing page → Chat interface loads at `/journey`
+- AI presents 4 aesthetic options (Romantic, Chic, Edgy, Boho)
+- User selects aesthetic → User message bubble appears
+- Journey context updates with occasion, weather (extracted from query)
+- Status updates: "Creating Style Profile..." → "Building Your Journey..." → "Journey Complete!"
+- Journey title can be renamed via pencil icon
+- Header search bar allows adding new queries to chat
+
+**Architecture:**
+```
+┌──────────────────────────────────────┬────────────┐
+│         Chat Feed (Left)             │  Summary   │
+│   - User messages (right-aligned)    │   Panel    │
+│   - AI messages (left-aligned)       │  (Right)   │
+│   - Interactive StyleCard grids      │  1/3 width │
+│   - Header with search bar           │  Scrolls   │
+│                                      │  + Fixed   │
+│                                      │  Buttons   │
+└──────────────────────────────────────┴────────────┘
+```
+
+**Next Phase - Full Conversation Flow:**
+- Implement multi-step conversation (occasion → weather → budget → key pieces)
+- Add edit functionality for summary panel fields (occasion, weather, budget)
+- Navigate to results page with curated product recommendations
+- Integrate with real AI backend service
+- Persist journey context to database
+
+See `IMPLEMENTATION_SUMMARY.md` for complete technical documentation.
+
+### January 27, 2026
+
+**AI-Powered Dynamic Forms (Hybrid Approach)**
+- ✅ Implemented `src/components/dynamic-forms` architecture
+- ✅ Created `QuestionRenderer` to map JSON schema to React components
+- ✅ Built core component library: `ImageChoice`, `FreeText`, `MultiSelect`, `ScaleRating`, `HybridSelect`, `ColorPalette`, `ImageUpload`
+- ✅ Established `StyleGuide` pattern for AI-to-UI contract
+- ✅ Documented full specification in `DynamicForms.md`
+
+**Key Architecture:**
+- **Hybrid Model:** AI generates JSON data (questions/options), React renders pre-built components
+- **Type Safety:** Strict TypeScript interfaces for Question/Option schemas (see `DynamicForms.md`)
+- **Component Registry:** Maps string types (e.g., "image-choice") to React components
+
+See `DynamicForms.md` for complete architectural details, schema definitions, and usage examples.
 
 ### Next Steps
 
