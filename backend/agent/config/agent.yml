@@ -19,3 +19,12 @@ personal_stylist:
     params:
       <<: *base_model_params_recipe
       max_tokens: 4096
+
+### Matchmaker config
+matchmaker:
+  <<: *base_agent_recipe
+  model:
+    <<: *base_model_recipe
+    params:
+      <<: *base_model_params_recipe
+      max_tokens: 4096

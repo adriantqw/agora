@@ -23,7 +23,7 @@ class PersonalStylistAgent:
     """
     React-style Personal Stylist Agent with UI generation tools.
 
-    Uses LangGraph's prebuilt react agent pattern with a checkpointer
+    Uses custom LangGraph's react agent pattern with prebuilt checkpointer
     for session management via thread IDs.
     """
 
