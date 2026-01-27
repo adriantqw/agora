@@ -190,7 +190,7 @@ const JourneysPage = () => {
               marginBottom: '8px',
               letterSpacing: '-0.5px'
             }}>
-              Your Journeys
+              My Journeys
             </h1>
             <p style={{ color: colors.text.secondary, fontSize: '16px' }}>
               Track your active style explorations and curated collections.

@@ -196,7 +196,7 @@ export default function Header({
                           onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                         >
                           <InventoryIcon />
-                          <span>My Inventory</span>
+                          <span>Inventory</span>
                         </button>
           <button
             onClick={() => navigate('/login')}
