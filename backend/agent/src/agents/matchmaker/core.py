@@ -16,8 +16,6 @@ from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
 
-RECURSION_LIMIT = 25
-
 
 class MatchMakerAgent:
     """
@@ -32,10 +30,11 @@ class MatchMakerAgent:
         mlflow.langchain.autolog()
         self.agent_config = load_config("agent")["matchmaker"]
         self.model = load_model_from_config(self.agent_config["model"])
+        self.recursion_limit = self.agent_config["recursion_limit"]
 
         templates = load_prompt_templates()
         self.system_prompt = templates["matchmaker"]
-        self.system_prompt_best_effort = templates["matchmaker_best_effort"]
+        self.system_prompt_best_effort = templates["matchmaker_best_match"]
 
         self.checkpointer = MemorySaver()
         self.tools = [search_products]
@@ -52,7 +51,7 @@ class MatchMakerAgent:
         Returns:
             dict: Agent state including messages and matches
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.invoke({
             "journey": journey,
             "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
@@ -69,7 +68,7 @@ class MatchMakerAgent:
         Returns:
             dict: Agent state including messages and matches
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.astream_events({
             "journey": journey,
             "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
@@ -91,25 +90,27 @@ class MatchMakerAgent:
     def _invoke_model(self, state: MatchmakerState):
         """Invoke the model to generate search queries."""
         journey = state.get("journey")
-        iteration_count = state.get("iteration_count")
+        iteration_count = state.get("iteration_count", 0)
 
         # If approaching recursion limit use best effort system prompt
-        if iteration_count >= (RECURSION_LIMIT-1):
+        if iteration_count >= (self.recursion_limit - 1):
             prompt = self.system_prompt_best_effort.format(
                 journey=journey.model_dump_json() if journey else "No preferences",
-                journey_schema=JourneySchema.model_json_schema()
+                journey_schema=JourneySchema.model_json_schema(),
+                match_results_schema=MatchResult.model_json_schema()
             )
             model = self.model
         else:
             prompt = self.system_prompt.format(
                 journey=journey.model_dump_json() if journey else "No preferences",
-                journey_schema=JourneySchema.model_json_schema()
+                journey_schema=JourneySchema.model_json_schema(),
+                match_results_schema=MatchResult.model_json_schema()
             )
             model = self.model.bind_tools(self.tools)
 
         messages = [SystemMessage(content=prompt)] + state["messages"]
-        response = model.bind_tools(self.tools).invoke(messages)
-        return {"messages": [response], "iteration_count": iteration_count}
+        response = model.invoke(messages)
+        return {"messages": [response], "iteration_count": iteration_count + 1}
 
     def _should_continue(self, state: MatchmakerState):
         """Determine whether to continue processing."""

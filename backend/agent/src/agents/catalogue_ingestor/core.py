@@ -22,8 +22,6 @@ load_dotenv()
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
 
-RECURSION_LIMIT = 200
-
 class CatalogueIngestor:
     """Catalogue ingestor agent. Ingests the unstructured catalogue document and returns a structured catalogue."""
     
@@ -34,6 +32,7 @@ class CatalogueIngestor:
         self.model = load_model_from_config(self.agent_config["model"])
         self.templates = load_prompt_templates()["catalogue_ingestor"]
         self.graph = self._compile_graph()
+        self.recursion_limit = self.agent_config["recursion_limit"]
 
     def _convert_pdf_to_images(self, state: CatalogueIngestorState):
         """Convert PDF pages to images."""
@@ -207,13 +206,13 @@ class CatalogueIngestor:
     def ingest(self, pdf_path: str) -> dict:
         """Ingest the catalogue."""
         initial_state = CatalogueIngestorState(pdf_path=pdf_path)
-        final_state = self.graph.invoke(initial_state, config={"recursion_limit": RECURSION_LIMIT})
+        final_state = self.graph.invoke(initial_state, config={"recursion_limit": self.recursion_limit})
         return final_state
     
     async def stream_ingest(self, pdf_path: str):
         """Asynchronously ingest the catalogue."""
         initial_state = CatalogueIngestorState(pdf_path=pdf_path)
-        return self.graph.astream_events(initial_state, config={"recursion_limit": RECURSION_LIMIT})
+        return self.graph.astream_events(initial_state, config={"recursion_limit": self.recursion_limit})
 
     def parse_final_state(self, final_state: CatalogueIngestorState):
         """

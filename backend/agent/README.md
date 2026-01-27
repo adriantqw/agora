@@ -1,105 +1,134 @@
-## Catalogue Ingestor Agent
+# Agent Module
 
-AI-powered agent for processing product catalogue PDFs using LangGraph and Google Gemini.
+AI-powered agents for the Agora platform using LangGraph and Google Gemini.
 
 ## Directory Structure
 
 ```
 agent/
-├── src/                     # Agent source code
-│   ├── agents/
-│   │   ├── catalogue_ingestor.py    # Main agent class
-│   │   ├── schemas.py               # Pydantic schemas
-│   │   └── states.py                # LangGraph states
-│   ├── models/
-│   │   └── utils.py                 # Model loading utilities
-│   └── utils/
-│       ├── image.py                 # Image processing
-│       └── yaml.py                  # Config loading
 ├── config/
-│   └── agent.yml           # Agent configuration
-├── tests/
-│   └── test_catalogue_ingestor.py
-├── main.py                 # Public API functions
-└── README.md
+│   ├── agent.yml           # Agent configurations
+│   ├── model.yml           # LLM model settings
+│   └── vector_db.yml       # ChromaDB vector store config
+├── src/
+│   ├── agents/
+│   │   ├── catalogue_ingestor/  # PDF catalogue extraction
+│   │   ├── personal_stylist/    # Interactive style gathering
+│   │   └── matchmaker/          # Product matching via vector search
+│   ├── models/
+│   │   └── langchain_utils.py   # Model loading utilities
+│   ├── prompts/
+│   │   └── templates.yml        # System prompts for all agents
+│   ├── utils/
+│   │   ├── yaml.py              # Config/template loaders
+│   │   ├── image.py             # Image processing
+│   │   └── stream.py            # Streaming utilities
+│   └── vector_db/
+│       └── catalogue.py         # ChromaDB + Gemini embeddings
+└── tests/
 ```
 
 ## Development Setup
 
-**Dependencies are managed at the backend root level** (`backend/pyproject.toml`), not in this subdirectory.
-
-To set up the development environment:
+**Dependencies are managed at the backend root level** (`backend/pyproject.toml`).
 
 ```bash
-# From the backend directory
 cd backend
-
-# Create virtual environment and install all dependencies
 uv venv
 uv sync
-
-# Activate virtual environment
-source .venv/bin/activate      # macOS/Linux
-.venv\Scripts\activate         # Windows
+source .venv/bin/activate
 ```
 
-**Note**: You will need to separately install Tesseract OCR:
-- Windows: https://github.com/UB-Mannheim/tesseract/wiki
-- macOS: `brew install tesseract`
-- Linux: `sudo apt-get install tesseract-ocr`
+**Additional requirements:**
+- Tesseract OCR: `brew install tesseract` (macOS) or `apt-get install tesseract-ocr` (Linux)
 
 ## Environment Variables
 
-Environment variables are configured in `backend/.env` (not in this directory):
+Configure in `backend/.env`:
 
 ```env
-GOOGLE_API_KEY=<your_google_api_key>  # Gemini API key from Google AI Studio
-TESSERACT_PATH=/usr/bin/tesseract     # Path to Tesseract binary
+GOOGLE_API_KEY=<your_google_api_key>
+TESSERACT_PATH=/usr/bin/tesseract
 ```
 
-Get your Google API key from: https://makersuite.google.com/app/apikey
+## Agents
 
-## Usage
+### CatalogueIngestorAgent
 
-### As Part of Backend API
-
-The agent is integrated into the FastAPI backend and used via the `/api/catalogues/upload` endpoint.
-
-### Standalone Testing
-
-Test the agent directly:
-
-```bash
-# From backend directory with venv activated
-python agent/tests/test_catalogue_ingestor.py --pdf_path /path/to/catalogue.pdf
-```
-
-### Programmatic Usage
+Extracts product data from PDF catalogue pages.
 
 ```python
 from agent.src.agents.catalogue_ingestor import CatalogueIngestor
 
-# Initialize the agent
 ingestor = CatalogueIngestor()
-
-# Process a PDF
 final_state = await ingestor.ingest(pdf_path="catalogue.pdf")
-
-# Parse results
 items = ingestor.parse_final_state(final_state)
 ```
 
-## Core Functionality
+### PersonalStylistAgent
 
-Located in `main.py`:
+Gathers user style preferences via interactive UI components.
 
-- `ingest_catalogue(file_path)` - Synchronous PDF ingestion
-- `ingest_catalogue_stream(file_path)` - Async streaming ingestion
-- `parse_final_agent_state(state)` - Extract structured items from agent state
+```python
+from agent.src.agents.personal_stylist.core import PersonalStylistAgent
+
+agent = PersonalStylistAgent()
+result = agent.chat("I need an outfit for a brunch date", thread_id="session-123")
+# Returns UI components (image-choice, multi-select, etc.)
+
+# Submit user answers
+result = agent.submit_answers(thread_id="session-123", answers=[...])
+```
+
+**JourneySchema** (accumulated preferences):
+- `occasion`, `style_preferences`, `colour_preferences`
+- `time_of_day`, `season`, `budget_range`
+
+### MatchMakerAgent
+
+Matches products to user preferences using vector similarity search.
+
+```python
+from agent.src.agents.matchmaker.core import MatchMakerAgent
+from agent.src.agents.personal_stylist.schemas import JourneySchema
+
+agent = MatchMakerAgent()
+journey = JourneySchema(
+    title="Brunch Date",
+    occasion="brunch",
+    style_preferences=["minimalist", "elegant"],
+    colour_preferences=["navy", "white"]
+)
+result = agent.match(journey, thread_id="session-123")
+# Returns MatchResult with ProductMatch items
+```
+
+## Vector Database
+
+ChromaDB with Gemini embeddings for product similarity search.
+
+```python
+from agent.src.vector_db import CatalogueVectorDb
+
+vdb = CatalogueVectorDb("catalogue_items")
+vdb.bulk_sync_catalogue()  # Sync all products + catalogue items
+results = vdb.search("elegant navy dress", n_results=10)
+```
+
+## Running Tests
+
+```bash
+cd backend
+
+# Test individual agents
+python -m agent.tests.test_matchmaker
+python -m agent.tests.test_personal_stylist
+python -m agent.tests.test_catalogue_ingestor --pdf_path /path/to/catalogue.pdf
+```
 
 ## Agent Configuration
 
-Agent behavior is configured in `config/agent.yml`:
+`config/agent.yml`:
 
 ```yaml
 catalogue_ingestor:
@@ -108,4 +137,16 @@ catalogue_ingestor:
     params:
       temperature: 0.7
       max_tokens: 1024
+
+personal_stylist:
+  model:
+    name: gemini-3-pro-preview
+    params:
+      max_tokens: 4096
+
+matchmaker:
+  model:
+    name: gemini-3-pro-preview
+    params:
+      max_tokens: 4096
 ```
