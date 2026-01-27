@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.routes import auth, products, catalogues, consumer_auth, journeys
+from app.routes import auth, products, catalogues, consumer_auth, journeys, stylist
 import logging
 
 # Configure logging
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(products.router)
 app.include_router(catalogues.router)
+app.include_router(stylist.router)
 app.include_router(consumer_auth.router)
 app.include_router(journeys.router)
 
