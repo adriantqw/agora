@@ -298,7 +298,7 @@ const ConsumerProfilePage = () => {
                     value="142" 
                     label="Closet Items" 
                     iconColor="#60A5FA" // Blue
-                    onClick={() => navigate('/closet')}
+                    onClick={() => navigate('/inventory')}
                   />
                   <StatCard 
                     icon={Compass} 
@@ -395,7 +395,7 @@ const ConsumerProfilePage = () => {
                         key={item.id} 
                         style={{ cursor: 'pointer' }} 
                         className="group"
-                        onClick={() => navigate('/closet')}
+                        onClick={() => navigate('/inventory')}
                       >
                         <div style={{
                           aspectRatio: '3/4',

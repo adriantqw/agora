@@ -11,7 +11,7 @@ import BrowsePage from './pages/BrowsePage'
 import ConsumerLoginPage from './pages/ConsumerLoginPage'
 import ConsumerProfilePage from './pages/ConsumerProfilePage'
 import JourneysPage from './pages/JourneysPage'
-import ClosetPage from './pages/ClosetPage'
+import InventoryPage from './pages/InventoryPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -70,7 +70,7 @@ function AppRoutes() {
       />
 
       <Route path="/journeys" element={<JourneysPage />} />
-      <Route path="/closet" element={<ClosetPage />} />
+      <Route path="/inventory" element={<InventoryPage />} />
 
       {/* Merchant Routes */}
       <Route

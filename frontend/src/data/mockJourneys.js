@@ -44,7 +44,7 @@ export const mockJourneys = [
     status: 'in_progress',
     statusColor: '#3182ce',
     statusLabel: 'Styling in Progress',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Work Event',
       style: 'Professional & Chic',
@@ -104,7 +104,7 @@ export const mockJourneys = [
     status: 'in_progress',
     statusColor: '#d53f8c',
     statusLabel: 'Refining Options',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Wedding Guest',
       style: 'Romantic & Floral',
@@ -164,7 +164,7 @@ export const mockJourneys = [
     status: 'in_progress',
     statusColor: '#805ad5',
     statusLabel: 'Awaiting Review',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Gala Dinner',
       style: 'Elegant & Formal',
@@ -224,7 +224,7 @@ export const mockJourneys = [
     status: 'in_progress',
     statusColor: '#d53f8c',
     statusLabel: 'Concept Phase',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Night Out',
       style: 'Edgy & Fun',
@@ -286,7 +286,7 @@ export const mockJourneys = [
     status: 'completed',
     statusColor: '#48BB78',
     statusLabel: 'Completed',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Important Meeting',
       style: 'Structured & Bold',
@@ -346,7 +346,7 @@ export const mockJourneys = [
     status: 'completed',
     statusColor: '#48BB78',
     statusLabel: 'Completed',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Clubbing',
       style: 'Dark & Moody',
@@ -406,7 +406,7 @@ export const mockJourneys = [
     status: 'completed',
     statusColor: '#48BB78',
     statusLabel: 'Completed',
-    closetUrl: '/closet',
+    closetUrl: '/inventory',
     summaryContext: {
       occasion: 'Beach Day',
       style: 'Casual & Breezy',

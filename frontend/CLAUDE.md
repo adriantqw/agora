@@ -98,7 +98,7 @@ The consumer homepage follows a journey-centric design pattern:
 - `JourneySection`: Grid of outfit cards with journey title and status badge
 - `OutfitCard`: Product card with icon placeholder, AI Pick badge, price, add button
 - `Footer`: 4-column responsive footer with navigation links
-- `Header` (journey variant): Navigation buttons (Journeys, My Closets, Account) with Lucide icons
+- `Header` (journey variant): Navigation buttons (Journeys, My Inventory, Account) with Lucide icons
 - `Mascot` (fab variant): Simple 60px circular button with Sparkles icon
 
 **Responsive Breakpoints:**

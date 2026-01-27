@@ -175,30 +175,29 @@ export default function Header({
             <span>Journeys</span>
           </button>
 
-          <button
-            onClick={() => navigate('/closet')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '0 12px',
-              height: '40px',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              color: textColor,
-              fontSize: '15px',
-              fontWeight: '600',
-              transition: 'all 0.2s',
-              borderRadius: '8px',
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            <InventoryIcon />
-            <span>My Inventory</span>
-          </button>
-
+                        <button
+                          onClick={() => navigate('/inventory')}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            padding: '0 12px',
+                            height: '40px',
+                            border: 'none',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            color: textColor,
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            transition: 'all 0.2s',
+                            borderRadius: '8px',
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        >
+                          <InventoryIcon />
+                          <span>My Inventory</span>
+                        </button>
           <button
             onClick={() => navigate('/login')}
             style={{
