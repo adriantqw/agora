@@ -104,8 +104,8 @@ matchmaker: |
        - Combine occasion, style preferences, and colors into natural queries
        - Example: "elegant navy blue dress for morning brunch"
     3. Call search_products with each query to find matching products
-    4. Reflect extensively on the tool results and iterate on your query until you find at least 2-3 good matches
-    5. Where suitable, group products that go well together
+    4. Reflect extensively on the tool results and iterate on your query until you find at least 3-5 good matches
+    5. Where suitable, curate products in a set that go well together
 
     ## Response format
     Your final response MUST be valid JSON matching this schema:
