@@ -170,7 +170,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#4299e1",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Silk Button-Down", "subtext": "Cream tailored blouse", "price": 120, "icon_name": "Shirt", "icon_color": "#4A5568", "background_color": "#F7FAFC", "is_ai_pick": False},
               {"label": "Tailored Trousers", "subtext": "High-waisted charcoal", "price": 150, "icon_name": "Shirt", "icon_color": "#2D3748", "background_color": "#EDF2F7", "is_ai_pick": True},
@@ -184,7 +184,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#4299e1",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Checkered Blazer", "subtext": "Professional layering", "price": 210, "icon_name": "Shirt", "icon_color": "#4A5568", "background_color": "#F7FAFC", "is_ai_pick": True},
               {"label": "Pencil Skirt", "subtext": "Navy wool blend", "price": 95, "icon_name": "Shirt", "icon_color": "#2C5282", "background_color": "#EBF8FF", "is_ai_pick": False},
@@ -198,7 +198,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#F5A5B8",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Floral Midi Dress", "subtext": "Wedding guest attire", "price": 245, "icon_name": "Flower", "icon_color": "#F5A5B8", "background_color": "#FFF5F7", "is_ai_pick": True},
               {"label": "Pearl Clutch", "subtext": "Evening evening bag", "price": 85, "icon_name": "ShoppingBag", "icon_color": "#CBD5E0", "background_color": "#F7FAFC", "is_ai_pick": False},
@@ -212,7 +212,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#805ad5",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Silk Slip Dress", "subtext": "Formal dinner attire", "price": 280, "icon_name": "Sparkles", "icon_color": "#805ad5", "background_color": "#FAF5FF", "is_ai_pick": True},
               {"label": "Velvet Blazer", "subtext": "Structured evening layer", "price": 195, "icon_name": "Shirt", "icon_color": "#44337A", "background_color": "#F3E8FF", "is_ai_pick": False},
@@ -226,7 +226,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#ED64A6",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Sequin Mini Skirt", "subtext": "Party-ready sparkle", "price": 110, "icon_name": "Music", "icon_color": "#ED64A6", "background_color": "#FFF5F7", "is_ai_pick": True},
               {"label": "Lace Bodysuit", "subtext": "Midnight black layering", "price": 75, "icon_name": "Heart", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": False},
@@ -240,7 +240,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#1A202C",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Leather Trousers", "subtext": "Night out attire", "price": 195, "icon_name": "Flame", "icon_color": "#1A202C", "background_color": "#F7FAFC", "is_ai_pick": True},
               {"label": "Statement Choker", "subtext": "Bold metallic accessory", "price": 55, "icon_name": "Crown", "icon_color": "#D69E2E", "background_color": "#FFFFF0", "is_ai_pick": False},
@@ -254,7 +254,7 @@ def seed_journeys():
             "status": "active",
             "status_color": "#F6E05E",
             "status_label": "In Closet",
-            "closet_url": "/closet",
+            "closet_url": "/inventory",
             "outfits": [
               {"label": "Linen Sundress", "subtext": "Island-bound attire", "price": 110, "icon_name": "Sun", "icon_color": "#F6E05E", "background_color": "#FFFFF0", "is_ai_pick": True},
               {"label": "Woven Sun Hat", "subtext": "Beach day essential", "price": 45, "icon_name": "Camera", "icon_color": "#78350F", "background_color": "#FFF7ED", "is_ai_pick": False},

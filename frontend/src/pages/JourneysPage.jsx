@@ -4,7 +4,6 @@ import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn }
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 import CollapsibleJourneySection from '../components/consumer/JourneySection/CollapsibleJourneySection';
 import { mockJourneys } from '../data/mockJourneys';
 
@@ -56,7 +55,7 @@ const JourneysPage = () => {
   if (!isAuthenticated) {
     return (
       <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Header variant="landing" showNav={true} />
+        <Header variant="full" showNav={true} />
 
         <main style={{ 
           flexGrow: 1, 
@@ -90,7 +89,10 @@ const JourneysPage = () => {
               color: colors.primary.eggPink,
               marginBottom: '8px'
             }}>
-              <Compass size={40} />
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 21V4C5 4 5 3 7 3C9 3 10 4 12 4C14 4 15 3 17 3C19 3 19 4 19 4V14C19 14 19 15 17 15C15 15 14 14 12 14C10 14 9 15 7 15C5 15 5 14 5 14" fill="currentColor" opacity="0.8"/>
+                <path d="M7 14V21H5V14H7Z" fill="currentColor"/>
+              </svg>
             </div>
 
             <h1 style={{ fontSize: '28px', fontWeight: '700', color: colors.text.primary, margin: 0 }}>No Journeys Yet</h1>
@@ -156,16 +158,13 @@ const JourneysPage = () => {
               </button>
             </div>
           </div>
-        </main>
-
-        <Footer />
-      </div>
-    );
+              </main>
+            </div>    );
   }
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header variant="landing" showNav={true} />
+      <Header variant="full" showNav={true} />
 
       <main style={{ 
         flexGrow: 1, 
@@ -191,7 +190,7 @@ const JourneysPage = () => {
               marginBottom: '8px',
               letterSpacing: '-0.5px'
             }}>
-              Your Journeys
+              My Journeys
             </h1>
             <p style={{ color: colors.text.secondary, fontSize: '16px' }}>
               Track your active style explorations and curated collections.
@@ -417,8 +416,6 @@ const JourneysPage = () => {
             </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 };

@@ -22,7 +22,6 @@ import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 
 const ConsumerProfilePage = () => {
   const colors = useThemeColors();
@@ -92,7 +91,7 @@ const ConsumerProfilePage = () => {
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header variant="landing" showNav={true} />
+      <Header variant="full" showNav={true} />
 
       <main style={{ flexGrow: 1, padding: '32px 20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -299,7 +298,7 @@ const ConsumerProfilePage = () => {
                     value="142" 
                     label="Closet Items" 
                     iconColor="#60A5FA" // Blue
-                    onClick={() => navigate('/closet')}
+                    onClick={() => navigate('/inventory')}
                   />
                   <StatCard 
                     icon={Compass} 
@@ -396,7 +395,7 @@ const ConsumerProfilePage = () => {
                         key={item.id} 
                         style={{ cursor: 'pointer' }} 
                         className="group"
-                        onClick={() => navigate('/closet')}
+                        onClick={() => navigate('/inventory')}
                       >
                         <div style={{
                           aspectRatio: '3/4',
@@ -439,8 +438,6 @@ const ConsumerProfilePage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       <style>{`
         @media (max-width: 1023px) {

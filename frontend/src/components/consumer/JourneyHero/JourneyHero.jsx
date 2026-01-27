@@ -7,7 +7,7 @@ import './typewriter.css';
  * JourneyHero Component
  *
  * Hero section for the journey-based homepage featuring:
- * - "Personal AI Stylist" heading with subtext
+ * - "Personal AI Shopping Assistant" heading with subtext
  * - Journey search bar with typewriter placeholder effect
  * - Pink arrow submit button
  *
