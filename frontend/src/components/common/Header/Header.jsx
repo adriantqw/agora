@@ -222,13 +222,15 @@ export default function Header({
             <span>{getDisplayName()}</span>
           </button>
 
-          <ThemeToggle
-            size={40}
-            borderRadius={isLanding ? '50%' : '8px'}
-            iconColor={textColor}
-            hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
-            hoverIconColor={isLanding ? '#2D3748' : colors.text.primary}
-          />
+          {!isLanding && (
+            <ThemeToggle
+              size={40}
+              borderRadius={isLanding ? '50%' : '8px'}
+              iconColor={textColor}
+              hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+              hoverIconColor={isLanding ? '#2D3748' : colors.text.primary}
+            />
+          )}
         </div>
       </div>
     </header>
