@@ -18,7 +18,6 @@ import {
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 import { useAuth } from '../contexts/AuthContext';
 
 // SVG Google Logo component
@@ -524,8 +523,6 @@ const ConsumerLoginPage = () => {
         `}</style>
 
       </main>
-
-      <Footer />
     </div>
   );
 };

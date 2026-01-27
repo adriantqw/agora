@@ -22,7 +22,6 @@ import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 
 const ConsumerProfilePage = () => {
   const colors = useThemeColors();
@@ -439,8 +438,6 @@ const ConsumerProfilePage = () => {
           </div>
         </div>
       </main>
-
-      <Footer />
 
       <style>{`
         @media (max-width: 1023px) {

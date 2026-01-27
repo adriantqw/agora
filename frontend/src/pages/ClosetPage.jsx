@@ -5,7 +5,6 @@ import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 import journeyService from '../services/journeyService';
 import { getIconByName } from '../utils/iconMapper';
 
@@ -135,7 +134,7 @@ const ClosetPage = () => {
   if (!isAuthenticated) {
     return (
       <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Header variant="landing" showNav={true} />
+        <Header variant="full" showNav={true} />
         <main style={{ 
           flexGrow: 1, 
           display: 'flex', 
@@ -225,14 +224,13 @@ const ClosetPage = () => {
             </div>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header variant="landing" showNav={true} />
+      <Header variant="full" showNav={true} />
 
       <main style={{ flexGrow: 1, padding: '32px 20px' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
@@ -535,8 +533,6 @@ const ClosetPage = () => {
           )}
         </div>
       </main>
-
-      <Footer />
       <style>{`
         .group:hover .action-btn {
           opacity: 1 !important;

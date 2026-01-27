@@ -4,7 +4,6 @@ import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn }
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
-import Footer from '../components/consumer/Footer/Footer';
 import CollapsibleJourneySection from '../components/consumer/JourneySection/CollapsibleJourneySection';
 import { mockJourneys } from '../data/mockJourneys';
 
@@ -156,11 +155,8 @@ const JourneysPage = () => {
               </button>
             </div>
           </div>
-        </main>
-
-        <Footer />
-      </div>
-    );
+              </main>
+            </div>    );
   }
 
   return (
@@ -417,8 +413,6 @@ const JourneysPage = () => {
             </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 };
