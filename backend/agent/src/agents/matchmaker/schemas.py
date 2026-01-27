@@ -1,4 +1,4 @@
-from typing import Optional, Literal
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -8,6 +8,7 @@ class ProductMatch(BaseModel):
     name: str = Field(description="Product or catalogue item name")
     description: Optional[str] = Field(default=None, description="Product or catalogue item description")
     image_url: Optional[str] = Field(default=None, description="Product or catalogue item image path or url")
+    price: Optional[int] = Field(default=None, description="Product or catalogue item price")
     score: Optional[float] = Field(default=None, description="Product or catalogue item match confidence score")
 
 class ProductMatchSet(BaseModel):

@@ -121,10 +121,9 @@ class MatchMakerAgent:
 
     def _parse_matches(self, state: MatchmakerState):
         """Extract matches from tool results in messages."""
-        matches = []
         structured_model = self.model.with_structured_output(MatchResult)
-        matches = structured_model.invoke(state["messages"])
-        return {"matches": matches}
+        response = structured_model.invoke(state["messages"])
+        return {"matches": response.matches}
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
