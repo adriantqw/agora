@@ -62,7 +62,7 @@ const ConsumerLoginPage = () => {
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column', transition: 'background 0.3s ease' }}>
-      <Header variant="landing" showNav={true} />
+      <Header variant="full" showNav={true} />
 
       <main style={{ 
         flexGrow: 1, 

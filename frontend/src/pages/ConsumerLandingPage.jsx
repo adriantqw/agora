@@ -1,175 +1,241 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useThemeColors } from '../hooks/useThemeColors';
+import { ArrowRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
-import Mascot from '../components/common/Mascot/Mascot';
-import JourneyHero from '../components/consumer/JourneyHero/JourneyHero';
-import JourneySection from '../components/consumer/JourneySection/JourneySection';
-import Footer from '../components/consumer/Footer/Footer';
-import { guestMockData } from '../data/guestMockData';
-import { useAuth } from '../contexts/AuthContext';
-import journeyService from '../services/journeyService';
-import { getIconByName } from '../utils/iconMapper';
 
-/**
- * ConsumerLandingPage
- *
- * Journey-based homepage featuring:
- * - Header with journey navigation
- * - Hero section with AI stylist search
- * - 3 journey sections with outfit cards
- * - Footer with links and merchant portal
- * - AI FAB for future chat functionality
- */
 const ConsumerLandingPage = () => {
-  const colors = useThemeColors();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  const [notification, setNotification] = useState(null);
-  const [journeys, setJourneys] = useState(guestMockData);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchJourneys = async () => {
-      if (isAuthenticated) {
-        try {
-          const data = await journeyService.getJourneys();
-          if (data && data.length > 0) {
-            // Transform backend data to frontend format
-            const formattedJourneys = data.map(j => ({
-              id: j.id,
-              title: j.title,
-              status: j.status,
-              statusColor: j.status_color,
-              statusLabel: j.status_label,
-              closetUrl: j.closet_url,
-              outfits: j.outfits.map(o => ({
-                id: o.id,
-                label: o.label,
-                subtext: o.subtext,
-                price: o.price,
-                imageUrl: o.image_url,
-                icon: getIconByName(o.icon_name),
-                iconColor: o.icon_color,
-                backgroundColor: o.background_color,
-                isAIPick: o.is_ai_pick
-              }))
-            }));
-            setJourneys(formattedJourneys);
-          }
-        } catch (error) {
-          console.error("Failed to fetch journeys", error);
-          // Fallback to guest data is already set
-        }
-      } else {
-        setJourneys(guestMockData);
-      }
-    };
-
-    fetchJourneys();
-  }, [isAuthenticated]);
-
-  const handleSearch = (query) => {
-    // Navigate to journey page with search query
-    navigate('/journey', { state: { searchQuery: query } });
-  };
-
-  const handleOutfitAdd = (outfit, journey) => {
-    // For guests, redirect to login on "Add"
-    if (!isAuthenticated) {
-        navigate('/login');
-    } else {
-        setNotification(`Added ${outfit.label} to closet!`);
-        setTimeout(() => setNotification(null), 3000);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate('/journey', { state: { searchQuery: searchQuery.trim() } });
     }
   };
 
-  const handleAIFabClick = () => {
-    // Future: Open AI chat modal
-    console.log('AI FAB clicked - will open AI chat modal');
-    setNotification('AI Chat coming soon!');
-    setTimeout(() => setNotification(null), 3000);
-  };
-
   return (
-    <div
-      style={{
-        background: colors.page.background,
-        minHeight: '100vh',
-      }}
-    >
-      {/* Header with landing variant */}
+    <div style={{
+      minHeight: '100vh',
+      width: '100%',
+      backgroundColor: '#fff9f5',
+      backgroundImage: `
+        radial-gradient(circle at 50% 50%, #ffecd9 0%, rgba(255, 236, 217, 0) 65%),
+        radial-gradient(circle at 0% 50%, #ffb6e6 0%, transparent 60%),
+        radial-gradient(circle at 100% 0%, #9dcaff 0%, transparent 60%)
+      `,
+      backgroundRepeat: 'no-repeat',
+      backgroundAttachment: 'fixed',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: '"Readex Pro", sans-serif',
+    }}>
       <Header variant="landing" showNav={true} />
 
-      {/* Hero Section */}
-      <JourneyHero
-        onSearch={handleSearch}
-      />
-
-      {/* Journey Sections */}
-      <main
-        style={{
-          padding: '80px 6%',
-          maxWidth: '1600px',
-          margin: '0 auto',
-        }}
-      >
-        {journeys.map((journey, index) => (
-          <React.Fragment key={journey.id}>
-            <JourneySection
-              journey={journey}
-              onOutfitAdd={handleOutfitAdd}
+      {/* Main Content */}
+      <main style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        minHeight: '100vh',
+        padding: '220px 20px 40px',
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 10,
+      }}>
+        
+        {/* Mascot & Greeting */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '24px',
+          marginBottom: '20px',
+        }}>
+          {/* Mascot */}
+          <div style={{
+            width: '120px',
+            height: '140px',
+            animation: 'float 6s ease-in-out infinite',
+          }}>
+             <img 
+              src="/egg-chan.svg" 
+              alt="Eggora-chan" 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
-            {index < journeys.length - 1 && (
-              <div style={{
-                height: '2px',
-                background: colors.border.divider,
-                margin: '80px 0',
-                width: '100%',
-                opacity: 0.8
-              }} />
-            )}
-          </React.Fragment>
-        ))}
-      </main>
+          </div>
 
-      {/* Footer */}
-      <Footer />
+          {/* Text */}
+          <div style={{ textAlign: 'left' }}>
+            <h1 style={{
+              fontSize: '32px',
+              fontWeight: '800',
+              color: '#2D3748',
+              margin: '0 0 8px 0',
+              lineHeight: '1.2',
+            }}>
+              Hi, I'm Eggora-chan!<br/>
+              <span style={{ color: '#4C1D95' }}>Your personal shopping assistant...</span>
+            </h1>
+          </div>
+        </div>
 
-      {/* AI FAB */}
-      <Mascot variant="fab" position="bottom-right" onClick={handleAIFabClick} />
+        {/* Description */}
+        <p style={{
+          fontSize: '16px',
+          color: '#4A5568',
+          maxWidth: '520px',
+          marginBottom: '40px',
+          lineHeight: '1.6',
+        }}>
+          Tell me about an event, outfit or idea you want to shop for, and I can come back with curated suggestions just for you!
+        </p>
 
-      {/* Toast Notification */}
-      {notification && (
-        <div
+        {/* Search Bar */}
+        <form 
+          onSubmit={handleSearch}
           style={{
-            position: 'fixed',
-            bottom: '100px',
-            right: '20px',
-            background: colors.text.primary,
-            color: '#ffffff',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-            zIndex: 1000,
-            animation: 'slideInRight 0.3s ease-out',
+            width: '100%',
+            maxWidth: '600px',
+            position: 'relative',
+            marginBottom: '60px',
           }}
         >
-          {notification}
+          <textarea
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSearch(e);
+              }
+            }}
+            placeholder="What are you looking for?"
+            style={{
+              width: '100%',
+              height: '100px',
+              padding: '24px 60px 24px 24px',
+              fontSize: '16px',
+              borderRadius: '32px',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              backgroundColor: 'rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+              outline: 'none',
+              color: '#2D3748',
+              transition: 'all 0.3s ease',
+              resize: 'none',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
+            }}
+            onFocus={(e) => {
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+              e.target.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.08)';
+              e.target.style.border = '1px solid rgba(255, 255, 255, 0.8)';
+            }}
+            onBlur={(e) => {
+              e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+              e.target.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.05)';
+              e.target.style.border = '1px solid rgba(255, 255, 255, 0.4)';
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              position: 'absolute',
+              right: '16px',
+              bottom: '16px',
+              width: '44px',
+              height: '44px',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+              boxShadow: '0 4px 12px rgba(118, 75, 162, 0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(118, 75, 162, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(118, 75, 162, 0.3)';
+            }}
+          >
+            <ArrowRight size={22} strokeWidth={2.5} />
+          </button>
+        </form>
+
+        {/* Floating Bags (Decorative Row) */}
+        
+        {/* Center Cluster (New Bunch) */}
+        <div style={{ position: 'absolute', bottom: '20%', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 0 }}>
+           {/* Bag 2 (Back) */}
+           <div style={{ position: 'absolute', bottom: '10px', left: '-60px', animation: 'float 8s ease-in-out infinite' }}>
+             <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '160px', transform: 'rotate(-10deg)' }} />
+             <div style={{ width: '100px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '15px auto 0', animation: 'shadow 8s ease-in-out infinite' }} />
+           </div>
+           
+           {/* Bag 1 (Middle) */}
+           <div style={{ position: 'absolute', bottom: '30px', right: '-50px', animation: 'float 7s ease-in-out infinite 0.5s' }}>
+             <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(15deg)' }} />
+             <div style={{ width: '90px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', margin: '12px auto 0', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
+           </div>
+
+           {/* Bag 3 (Front) */}
+           <div style={{ position: 'relative', animation: 'float 6s ease-in-out infinite 1s' }}>
+             <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '150px', transform: 'rotate(5deg)' }} />
+             <div style={{ width: '95px', height: '15px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '14px auto 0', animation: 'shadow 6s ease-in-out infinite 1s' }} />
+           </div>
         </div>
-      )}
+
+        {/* Left Group */}
+        <div style={{ position: 'absolute', bottom: '15%', left: '5%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '120px', transform: 'rotate(-5deg)', animation: 'float 6s ease-in-out infinite' }} />
+           <div style={{ width: '80px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '12px', animation: 'shadow 6s ease-in-out infinite' }} />
+        </div>
+        
+        {/* Center-Left Group (Bunched) */}
+        <div style={{ position: 'absolute', bottom: '12%', left: '22%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '200px', transform: 'rotate(2deg)', animation: 'float 7.5s ease-in-out infinite 0.2s' }} />
+           <div style={{ width: '120px', height: '20px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(10px)', marginTop: '18px', animation: 'shadow 7.5s ease-in-out infinite 0.2s' }} />
+        </div>
+        <div style={{ position: 'absolute', bottom: '18%', left: '28%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(-3deg)', animation: 'float 6.5s ease-in-out infinite 1s' }} />
+           <div style={{ width: '90px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', marginTop: '15px', animation: 'shadow 6.5s ease-in-out infinite 1s' }} />
+        </div>
+
+        {/* Center-Right Group */}
+        <div style={{ position: 'absolute', bottom: '14%', right: '35%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '160px', transform: 'rotate(4deg)', animation: 'float 7s ease-in-out infinite 0.5s' }} />
+           <div style={{ width: '100px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '15px', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
+        </div>
+
+        {/* Right Group (Bunched) */}
+        <div style={{ position: 'absolute', bottom: '16%', right: '15%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '170px', transform: 'rotate(-6deg)', animation: 'float 8s ease-in-out infinite 1.5s' }} />
+           <div style={{ width: '110px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '18px', animation: 'shadow 8s ease-in-out infinite 1.5s' }} />
+        </div>
+        <div style={{ position: 'absolute', bottom: '10%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '130px', transform: 'rotate(3deg)', animation: 'float 6s ease-in-out infinite 2s' }} />
+           <div style={{ width: '80px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '15px', animation: 'shadow 6s ease-in-out infinite 2s' }} />
+        </div>
+
+      </main>
 
       <style>{`
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(100px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+          50% { transform: translateY(-20px) rotate(var(--r, 0deg)); }
+        }
+        @keyframes shadow {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(0.8); opacity: 0.5; }
         }
       `}</style>
     </div>

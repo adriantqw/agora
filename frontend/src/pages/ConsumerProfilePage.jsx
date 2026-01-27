@@ -92,7 +92,7 @@ const ConsumerProfilePage = () => {
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header variant="landing" showNav={true} />
+      <Header variant="full" showNav={true} />
 
       <main style={{ flexGrow: 1, padding: '32px 20px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
