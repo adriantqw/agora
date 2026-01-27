@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { Compass, LayoutGrid, UserCircle } from 'lucide-react';
 import ThemeToggle from '../../ThemeToggle';
 import { useThemeColors } from '../../../hooks/useThemeColors';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -21,7 +20,7 @@ export default function Header({
     return name.split(' ')[0];
   };
 
-  // Custom SVGs for Landing Page
+  // Custom SVGs for all Header variants
   const JourneyIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M5 21V4C5 4 5 3 7 3C9 3 10 4 12 4C14 4 15 3 17 3C19 3 19 4 19 4V14C19 14 19 15 17 15C15 15 14 14 12 14C10 14 9 15 7 15C5 15 5 14 5 14" fill="currentColor" opacity="0.8"/>
@@ -42,16 +41,20 @@ export default function Header({
   );
 
   const isLanding = variant === 'landing';
+  const textColor = isLanding ? '#4A5568' : colors.text.primary;
+  const headerBg = isLanding ? 'transparent' : colors.card.background;
+  const logoColor = isLanding ? '#D1667C' : colors.primary.eggPink;
 
   return (
     <header style={{
-      background: isLanding ? 'transparent' : colors.gradient.pink,
-      borderBottom: isLanding ? 'none' : `2px solid ${colors.border.divider}`,
-      position: isLanding ? 'absolute' : 'sticky',
+      background: headerBg,
+      borderBottom: isLanding ? 'none' : `1px solid ${colors.border.subtle}`,
+      position: isLanding ? 'absolute' : 'relative',
       top: 0,
       left: 0,
       right: 0,
       zIndex: 100,
+      backdropFilter: isLanding ? 'none' : 'blur(8px)',
     }}>
       <div className="header-container" style={{
         padding: '15px 6%',
@@ -92,7 +95,7 @@ export default function Header({
           <span style={{
             fontWeight: '800',
             fontSize: '24px',
-            color: isLanding ? '#D1667C' : 'white',
+            color: logoColor,
             fontFamily: '"Readex Pro", -apple-system, sans-serif',
             letterSpacing: '-0.5px',
           }}>
@@ -111,8 +114,8 @@ export default function Header({
               position: 'relative',
               display: 'flex',
               alignItems: 'center',
-              background: 'white',
-              border: `2px solid rgba(255, 255, 255, 0.2)`,
+              background: colors.card.backgroundAlt,
+              border: `1px solid ${colors.border.subtle}`,
               borderRadius: '20px',
               padding: '4px',
               transition: 'all 0.2s ease',
@@ -135,6 +138,7 @@ export default function Header({
                   fontSize: '15px',
                   fontFamily: 'inherit',
                   background: 'transparent',
+                  color: colors.text.primary,
                 }}
               />
             </div>
@@ -147,149 +151,84 @@ export default function Header({
           alignItems: 'center',
           gap: '12px',
         }}>
-          {isLanding ? (
-            /* LANDING VARIANT (Grey Text, Custom SVGs) */
-            <>
-              <button
-                onClick={() => navigate('/journeys')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '0 12px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: '#4A5568',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <JourneyIcon />
-                <span>Journeys</span>
-              </button>
+          <button
+            onClick={() => navigate('/journeys')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '0 12px',
+              height: '40px',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: textColor,
+              fontSize: '15px',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+              borderRadius: '8px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <JourneyIcon />
+            <span>Journeys</span>
+          </button>
 
-              <button
-                onClick={() => navigate('/closet')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '0 12px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: '#4A5568',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <InventoryIcon />
-                <span>My Inventory</span>
-              </button>
+          <button
+            onClick={() => navigate('/closet')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '0 12px',
+              height: '40px',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: textColor,
+              fontSize: '15px',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+              borderRadius: '8px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <InventoryIcon />
+            <span>My Inventory</span>
+          </button>
 
-              <button
-                onClick={() => navigate('/login')}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '0 12px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                  color: '#4A5568',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s',
-                }}
-              >
-                <ProfileIcon />
-                <span>{getDisplayName()}</span>
-              </button>
-            </>
-          ) : (
-            /* OLD VARIANT (White Text/Icons, Lucide) */
-            <>
-              <button
-                onClick={() => navigate('/journeys')}
-                title="Journeys"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <Compass size={24} strokeWidth={2} />
-              </button>
-
-              <button
-                onClick={() => navigate('/closet')}
-                title="My Inventory"
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <LayoutGrid size={24} strokeWidth={2} />
-              </button>
-
-              <button
-                onClick={() => navigate('/login')}
-                title={getDisplayName()}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  border: 'none',
-                  background: 'transparent',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-              >
-                <UserCircle size={24} strokeWidth={2} />
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => navigate('/login')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '0 12px',
+              height: '40px',
+              border: 'none',
+              background: 'transparent',
+              cursor: 'pointer',
+              color: textColor,
+              fontSize: '15px',
+              fontWeight: '600',
+              transition: 'all 0.2s',
+              borderRadius: '8px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <ProfileIcon />
+            <span>{getDisplayName()}</span>
+          </button>
 
           <ThemeToggle
             size={40}
             borderRadius={isLanding ? '50%' : '8px'}
-            iconColor={isLanding ? '#4A5568' : 'white'}
-            hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : 'rgba(255, 255, 255, 0.2)'}
-            hoverIconColor={isLanding ? '#2D3748' : 'white'}
+            iconColor={textColor}
+            hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            hoverIconColor={isLanding ? '#2D3748' : colors.text.primary}
           />
         </div>
       </div>
