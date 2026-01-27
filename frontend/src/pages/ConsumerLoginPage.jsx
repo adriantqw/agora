@@ -329,11 +329,50 @@ const ConsumerLoginPage = () => {
               </div>
             </div>
 
-            <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: colors.text.secondary }}>
-              New to Agora? 
-              <a href="#" style={{ color: colors.primary.eggPink, fontWeight: '600', textDecoration: 'none', marginLeft: '4px' }}>
-                Start your Style Profile
-              </a>
+            <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: colors.text.secondary, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                New to Agora? 
+                <a href="#" style={{ color: colors.primary.eggPink, fontWeight: '600', textDecoration: 'none', marginLeft: '4px' }}>
+                  Start your Style Profile
+                </a>
+              </div>
+              
+              <div style={{ 
+                marginTop: '12px', 
+                paddingTop: '20px', 
+                borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB'}` 
+              }}>
+                <button
+                  onClick={() => navigate('/merchant/login')}
+                  style={{
+                    background: 'transparent',
+                    border: `1px solid ${colors.primary.blue}`,
+                    color: colors.primary.blue,
+                    padding: '10px 20px',
+                    borderRadius: '9999px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = colors.primary.blue;
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = colors.primary.blue;
+                  }}
+                >
+                  <Briefcase size={18} />
+                  <span>Merchant Login Portal</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -452,7 +491,7 @@ const ConsumerLoginPage = () => {
 
             {/* Bottom Text */}
             <div style={{ position: 'relative', zIndex: 10 }}>
-              <h3 style={{ fontSize: '24px', fontWeight: '700', color: colors.text.primary, marginBottom: '8px' }}>Your Personal AI Stylist</h3>
+              <h3 style={{ fontSize: '24px', fontWeight: '700', color: colors.text.primary, marginBottom: '8px' }}>Your Personal AI Shopping Assistant</h3>
               <p style={{ color: colors.text.secondary, fontSize: '14px', lineHeight: '1.6' }}>
                 Ready for your next event? We've generated <span style={{ color: colors.primary.eggPink, fontWeight: '600' }}>3 new outfits</span> based on your closet and the latest trends.
               </p>
