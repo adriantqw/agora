@@ -24,8 +24,8 @@ export default function Header({
   // Custom SVGs for Landing Page
   const JourneyIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5 21V4C5 4 5 3 7 3C9 3 10 4 12 4C14 4 15 3 17 3C19 3 19 4 19 4V14C19 14 19 15 17 15C15 15 14 14 12 14C10 14 9 15 7 15C5 15 5 14 5 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M5 21V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M5 21V4C5 4 5 3 7 3C9 3 10 4 12 4C14 4 15 3 17 3C19 3 19 4 19 4V14C19 14 19 15 17 15C15 15 14 14 12 14C10 14 9 15 7 15C5 15 5 14 5 14" fill="currentColor" opacity="0.8"/>
+      <path d="M7 14V21H5V14H7Z" fill="currentColor"/>
     </svg>
   );
 
@@ -145,7 +145,7 @@ export default function Header({
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '24px',
+          gap: '12px',
         }}>
           {isLanding ? (
             /* LANDING VARIANT (Grey Text, Custom SVGs) */
@@ -156,7 +156,8 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px',
+                  padding: '0 12px',
+                  height: '40px',
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',
@@ -176,7 +177,8 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px',
+                  padding: '0 12px',
+                  height: '40px',
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',
@@ -196,7 +198,8 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  padding: '8px',
+                  padding: '0 12px',
+                  height: '40px',
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',

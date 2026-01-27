@@ -173,57 +173,52 @@ const ConsumerLandingPage = () => {
 
         {/* Floating Bags (Decorative Row) */}
         
-        {/* Center Cluster (New Bunch) */}
-        <div style={{ position: 'absolute', bottom: '20%', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 0 }}>
-           {/* Bag 2 (Back) */}
-           <div style={{ position: 'absolute', bottom: '10px', left: '-60px', animation: 'float 8s ease-in-out infinite' }}>
-             <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '160px', transform: 'rotate(-10deg)' }} />
-             <div style={{ width: '100px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '15px auto 0', animation: 'shadow 8s ease-in-out infinite' }} />
-           </div>
-           
-           {/* Bag 1 (Middle) */}
-           <div style={{ position: 'absolute', bottom: '30px', right: '-50px', animation: 'float 7s ease-in-out infinite 0.5s' }}>
-             <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(15deg)' }} />
-             <div style={{ width: '90px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', margin: '12px auto 0', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
-           </div>
-
-           {/* Bag 3 (Front) */}
-           <div style={{ position: 'relative', animation: 'float 6s ease-in-out infinite 1s' }}>
-             <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '150px', transform: 'rotate(5deg)' }} />
-             <div style={{ width: '95px', height: '15px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '14px auto 0', animation: 'shadow 6s ease-in-out infinite 1s' }} />
-           </div>
-        </div>
-
         {/* Left Group */}
-        <div style={{ position: 'absolute', bottom: '15%', left: '5%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
-           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '120px', transform: 'rotate(-5deg)', animation: 'float 6s ease-in-out infinite' }} />
-           <div style={{ width: '80px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '12px', animation: 'shadow 6s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '12%', left: '5%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '130px', transform: 'rotate(-5deg)', animation: 'float 6s ease-in-out infinite' }} />
+           <div style={{ width: '90px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '12px', animation: 'shadow 6s ease-in-out infinite' }} />
         </div>
         
         {/* Center-Left Group (Bunched) */}
-        <div style={{ position: 'absolute', bottom: '12%', left: '22%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
-           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '200px', transform: 'rotate(2deg)', animation: 'float 7.5s ease-in-out infinite 0.2s' }} />
-           <div style={{ width: '120px', height: '20px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(10px)', marginTop: '18px', animation: 'shadow 7.5s ease-in-out infinite 0.2s' }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '20%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '210px', transform: 'rotate(2deg)', animation: 'float 7.5s ease-in-out infinite 0.2s' }} />
+           <div style={{ width: '130px', height: '20px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(10px)', marginTop: '18px', animation: 'shadow 7.5s ease-in-out infinite 0.2s' }} />
         </div>
-        <div style={{ position: 'absolute', bottom: '18%', left: '28%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
-           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(-3deg)', animation: 'float 6.5s ease-in-out infinite 1s' }} />
-           <div style={{ width: '90px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', marginTop: '15px', animation: 'shadow 6.5s ease-in-out infinite 1s' }} />
+        <div style={{ position: 'absolute', bottom: '15%', left: '26%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '150px', transform: 'rotate(-3deg)', animation: 'float 6.5s ease-in-out infinite 1s' }} />
+           <div style={{ width: '100px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', marginTop: '15px', animation: 'shadow 6.5s ease-in-out infinite 1s' }} />
+        </div>
+
+        {/* Center Cluster (Main Bunch) */}
+        <div style={{ position: 'absolute', bottom: '12%', left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 0 }}>
+           <div style={{ position: 'absolute', bottom: '10px', left: '-70px', animation: 'float 8s ease-in-out infinite' }}>
+             <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '170px', transform: 'rotate(-10deg)' }} />
+             <div style={{ width: '110px', height: '16px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '15px auto 0', animation: 'shadow 8s ease-in-out infinite' }} />
+           </div>
+           <div style={{ position: 'absolute', bottom: '30px', right: '-60px', animation: 'float 7s ease-in-out infinite 0.5s' }}>
+             <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '150px', transform: 'rotate(15deg)' }} />
+             <div style={{ width: '100px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', margin: '12px auto 0', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
+           </div>
+           <div style={{ position: 'relative', animation: 'float 6s ease-in-out infinite 1s' }}>
+             <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '160px', transform: 'rotate(5deg)' }} />
+             <div style={{ width: '100px', height: '15px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(8px)', margin: '14px auto 0', animation: 'shadow 6s ease-in-out infinite 1s' }} />
+           </div>
         </div>
 
         {/* Center-Right Group */}
-        <div style={{ position: 'absolute', bottom: '14%', right: '35%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
-           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '160px', transform: 'rotate(4deg)', animation: 'float 7s ease-in-out infinite 0.5s' }} />
-           <div style={{ width: '100px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '15px', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
+        <div style={{ position: 'absolute', bottom: '11%', right: '35%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags1.png" alt="Shopping Bags" style={{ width: '170px', transform: 'rotate(4deg)', animation: 'float 7s ease-in-out infinite 0.5s' }} />
+           <div style={{ width: '110px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '15px', animation: 'shadow 7s ease-in-out infinite 0.5s' }} />
         </div>
 
         {/* Right Group (Bunched) */}
-        <div style={{ position: 'absolute', bottom: '16%', right: '15%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
-           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '170px', transform: 'rotate(-6deg)', animation: 'float 8s ease-in-out infinite 1.5s' }} />
-           <div style={{ width: '110px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '18px', animation: 'shadow 8s ease-in-out infinite 1.5s' }} />
+        <div style={{ position: 'absolute', bottom: '14%', right: '15%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1 }}>
+           <img src="/shopping_bags2.png" alt="Shopping Bags" style={{ width: '180px', transform: 'rotate(-6deg)', animation: 'float 8s ease-in-out infinite 1.5s' }} />
+           <div style={{ width: '120px', height: '18px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(9px)', marginTop: '18px', animation: 'shadow 8s ease-in-out infinite 1.5s' }} />
         </div>
-        <div style={{ position: 'absolute', bottom: '10%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
-           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '130px', transform: 'rotate(3deg)', animation: 'float 6s ease-in-out infinite 2s' }} />
-           <div style={{ width: '80px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '15px', animation: 'shadow 6s ease-in-out infinite 2s' }} />
+        <div style={{ position: 'absolute', bottom: '8%', right: '8%', display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2 }}>
+           <img src="/shopping_bags3.png" alt="Shopping Bags" style={{ width: '140px', transform: 'rotate(3deg)', animation: 'float 6s ease-in-out infinite 2s' }} />
+           <div style={{ width: '90px', height: '14px', background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(7px)', marginTop: '15px', animation: 'shadow 6s ease-in-out infinite 2s' }} />
         </div>
 
       </main>
