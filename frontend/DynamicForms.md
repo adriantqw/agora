@@ -65,8 +65,9 @@ Each component type represents a different interaction pattern:
 | `free-text` | Open-ended response | Text input | Describing target audience, goals |
 | `color-palette` | Choose color schemes | Color selection | Brand color direction |
 | `scale-rating` | Rate on spectrum | Slider/scale | Intensity preferences (minimal ↔ bold) |
-| `multi-select` | Choose multiple options | Checkboxes | Features, attributes, keywords |
-| `single-choice` | Pick one option | Radio buttons | Yes/no, either/or decisions |
+| `multi-select` | Choose multiple options | Checkboxes | Season, Time of Day, Features |
+| `single-choice` | Pick one option | Radio buttons | Style leaning, category selection |
+| `hybrid-select` | Select + custom detail | Options + Text | Location (Outdoors + Details) |
 | `image-upload` | User provides reference | File upload | Inspiration images |
 | `text-with-images` | Text + supporting visuals | Text + interaction | Contextual explanations |
 
@@ -85,6 +86,9 @@ interface StyleGuide {
     secondary: string;
     accent: string;
     neutral: string[];
+    text: { primary: string; secondary: string; };
+    error: string;
+    warning: string;
   };
   
   // Layout options AI can choose
@@ -96,6 +100,9 @@ interface StyleGuide {
     minOptions: number;
     gridColumns: number[];
     imageAspectRatios: string[];
+    'free-text': { maxLength: number; debounceMs: number; };
+    'scale-rating': { defaultMin: number; defaultMax: number; };
+    'multi-select': { minSelections: number; maxSelections: number; };
   };
   
   // Tone and personality
@@ -123,6 +130,7 @@ interface Question {
   question: string;              // The question text
   
   // Optional configuration
+  subtext?: string;              // Supporting help text below question
   layout?: 'grid' | 'stack' | 'carousel' | 'masonry';
   columns?: number;              // For grid layouts
   required?: boolean;            // Is answer mandatory?
@@ -131,11 +139,56 @@ interface Question {
   options?: Option[];            // For choice-based questions
   config?: QuestionConfig;       // Additional settings
   
+  // Component-specific parameters (passed directly in question object)
+  placeholder?: string;          // For text inputs / hybrid
+  multiSelect?: boolean;         // For hybrid-select / multi-select
+  min?: number;                  // For scale-rating
+  max?: number;                  // For scale-rating
+  step?: number;                 // For scale-rating
+  minLabel?: string;             // For scale-rating
+  maxLabel?: string;             // For scale-rating
+  maxLength?: number;            // For free-text
+  multiline?: boolean;           // For free-text
+  maxFileSize?: number;          // For image-upload
+  
   // Metadata
   category?: string;             // Grouping (color, style, mood, etc.)
   order?: number;                // Display sequence
-  conditional?: ConditionalRule; // Show based on previous answers
 }
+
+### Component Parameters Detail
+
+#### 1. `image-choice` / `color-palette`
+- `options`: `Option[]` (min 2)
+- `layout`: `'grid' | 'stack'`
+- `columns`: `number` (1-4)
+
+#### 2. `free-text`
+- `placeholder`: `string`
+- `multiline`: `boolean` (renders textarea if true)
+- `maxLength`: `number`
+
+#### 3. `scale-rating`
+- `min`: `number` (default 0)
+- `max`: `number` (default 10)
+- `step`: `number` (default 0.5)
+- `minLabel`: `string`
+- `maxLabel`: `string`
+
+#### 4. `multi-select` / `single-choice`
+- `options`: `Option[]`
+- `minSelections`: `number`
+- `maxSelections`: `number`
+
+#### 5. `hybrid-select`
+- `options`: `Option[]`
+- `multiSelect`: `boolean` (control if chip selection is multiple)
+- `placeholder`: `string` (for the free-text input field)
+
+#### 6. `image-upload`
+- `maxFileSize`: `number` (in bytes)
+
+---
 ```
 
 ### Option Schema
@@ -166,7 +219,42 @@ interface Option {
 }
 ```
 
-### Complete Example
+### Complete Examples
+
+#### Standard Set: Location (Hybrid)
+```json
+{
+  "id": "location-hybrid",
+  "type": "hybrid-select",
+  "question": "Where will you be?",
+  "subtext": "Select from the list or add specific details below.",
+  "required": true,
+  "multiSelect": false,
+  "placeholder": "Specific location details (e.g. Garden wedding in London)",
+  "options": [
+    { "id": "indoors", "label": "Indoors", "metadata": { "tags": ["indoor"] } },
+    { "id": "outdoors", "label": "Outdoors", "metadata": { "tags": ["outdoor"] } },
+    { "id": "beach", "label": "At the Beach", "metadata": { "tags": ["beach"] } }
+  ]
+}
+```
+
+#### Standard Set: Budget (Scale)
+```json
+{
+  "id": "budget-scale",
+  "type": "scale-rating",
+  "question": "What is your budget comfort level?",
+  "min": 1,
+  "max": 5,
+  "step": 1,
+  "minLabel": "$",
+  "maxLabel": "$$$$$",
+  "required": true
+}
+```
+
+### Complete Example (Full Object)
 
 ```json
 {
@@ -415,21 +503,24 @@ export const FreeText: React.FC<FreeTextProps> = ({
 Map component types to implementations:
 
 ```typescript
-import { ImageChoice } from './components/ImageChoice';
-import { FreeText } from './components/FreeText';
-import { ColorPalette } from './components/ColorPalette';
-import { ScaleRating } from './components/ScaleRating';
-import { MultiSelect } from './components/MultiSelect';
+import ImageChoice from '../ImageChoice.jsx';
+import FreeText from '../FreeText.jsx';
+import MultiSelect from '../MultiSelect.jsx';
+import SingleChoice from '../SingleChoice.jsx';
+import ScaleRating from '../ScaleRating.jsx';
+import ColorPalette from '../ColorPalette.jsx';
+import ImageUpload from '../ImageUpload.jsx';
+import HybridSelect from '../HybridSelect.jsx';
 
-export const COMPONENT_REGISTRY: Record<string, React.FC<QuestionComponentProps>> = {
+export const COMPONENT_REGISTRY = {
   'image-choice': ImageChoice,
   'free-text': FreeText,
-  'color-palette': ColorPalette,
-  'scale-rating': ScaleRating,
   'multi-select': MultiSelect,
-  'single-choice': MultiSelect, // Reuse with single-select config
-  'image-upload': ImageUpload,
-  'text-with-images': TextWithImages
+  'single-choice': SingleChoice,
+  'scale-rating': ScaleRating,
+  'color-palette': ColorPalette,
+  'hybrid-select': HybridSelect,
+  'image-upload': ImageUpload
 };
 
 // Renderer component
@@ -555,6 +646,11 @@ COMPONENT TYPE GUIDELINES:
 6. single-choice
    - Use for: Binary or exclusive choices
    - Simple yes/no or either/or questions
+
+7. hybrid-select
+   - Use for: Category selection with optional custom details
+   - Ideal for: Location, specific style lanes, age ranges
+   - Config: multiSelect (boolean), placeholder (for text input)
 
 DESIGN CONSTRAINTS:
 - Colors: ${JSON.stringify(styleGuide.colors)}
