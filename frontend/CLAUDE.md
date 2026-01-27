@@ -213,6 +213,10 @@ src/
     common/
       Header/                  # Header with journey/full/compact variants
       Mascot/                  # Mascot with default/fab variants
+    dynamic-forms/             # AI-driven question components (See DynamicForms.md)
+      registry/                # Component registry
+      QuestionRenderer.jsx     # Main renderer component
+      ...                      # Individual form components (ImageChoice, FreeText, etc.)
   data/
     mockJourneys.js            # Mock journey and outfit data
   App.jsx                      # Main app with routing & auth
@@ -503,6 +507,22 @@ POST /api/catalogues/{id}/create-products - Convert items to products
 - Persist journey context to database
 
 See `IMPLEMENTATION_SUMMARY.md` for complete technical documentation.
+
+### January 27, 2026
+
+**AI-Powered Dynamic Forms (Hybrid Approach)**
+- ✅ Implemented `src/components/dynamic-forms` architecture
+- ✅ Created `QuestionRenderer` to map JSON schema to React components
+- ✅ Built core component library: `ImageChoice`, `FreeText`, `MultiSelect`, `ScaleRating`, `HybridSelect`, `ColorPalette`, `ImageUpload`
+- ✅ Established `StyleGuide` pattern for AI-to-UI contract
+- ✅ Documented full specification in `DynamicForms.md`
+
+**Key Architecture:**
+- **Hybrid Model:** AI generates JSON data (questions/options), React renders pre-built components
+- **Type Safety:** Strict TypeScript interfaces for Question/Option schemas (see `DynamicForms.md`)
+- **Component Registry:** Maps string types (e.g., "image-choice") to React components
+
+See `DynamicForms.md` for complete architectural details, schema definitions, and usage examples.
 
 ### Next Steps
 
