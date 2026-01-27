@@ -53,7 +53,7 @@ const ConsumerLandingPage = () => {
           gap: '48px',
           width: '100%',
           maxWidth: '1000px',
-          marginBottom: '10px',
+          marginBottom: '25px',
           textAlign: 'left',
         }}>
           {/* Mascot (Bigger) */}
