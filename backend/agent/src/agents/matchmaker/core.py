@@ -1,4 +1,3 @@
-import json
 import mlflow
 from dotenv import load_dotenv
 
