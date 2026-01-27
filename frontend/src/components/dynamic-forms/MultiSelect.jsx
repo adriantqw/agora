@@ -119,16 +119,6 @@ export default function MultiSelect({ question, onAnswer, currentAnswer, disable
           {maxSelections && ` (max ${maxSelections})`}
         </p>
 
-        {/* Required Error */}
-        {showMinError && (
-          <p style={{
-            ...getHelperTextStyle(true),
-            margin: 0
-          }}>
-            * This question is required
-          </p>
-        )}
-
         {/* Min Selections Warning */}
         {minSelections && !isMinValid && selectedOptions.length > 0 && (
           <p style={{

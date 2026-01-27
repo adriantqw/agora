@@ -198,19 +198,6 @@ export default function ScaleRating({ question, onAnswer, currentAnswer, disable
         })}
       </div>
 
-      {/* Required Indicator */}
-      {required && value === null && (
-        <p style={{
-          fontSize: typography.sizes.sm,
-          color: colors.neutral500,
-          marginTop: spacing.md,
-          fontStyle: 'italic',
-          textAlign: 'center'
-        }}>
-          * This question is required
-        </p>
-      )}
-
       <style>{`
         /* Custom slider thumb styles */
         input[type="range"]::-webkit-slider-thumb {

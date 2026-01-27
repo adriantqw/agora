@@ -118,17 +118,8 @@ export default function FreeText({ question, onAnswer, currentAnswer, disabled =
         alignItems: 'center',
         marginTop: spacing.sm
       }}>
-        {/* Helper Text */}
-        {required && !value && (
-          <p id={`${question.id}-helper`} style={{
-            ...getHelperTextStyle(false, theme),
-            margin: 0,
-            fontStyle: 'italic'
-          }}>
-            * This question is required
-          </p>
-        )}
-
+        {/* Helper Text - Removed */}
+        
         {/* Character Count */}
         <div style={{ marginLeft: 'auto' }}>
           <span style={{

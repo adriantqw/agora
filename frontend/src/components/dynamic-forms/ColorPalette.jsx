@@ -184,18 +184,6 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
           );
         })}
       </div>
-
-      {/* Helper Text */}
-      {question.required && !selectedOption && (
-        <p style={{
-          fontSize: typography.sizes.sm,
-          color: colors.neutral500,
-          marginTop: spacing.md,
-          fontStyle: 'italic'
-        }}>
-          * This question is required
-        </p>
-      )}
     </div>
   );
 }

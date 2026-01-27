@@ -1029,115 +1029,165 @@ export const processContextAnswer = (answer) => {
 };
 
 /**
- * Generate Batch 1: Initial Style Profile (5 questions)
+ * Get Time of Day question configuration (Multi-Select)
  *
- * @returns {Object} Batch configuration with title, description, questions array
+ * @returns {Object} Question object
+ */
+export const getTimeOfDayQuestion = () => ({
+  id: 'time-of-day',
+  type: 'multi-select',
+  question: 'What time of day is this for?',
+  subtext: '(Select all that apply)',
+  required: true,
+  options: [
+    { id: 'daytime', label: 'Daytime', metadata: { tags: ['day', 'morning', 'brunch', 'work'] } },
+    { id: 'golden-hour', label: 'Golden Hour / Sunset', metadata: { tags: ['sunset', 'evening', 'cocktail'] } },
+    { id: 'evening', label: 'Evening', metadata: { tags: ['evening', 'dinner', 'date'] } },
+    { id: 'late-night', label: 'Late Night', metadata: { tags: ['night', 'party', 'club'] } }
+  ]
+});
+
+/**
+ * Get Season question configuration (Multi-Select)
+ *
+ * @returns {Object} Question object
+ */
+export const getSeasonQuestion = () => ({
+  id: 'season',
+  type: 'multi-select',
+  question: 'What is the weather like?',
+  subtext: '(Select all that apply)',
+  required: true,
+  options: [
+    { id: 'spring', label: 'Spring (Mild)', metadata: { tags: ['spring', 'mild', 'light-layers'] } },
+    { id: 'summer', label: 'Summer (Hot)', metadata: { tags: ['summer', 'hot', 'breathable', 'linen'] } },
+    { id: 'autumn', label: 'Autumn (Crisp)', metadata: { tags: ['autumn', 'cool', 'crisp', 'knits'] } },
+    { id: 'winter', label: 'Winter (Cold)', metadata: { tags: ['winter', 'cold', 'insulating', 'coats'] } }
+  ]
+});
+
+/**
+ * Get Location question configuration (Hybrid Select)
+ *
+ * @returns {Object} Question object
+ */
+export const getLocationQuestion = () => ({
+  id: 'location-hybrid',
+  type: 'hybrid-select',
+  question: 'Where will you be?',
+  subtext: 'Select from the list or add specific details below.',
+  required: true,
+  multiSelect: false, // Force single selection for main location type
+  placeholder: 'Specific location details (e.g. Garden wedding in London)',
+  options: [
+    { id: 'indoors', label: 'Indoors', metadata: { tags: ['indoor'] } },
+    { id: 'outdoors', label: 'Outdoors', metadata: { tags: ['outdoor'] } },
+    { id: 'beach', label: 'At the Beach', metadata: { tags: ['beach'] } },
+    { id: 'office', label: 'Office/Professional', metadata: { tags: ['office'] } }
+  ]
+});
+
+/**
+ * Get Budget question configuration (Scale Rating)
+ *
+ * @returns {Object} Question object
+ */
+export const getBudgetScaleQuestion = () => ({
+  id: 'budget-scale',
+  type: 'scale-rating',
+  question: 'What is your budget comfort level?',
+  min: 1,
+  max: 5,
+  step: 1,
+  minLabel: '$',
+  maxLabel: '$$$$$',
+  required: true
+});
+
+/**
+ * Get Style Leaning question configuration (Hybrid Select)
+ *
+ * @returns {Object} Question object
+ */
+export const getStyleLeaningQuestion = () => ({
+  id: 'style-leaning',
+  type: 'hybrid-select',
+  question: 'Which style lane should we look in?',
+  subtext: 'This helps us filter for Men\'s vs Women\'s sizing and cuts.',
+  required: true,
+  multiSelect: false,
+  placeholder: 'Or describe your specific style preference...',
+  options: [
+    { id: 'feminine', label: 'Feminine', metadata: { tags: ['womens', 'feminine'] } },
+    { id: 'masculine', label: 'Masculine', metadata: { tags: ['mens', 'masculine'] } },
+    { id: 'unisex', label: 'No Preference / Unisex', metadata: { tags: ['unisex'] } }
+  ]
+});
+
+/**
+ * Get Age Range question configuration (Hybrid Select)
+ *
+ * @returns {Object} Question object
+ */
+export const getAgeRangeQuestion = () => ({
+  id: 'age-range',
+  type: 'hybrid-select',
+  question: 'Who are we shopping for?',
+  required: true,
+  multiSelect: false,
+  placeholder: 'Or enter a specific age/group...',
+  options: [
+    { id: 'teen', label: 'Teen (13-19)', metadata: { tags: ['teen'] } },
+    { id: 'young-adult', label: 'Young Adult (20-29)', metadata: { tags: ['young-adult', '20s'] } },
+    { id: 'adult', label: 'Adult (30-49)', metadata: { tags: ['adult', '30s', '40s'] } },
+    { id: 'mature', label: 'Mature (50+)', metadata: { tags: ['senior', '50s'] } }
+  ]
+});
+
+/**
+ * Generate Batch 1: Occasion & Context
+ *
+ * @returns {Object} Batch configuration
  */
 export const generateBatch1 = () => ({
-  title: 'Let\'s create your style profile',
-  description: 'I have 5 questions to help me understand your preferences.',
+  title: 'Let\'s set the scene',
+  description: 'First, I need to know the context of your journey.',
+  questions: [
+    getSeasonQuestion(),
+    getTimeOfDayQuestion(),
+    getLocationQuestion(),
+    getBudgetScaleQuestion(),
+    getStyleLeaningQuestion(),
+    getAgeRangeQuestion()
+  ]
+});
+
+/**
+ * Generate Batch 2: Style & Preferences
+ *
+ * @returns {Object} Batch configuration
+ */
+export const generateBatch2 = () => ({
+  title: 'Now for the style',
+  description: 'Help me understand your aesthetic and risk preferences.',
   questions: [
     getAestheticQuestion(),
-    getRiskToleranceQuestion(),
+    getRiskToleranceQuestion()
+  ]
+});
+
+/**
+ * Generate Batch 3: Final Details
+ *
+ * @returns {Object} Batch configuration
+ */
+export const generateBatch3 = () => ({
+  title: 'Finishing touches',
+  description: 'Any final details to perfect your curated collection?',
+  questions: [
     getAttributesQuestion(),
     getImageUploadQuestion(),
     getContextQuestion()
-  ]
-});
-
-/**
- * Generate Batch 2: Preferences & Constraints (4 questions)
- *
- * @returns {Object} Batch configuration with title, description, questions array
- */
-export const generateBatch2 = () => ({
-  title: 'Great! Now let\'s narrow it down',
-  description: 'A few more details to find the perfect matches.',
-  questions: [
-    {
-      id: 'budget-range',
-      type: 'scale-rating',
-      question: 'What is your budget comfort level?',
-      min: 1,
-      max: 5,
-      step: 1,
-      minLabel: 'Budget-Friendly ($)',
-      maxLabel: 'Premium ($$$$$)',
-      required: true
-    },
-    {
-      id: 'color-preferences',
-      type: 'multi-select',
-      question: 'Which color families do you prefer?',
-      required: false,
-      options: [
-        { id: 'warm', label: 'Warm Tones (reds, oranges, yellows)', metadata: { tags: ['warm'] } },
-        { id: 'cool', label: 'Cool Tones (blues, greens, purples)', metadata: { tags: ['cool'] } },
-        { id: 'neutral', label: 'Neutrals (black, white, beige, gray)', metadata: { tags: ['neutral'] } },
-        { id: 'pastel', label: 'Pastels', metadata: { tags: ['pastel'] } },
-        { id: 'bold', label: 'Bold & Vibrant', metadata: { tags: ['bold'] } }
-      ]
-    },
-    {
-      id: 'fit-preferences',
-      type: 'single-choice',
-      question: 'How do you prefer your clothes to fit?',
-      required: true,
-      options: [
-        { id: 'fitted', label: 'Fitted & Tailored', metadata: { tags: ['fitted'] } },
-        { id: 'relaxed', label: 'Relaxed & Comfortable', metadata: { tags: ['relaxed'] } },
-        { id: 'oversized', label: 'Oversized & Loose', metadata: { tags: ['oversized'] } },
-        { id: 'mixed', label: 'Mix of Different Fits', metadata: { tags: ['mixed'] } }
-      ]
-    },
-    {
-      id: 'brand-preferences',
-      type: 'free-text',
-      question: 'Any favorite brands or brands to avoid?',
-      multiline: true,
-      maxLength: 200,
-      placeholder: 'e.g., Love Zara, avoid fast fashion...',
-      required: false
-    }
-  ]
-});
-
-/**
- * Generate Batch 3: Final Details (3 questions)
- *
- * @returns {Object} Batch configuration with title, description, questions array
- */
-export const generateBatch3 = () => ({
-  title: 'Almost there!',
-  description: 'Just a few final touches to perfect your collection.',
-  questions: [
-    {
-      id: 'key-pieces',
-      type: 'free-text',
-      question: 'Are there specific pieces you\'re looking for?',
-      multiline: true,
-      maxLength: 200,
-      placeholder: 'e.g., A statement coat, comfortable heels...',
-      required: false
-    },
-    {
-      id: 'avoid-list',
-      type: 'free-text',
-      question: 'Anything you want to avoid?',
-      multiline: true,
-      maxLength: 200,
-      placeholder: 'e.g., No dresses, no high heels...',
-      required: false
-    },
-    {
-      id: 'special-requirements',
-      type: 'free-text',
-      question: 'Any special requirements or considerations?',
-      multiline: false,
-      maxLength: 200,
-      placeholder: 'e.g., Petite sizing, maternity, wheelchair accessible...',
-      required: false
-    }
   ]
 });
 
@@ -1219,6 +1269,12 @@ export default {
   getImageUploadQuestion,
   getContextQuestion,
   getGreetingQuestion,
+  getStyleLeaningQuestion,
+  getAgeRangeQuestion,
+  getTimeOfDayQuestion,
+  getSeasonQuestion,
+  getLocationQuestion,
+  getBudgetScaleQuestion,
 
   // Batch generation functions
   generateBatch1,

@@ -130,18 +130,6 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
           );
         })}
       </div>
-
-      {/* Helper Text */}
-      {required && !selectedOption && (
-        <p style={{
-          fontSize: typography.sizes.sm,
-          color: colors.neutral500,
-          marginTop: spacing.md,
-          fontStyle: 'italic'
-        }}>
-          * This question is required
-        </p>
-      )}
     </div>
   );
 }

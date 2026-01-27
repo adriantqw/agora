@@ -230,12 +230,25 @@ export default function ShoppingConciergePage() {
       } else if (question.id === 'additional-context') {
         const additionalContext = conciergeService.processContextAnswer(answer);
         setJourneyContext(prev => ({ ...prev, additionalContext }));
-      } else if (question.id === 'budget-range') {
+      } else if (question.id === 'budget-scale') {
         const budget = answer.value ? parseFloat(answer.value) : null;
         setJourneyContext(prev => ({ ...prev, budget }));
-      } else if (question.id === 'key-pieces') {
-        const keyPieces = answer.value ? answer.value.split(',').map(s => s.trim()) : [];
-        setJourneyContext(prev => ({ ...prev, keyPieces }));
+      } else if (question.id === 'style-leaning') {
+        const styleLeaning = answer.selectedOptions?.[0] || answer.value;
+        setJourneyContext(prev => ({ ...prev, styleLeaning }));
+      } else if (question.id === 'age-range') {
+        const ageRange = answer.selectedOptions?.[0] || answer.value;
+        setJourneyContext(prev => ({ ...prev, ageRange }));
+      } else if (question.id === 'time-of-day') {
+        const timeOfDay = answer.selectedOptions || [];
+        setJourneyContext(prev => ({ ...prev, timeOfDay }));
+      } else if (question.id === 'season') {
+        const season = answer.selectedOptions || [];
+        setJourneyContext(prev => ({ ...prev, season }));
+      } else if (question.id === 'location-hybrid') {
+        const locationType = answer.selectedOptions?.[0] || 'other';
+        const locationDetail = answer.value;
+        setJourneyContext(prev => ({ ...prev, locationType, locationDetail }));
       }
       // Add more question processing as needed
     });

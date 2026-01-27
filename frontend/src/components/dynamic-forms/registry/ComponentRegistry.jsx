@@ -12,6 +12,7 @@ import SingleChoice from '../SingleChoice.jsx';
 import ScaleRating from '../ScaleRating.jsx';
 import ColorPalette from '../ColorPalette.jsx';
 import ImageUpload from '../ImageUpload.jsx';
+import HybridSelect from '../HybridSelect.jsx';
 
 /**
  * Component Registry Object
@@ -24,6 +25,7 @@ export const COMPONENT_REGISTRY = {
   'single-choice': SingleChoice,
   'scale-rating': ScaleRating,
   'color-palette': ColorPalette,
+  'hybrid-select': HybridSelect,
 
   // Image upload component (for inspiration photos)
   'image-upload': ImageUpload,
