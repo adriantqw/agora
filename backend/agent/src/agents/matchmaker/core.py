@@ -17,7 +17,7 @@ from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
 
-RECURSION_LIMIT = 30
+RECURSION_LIMIT = 25
 
 
 class MatchMakerAgent:
