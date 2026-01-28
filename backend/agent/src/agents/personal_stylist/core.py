@@ -1,5 +1,6 @@
 import json
 import mlflow
+import uuid
 
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -178,6 +179,15 @@ class PersonalStylistAgent:
         # Use structured output to get UI components
         structured_model = self.model.with_structured_output(UIInputList)
         ui_list = structured_model.invoke(state["messages"])
+
+        # Assign unique IDs to UI inputs and their image options if not provided
+        for ui_input in ui_list.ui_inputs:
+            if ui_input.id is None:
+                ui_input.id = str(uuid.uuid4().hex)
+            if ui_input.image_options:
+                for image_option in ui_input.image_options:
+                    if image_option.id is None:
+                        image_option.id = str(uuid.uuid4().hex)
 
         return {"ui_inputs": ui_list.ui_inputs}
 
