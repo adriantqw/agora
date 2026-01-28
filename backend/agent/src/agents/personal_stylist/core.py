@@ -10,6 +10,7 @@ from langgraph.graph import END
 
 from .states import PersonalStylistState
 from .tools import Txt2ImgGenerator
+from ..tools import load_images
 from .schemas import UIInputList, JourneySchema, UserResponse
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
@@ -41,7 +42,7 @@ class PersonalStylistAgent:
 
         # Define available tools
         image_generator = Txt2ImgGenerator()
-        self.tools = image_generator.get_tools()
+        self.tools = image_generator.get_tools() + [load_images, {"google_search": {}}]
 
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()

@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 import tempfile
 from pathlib import Path
 from langgraph.graph import StateGraph, END
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from .schemas import CatalogueItemList
 from .states import CatalogueIngestorState
 from ...models.langchain_utils import load_model_from_config
@@ -110,12 +110,14 @@ class CatalogueIngestor:
             pdf_text = self._read_pdf(state)
             
             # Create message
-            messages = [HumanMessage(
-                content=[
-                    {"type": "text", "text": self.templates.format(pdf_text=pdf_text)}, #TODO: Check if this is needed
-                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
-                ]
-            )]
+            messages = [
+                SystemMessage(self.templates),
+                HumanMessage(
+                    content=[
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
+                    ]
+                )
+            ]
         
         structured_output_model = self.model.with_structured_output(CatalogueItemList)
         try:

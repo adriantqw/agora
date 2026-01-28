@@ -1,5 +1,5 @@
 from typing import Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, FilePath, FileUrl
 
 class UserResponse(BaseModel):
     question_id: str
@@ -11,7 +11,7 @@ class ImageOption(BaseModel):
     """An option for an image choice input field."""
     id: Optional[str] = Field(default=None, description="Unique identifier (auto-generated if not provided)")
     label: str = Field(description="Display label for this option")
-    image_path: str = Field(description="Path to the image file from batch generation")
+    image_path: FilePath | FileUrl = Field(description="Path to the image file from batch generation")
 
 class JourneySchema(BaseModel):
     """Base Journey class containing gathered user preferences"""
@@ -22,6 +22,7 @@ class JourneySchema(BaseModel):
     location: Optional[str] = Field(default=None, description="Location or setting (e.g. indoors, beach, office)")
     style_preferences: Optional[list[str]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
     colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences (e.g., black, brown, red)")
+    mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
 
 class UIInputType(BaseModel):
