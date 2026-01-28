@@ -80,7 +80,7 @@ const ConsumerLandingPage = () => {
               lineHeight: '1.1',
             }}>
               Hi, I'm Eggora-chan!<br/>
-              <span style={{ color: '#4C1D95' }}>Your personal shopping assistant...</span>
+              <span style={{ color: '#793DB0' }}>Your personal shopping assistant...</span>
             </h1>
             
             <p style={{
@@ -153,7 +153,7 @@ const ConsumerLandingPage = () => {
               height: '44px',
               borderRadius: '50%',
               border: 'none',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #667eea 0%, #793DB0 100%)',
               color: 'white',
               display: 'flex',
               alignItems: 'center',
