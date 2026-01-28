@@ -16,14 +16,12 @@ from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
 
-RECURSION_LIMIT = 25
-
 
 class PersonalStylistAgent:
     """
     React-style Personal Stylist Agent with UI generation tools.
 
-    Uses LangGraph's prebuilt react agent pattern with a checkpointer
+    Uses custom LangGraph's react agent pattern with prebuilt checkpointer
     for session management via thread IDs.
     """
 
@@ -32,6 +30,7 @@ class PersonalStylistAgent:
         mlflow.langchain.autolog()
         self.agent_config = load_config("agent")["personal_stylist"]
         self.model = load_model_from_config(self.agent_config["model"])
+        self.recursion_limit = self.agent_config["recursion_limit"]
 
         # Load separate prompts for journey update and UI generation
         templates = load_prompt_templates()
@@ -58,7 +57,7 @@ class PersonalStylistAgent:
         Returns:
             dict: Agent state including messages, ui_inputs, ui_answers, journey
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.invoke({"messages": [("user", message)]}, config=config)
     
     def submit_answers(self, thread_id: str, answers: list[UserResponse]) -> dict:
@@ -72,7 +71,7 @@ class PersonalStylistAgent:
         Returns:
             dict: Updated agent state
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.invoke({"ui_answers": answers}, config=config)
 
     async def chat_stream(self, message: str, thread_id: str):
@@ -86,7 +85,7 @@ class PersonalStylistAgent:
         Yields:
             Event dictionaries from the agent execution
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.astream_events({"messages": [("user", message)]}, config=config, version="v2")
     
     async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse]) -> dict:
@@ -100,7 +99,7 @@ class PersonalStylistAgent:
         Returns:
             dict: Updated agent state
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": RECURSION_LIMIT}
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.astream_events({"ui_answers": answers}, config=config, version="v2")
 
     def get_state(self, thread_id: str):

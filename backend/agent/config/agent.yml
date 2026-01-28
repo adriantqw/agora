@@ -9,6 +9,7 @@ catalogue_ingestor: &base_agent_recipe
       max_tokens: 1024
       thinking_level: low
       include_thoughts: true
+  recursion_limit: 100
 
 ## Consumer agents
 ### Personal stylist config
@@ -19,3 +20,14 @@ personal_stylist:
     params:
       <<: *base_model_params_recipe
       max_tokens: 4096
+  recursion_limit: 25
+
+### Matchmaker config
+matchmaker:
+  <<: *base_agent_recipe
+  model:
+    <<: *base_model_recipe
+    params:
+      <<: *base_model_params_recipe
+      max_tokens: 4096
+  recursion_limit: 25
