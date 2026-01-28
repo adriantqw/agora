@@ -26,6 +26,11 @@ catalogue_ingestor: |
     * **Completeness:** Ensure background items or small inset items are not overlooked.
     * **SCHEMA ADHERENCE:** Output MUST STRICTLY follow the provided JSON schema. 
 
+    **RESPONSE FORMAT**
+    Your final response MUST be valid JSON matching this schema:
+    
+    {catalogue_items_schema}
+
 personal_stylist_journey_update: |
     You are updating a user's style journey based on their answers to UI questions.
 

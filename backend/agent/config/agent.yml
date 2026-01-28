@@ -6,7 +6,7 @@ catalogue_ingestor: &base_agent_recipe
     name: gemini-3-pro-preview
     params: &base_model_params_recipe
       temperature: 0.7
-      max_tokens: 1024
+      max_tokens: 2048
       thinking_level: low
       include_thoughts: true
   recursion_limit: 100
@@ -19,6 +19,7 @@ personal_stylist:
     <<: *base_model_recipe
     params:
       <<: *base_model_params_recipe
+      thinking_level: low
       max_tokens: 4096
   recursion_limit: 25
 
@@ -29,5 +30,6 @@ matchmaker:
     <<: *base_model_recipe
     params:
       <<: *base_model_params_recipe
+      thinking_level: low
       max_tokens: 4096
   recursion_limit: 25

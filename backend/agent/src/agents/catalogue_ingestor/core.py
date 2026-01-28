@@ -31,7 +31,7 @@ class CatalogueIngestor:
         self.agent_key = "catalogue_ingestor"
         self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
-        self.templates = load_prompt_templates()[self.agent_key]
+        self.template = load_prompt_templates()[self.agent_key]
         self.graph = self._compile_graph()
         self.recursion_limit = self.agent_config["recursion_limit"]
 
@@ -106,13 +106,12 @@ class CatalogueIngestor:
             
             # Encode image to base64
             image_base64 = base64.b64encode(image_data).decode('utf-8')
-
-            # Get PDF text
-            pdf_text = self._read_pdf(state)
             
             # Create message
             messages = [
-                SystemMessage(self.templates),
+                SystemMessage(
+                    self.template.format(catalogue_items_schema=CatalogueItemList.model_json_schema())
+                ),
                 HumanMessage(
                     content=[
                         {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
@@ -136,9 +135,21 @@ class CatalogueIngestor:
         except OutputParserException as e:
             retry_count = state.get("retry_count", 0) + 1
             if retry_count <= 3:
-                logging.info(f"Validation error on page {idx} (attempt {retry_count}): {e}")
-                # Feed error back to model
-                messages.append(HumanMessage(content=f"Validation Error: {str(e)}\nPlease correct the output."))
+                # Extract detailed Pydantic validation errors if available
+                error_details = str(e)
+                if e.__cause__ is not None and hasattr(e.__cause__, 'errors'):
+                    validation_errors = e.__cause__.errors()
+                    formatted_errors = []
+                    for err in validation_errors:
+                        field_path = ' -> '.join(str(loc) for loc in err.get('loc', []))
+                        msg = err.get('msg', 'Unknown error')
+                        input_val = err.get('input', 'N/A')
+                        formatted_errors.append(f"  - Field '{field_path}': {msg} (got: {input_val})")
+                    error_details = "Pydantic validation failed:\n" + "\n".join(formatted_errors)
+
+                logging.info(f"Validation error on page {idx} (attempt {retry_count}): {error_details}")
+                # Feed detailed error back to model
+                messages.append(HumanMessage(content=f"Validation Error:\n{error_details}\nPlease correct the output and ensure all fields match the schema requirements."))
                 return {
                     "retry_count": retry_count,
                     "messages": messages
