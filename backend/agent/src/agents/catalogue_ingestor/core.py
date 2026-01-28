@@ -11,12 +11,12 @@ import tempfile
 from pathlib import Path
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.exceptions import OutputParserException
 from .schemas import CatalogueItemList
 from .states import CatalogueIngestorState
+from .utils import get_pil_box
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
-from ...utils.image import get_pil_box
-from langchain_core.exceptions import OutputParserException
 
 load_dotenv()
 
@@ -28,9 +28,10 @@ class CatalogueIngestor:
     def __init__(self):
         """Initialize the agent."""
         mlflow.langchain.autolog()
-        self.agent_config = load_config("agent")["catalogue_ingestor"]
+        self.agent_key = "catalogue_ingestor"
+        self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
-        self.templates = load_prompt_templates()["catalogue_ingestor"]
+        self.templates = load_prompt_templates()[self.agent_key]
         self.graph = self._compile_graph()
         self.recursion_limit = self.agent_config["recursion_limit"]
 
@@ -203,7 +204,7 @@ class CatalogueIngestor:
             }
         )
 
-        return workflow.compile()
+        return workflow.compile(name=self.agent_key)
 
     def ingest(self, pdf_path: str) -> dict:
         """Ingest the catalogue."""

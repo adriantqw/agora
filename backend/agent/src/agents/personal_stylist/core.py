@@ -29,14 +29,15 @@ class PersonalStylistAgent:
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
         mlflow.langchain.autolog()
-        self.agent_config = load_config("agent")["personal_stylist"]
+        self.agent_key = "personal_stylist"
+        self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
 
         # Load separate prompts for journey update and UI generation
         templates = load_prompt_templates()
-        self.journey_update_prompt: str = templates["personal_stylist_journey_update"]
-        self.ui_generation_prompt: str = templates["personal_stylist_ui_generation"]
+        self.journey_update_prompt: str = templates[f"{self.agent_key}_journey_update"]
+        self.ui_generation_prompt: str = templates[f"{self.agent_key}_ui_generation"]
 
         self.checkpointer = MemorySaver()
 
@@ -223,4 +224,4 @@ class PersonalStylistAgent:
         # Parse UI ends the flow
         workflow.add_edge("parse_ui", END)
 
-        return workflow.compile(checkpointer=self.checkpointer)
+        return workflow.compile(checkpointer=self.checkpointer, name=self.agent_key)

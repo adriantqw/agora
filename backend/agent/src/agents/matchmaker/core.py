@@ -29,13 +29,14 @@ class MatchMakerAgent:
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
         mlflow.langchain.autolog()
-        self.agent_config = load_config("agent")["matchmaker"]
+        self.agent_key = "matchmaker"
+        self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
 
         templates = load_prompt_templates()
-        self.system_prompt = templates["matchmaker"]
-        self.system_prompt_best_effort = templates["matchmaker_best_match"]
+        self.system_prompt = templates[self.agent_key]
+        self.system_prompt_best_effort = templates[f"{self.agent_key}_best_match"]
 
         self.checkpointer = MemorySaver()
         self.tools = [search_products, load_images, {"google_search": {}}]
@@ -143,4 +144,4 @@ class MatchMakerAgent:
         workflow.add_edge("tools", "agent")
         workflow.add_edge("parse_matches", END)
 
-        return workflow.compile(checkpointer=self.checkpointer)
+        return workflow.compile(checkpointer=self.checkpointer, name=self.agent_key)

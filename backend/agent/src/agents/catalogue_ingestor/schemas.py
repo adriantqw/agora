@@ -13,7 +13,7 @@ class CatalogueItem(BaseModel):
     name: str = Field(description="The name of the item")
     description: str = Field(description="A brief description of the item")
     sizes: Optional[list[str]] = Field(description="The available sizes of the item", default=[])
-    colours: Optional[list[str]] = Field(description="The available colours of the item", default=[])
+    colours: Optional[list[str]] = Field(description="The available hex code colours of the item, e.g. '#ff9999'", default=[])
     bbox: Optional[BBox] = Field(description="The bounding box of the item", default=None)
     page: Optional[int] = Field(description="The page number of the item", default=None)
 

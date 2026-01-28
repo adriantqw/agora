@@ -3,7 +3,7 @@ import asyncio
 import argparse
 from dotenv import load_dotenv
 
-from src.agents.catalogue_ingestor.core import CatalogueIngestor
+from ..src.agents.catalogue_ingestor.core import CatalogueIngestor
 
 parser = argparse.ArgumentParser(description="Test Catalogue Ingestor Agent")
 parser.add_argument("--pdf_path", type=str, required=True, help="Path to the catalogue PDF file")
