@@ -112,7 +112,7 @@ class CatalogueIngestor:
             # Create message
             messages = [HumanMessage(
                 content=[
-                    {"type": "text", "text": self.templates.format(pdf_text=pdf_text)},
+                    {"type": "text", "text": self.templates.format(pdf_text=pdf_text)}, #TODO: Check if this is needed
                     {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}}
                 ]
             )]

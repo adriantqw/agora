@@ -9,7 +9,7 @@ from langgraph.graph import END
 
 from .states import MatchmakerState
 from .schemas import MatchResult
-from .tools import search_products
+from .tools import search_products, load_images
 from ..personal_stylist.schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
@@ -37,7 +37,7 @@ class MatchMakerAgent:
         self.system_prompt_best_effort = templates["matchmaker_best_match"]
 
         self.checkpointer = MemorySaver()
-        self.tools = [search_products]
+        self.tools = [search_products, load_images]
         self.agent = self._compile_graph()
 
     def match(self, journey: JourneySchema, thread_id: str) -> dict:
