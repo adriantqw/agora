@@ -257,7 +257,7 @@ const ConsumerLoginPage = () => {
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 4px 14px rgba(242, 148, 170, 0.4)',
+                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',

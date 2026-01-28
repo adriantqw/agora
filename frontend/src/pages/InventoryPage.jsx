@@ -160,7 +160,7 @@ const InventoryPage = () => {
               width: '80px',
               height: '80px',
               borderRadius: '24px',
-              background: isDark ? 'rgba(245, 165, 184, 0.1)' : colors.primary.eggPinkLight,
+              background: colors.primary.eggPinkLight,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -190,7 +190,7 @@ const InventoryPage = () => {
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(242, 148, 170, 0.4)',
+                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -258,7 +258,7 @@ const InventoryPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: '0 4px 12px rgba(245, 165, 184, 0.4)'
+                boxShadow: `0 4px 12px ${colors.primary.pink}66`
               }}>
                 <Plus size={20} />
                 Add Item
@@ -298,8 +298,8 @@ const InventoryPage = () => {
                     fontSize: '15px',
                     fontWeight: '700',
                     cursor: 'pointer',
-                    background: activeTab === tab.name ? (isDark ? '#831843' : colors.primary.eggPinkLight) : 'transparent',
-                    color: activeTab === tab.name ? (isDark ? 'white' : '#831843') : colors.text.secondary,
+                    background: activeTab === tab.name ? colors.primary.eggPinkLight : 'transparent',
+                    color: activeTab === tab.name ? colors.primary.eggPink : colors.text.secondary,
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
