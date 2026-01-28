@@ -1,0 +1,6 @@
+catalogue_items: &base_vector_db_recipe
+  persist_directory: ./data/vector_db
+  embed_model_name: models/gemini-embedding-001
+  
+  
+  

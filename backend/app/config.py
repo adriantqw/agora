@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     CATALOGUE_UPLOAD_DIR: str = "data/uploads/catalogues"
     TESSERACT_PATH: str = "/usr/bin/tesseract"
 
+    # MLflow Settings
+    MLFLOW_TRACKING_URI: str = "sqlite:///mlflow.db"
+    MLFLOW_EXPERIMENT_NAME: str = "agora"
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
     @property

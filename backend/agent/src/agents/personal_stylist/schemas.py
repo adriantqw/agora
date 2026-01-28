@@ -15,13 +15,14 @@ class ImageOption(BaseModel):
 
 class JourneySchema(BaseModel):
     """Base Journey class containing gathered user preferences"""
-    title: str = Field(description="Title of the journey")
+    title: str = Field(description="User-friendly title of the journey")
     time_of_day: Optional[Literal["morning", "afternoon", "evening", "night"]] = Field(default=None, description="Preferred time of day for the outfit style")
     season: Optional[Literal["winter", "autumn", "spring", "summer"]] = Field(description="Seasonal vibe for the outfit")
-    occasion: Optional[str] = Field(default=None,description="Occasion for the outfit (e.g., casual, formal, party)")
+    occasion: Optional[str] = Field(default=None, description="Occasion for the outfit (e.g., casual, formal, party)")
+    location: Optional[str] = Field(default=None, description="Location or setting (e.g. indoors, beach, office)")
     style_preferences: Optional[list[str]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
     colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences (e.g., black, brown, red)")
-    budget_range: Optional[int] = Field(description="Budget range for the outfit", default=None)
+    budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
 
 class UIInputType(BaseModel):
     """Base class for UI input components."""
