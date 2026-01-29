@@ -154,28 +154,31 @@ const ConsumerProfilePage = () => {
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[
-                    { icon: LayoutGrid, label: 'Overview', active: true },
-                    { icon: Sliders, label: 'Style Profile', active: false },
-                    { icon: Package, label: 'Orders & Returns', active: false },
-                    { icon: Heart, label: 'Wishlist', badge: 12, active: false },
-                    { icon: Settings, label: 'Settings', active: false }
+                    { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
+                    { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
+                    { icon: Package, label: 'Orders & Returns', active: false, path: '#' },
+                    { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
+                    { icon: Settings, label: 'Settings', active: false, path: '#' }
                   ].map((item, idx) => (
-                    <a 
+                    <button 
                       key={idx} 
-                      href="#" 
-                      onClick={(e) => e.preventDefault()}
+                      onClick={() => item.path !== '#' && navigate(item.path)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                         padding: '12px 16px',
                         borderRadius: '12px',
+                        border: 'none',
                         color: item.active ? colors.primary.eggPink : colors.text.secondary,
                         background: item.active ? colors.primary.eggPinkLight : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
                       }}
                       onMouseEnter={(e) => {
                         if (!item.active) e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB';
@@ -199,7 +202,7 @@ const ConsumerProfilePage = () => {
                           {item.badge}
                         </span>
                       )}
-                    </a>
+                    </button>
                   ))}
                 </nav>
 

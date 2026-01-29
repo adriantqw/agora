@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
+import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import CollapsibleJourneySection from '../components/consumer/JourneySection/CollapsibleJourneySection';
@@ -11,6 +12,8 @@ const ITEMS_PER_PAGE = 3;
 
 const JourneysPage = () => {
   const colors = useThemeColors();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   
@@ -253,6 +256,7 @@ const JourneysPage = () => {
                 In Progress
                 <span style={{ 
                     background: activeTab === 'active' ? '#FFF' : colors.card.backgroundAlt,
+                    color: activeTab === 'active' ? '#1A202C' : 'inherit',
                     padding: '2px 8px',
                     borderRadius: '12px',
                     fontSize: '12px',
@@ -283,6 +287,7 @@ const JourneysPage = () => {
                 Completed
                 <span style={{ 
                     background: activeTab === 'completed' ? '#FFF' : colors.card.backgroundAlt,
+                    color: activeTab === 'completed' ? '#1A202C' : 'inherit',
                     padding: '2px 8px',
                     borderRadius: '12px',
                     fontSize: '12px',
