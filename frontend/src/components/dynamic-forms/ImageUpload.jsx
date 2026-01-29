@@ -7,7 +7,7 @@
 
 import { useState, useRef } from 'react';
 import { UploadCloud, X } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * @typedef {Object} ImageUploadProps

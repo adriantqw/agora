@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getCardStyle } from '../../utils/styleHelpers.js';
 import { Check, Plus } from 'lucide-react';
 

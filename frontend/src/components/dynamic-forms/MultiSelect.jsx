@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getChipStyle, getHelperTextStyle } from '../../utils/styleHelpers.js';
 
 /**

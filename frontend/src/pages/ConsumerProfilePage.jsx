@@ -16,12 +16,14 @@ import {
   ShoppingBag,
   Footprints,
   Glasses,
-  ArrowRight
+  ArrowRight,
+  Share2
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
+import ShareModal from '../components/common/ShareModal';
 
 const ConsumerProfilePage = () => {
   const colors = useThemeColors();
@@ -29,6 +31,8 @@ const ConsumerProfilePage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -38,12 +42,13 @@ const ConsumerProfilePage = () => {
   const userName = user?.full_name || user?.merchant_name || 'Shopper';
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
-  // Mock data for recent saves
-  const recentSaves = [
-    { id: 1, name: 'Silk Midi Dress', price: 245.00, icon: Shirt },
-    { id: 2, name: 'Leather Tote', price: 180.00, icon: ShoppingBag },
-    { id: 3, name: 'Urban Runners', price: 120.00, icon: Footprints },
-    { id: 4, name: 'Retro Frames', price: 85.00, icon: Glasses },
+  // Mock wishlist data (subset for profile view)
+  const wishlistItems = [
+    { id: 1, name: 'Silk Midi Dress', price: 245.00, brand: 'Reformation', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000&auto=format&fit=crop' },
+    { id: 2, name: 'Leather Tote Bag', price: 180.00, brand: 'Cuyana', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1000&auto=format&fit=crop' },
+    { id: 3, name: 'Classic White Sneakers', price: 120.00, brand: 'Veja', image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?q=80&w=1000&auto=format&fit=crop' },
+    { id: 4, name: 'Gold Hoop Earrings', price: 85.00, brand: 'Mejuri', image: 'https://images.unsplash.com/photo-1635767798638-3e2523422dc7?q=80&w=1000&auto=format&fit=crop' },
+    { id: 5, name: 'Wool Blend Coat', price: 350.00, brand: 'Aritzia', image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=1000&auto=format&fit=crop' },
   ];
 
   const StatCard = ({ icon: Icon, value, label, colorClass, iconColor, onClick }) => (
@@ -388,7 +393,7 @@ const ConsumerProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Recent Favorites */}
+                {/* My Wishlist (Formerly Recent Favorites) */}
                 <div style={{
                   background: colors.card.background,
                   borderRadius: '24px',
@@ -397,20 +402,35 @@ const ConsumerProfilePage = () => {
                   border: `1px solid ${colors.border.subtle}`
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary }}>Recent Saves</h3>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary }}>My Wishlist</h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronLeft size={16} strokeWidth={3} /></button>
-                      <button style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronRight size={16} strokeWidth={3} /></button>
+                      <button 
+                        onClick={() => navigate('/wishlist')}
+                        style={{ padding: '8px 16px', borderRadius: '99px', border: `1px solid ${colors.border.subtle}`, background: 'transparent', color: colors.text.secondary, fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = colors.primary.eggPink; e.currentTarget.style.color = colors.primary.eggPink; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = colors.border.subtle; e.currentTarget.style.color = colors.text.secondary; }}
+                      >
+                        View All
+                      </button>
+                      <button 
+                        onClick={() => setIsShareModalOpen(true)}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = colors.primary.eggPink; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = colors.card.backgroundAlt; e.currentTarget.style.color = colors.text.secondary; }}
+                        title="Share Wishlist"
+                      >
+                        <Share2 size={16} />
+                      </button>
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
-                    {recentSaves.map((item) => (
+                    {wishlistItems.map((item) => (
                       <div 
                         key={item.id} 
                         style={{ cursor: 'pointer' }} 
                         className="group"
-                        onClick={() => navigate('/inventory')}
+                        onClick={() => navigate('/wishlist')}
                       >
                         <div style={{
                           aspectRatio: '3/4',
@@ -423,7 +443,7 @@ const ConsumerProfilePage = () => {
                           justifyContent: 'center',
                           overflow: 'hidden'
                         }}>
-                          <item.icon size={48} color={colors.text.tertiary} strokeWidth={1} />
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <div style={{
                             position: 'absolute',
                             top: '8px',
@@ -435,14 +455,13 @@ const ConsumerProfilePage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: colors.status.error.text,
+                            color: colors.primary.eggPink,
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                           }}>
                             <Heart size={16} fill="currentColor" />
                           </div>
                         </div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: colors.text.primary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
-                        <div style={{ fontSize: '12px', color: colors.text.secondary }}>${item.price.toFixed(2)}</div>
                       </div>
                     ))}
                   </div>
@@ -464,6 +483,11 @@ const ConsumerProfilePage = () => {
           }
         }
       `}</style>
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        shareLink={`${window.location.origin}/wishlist/share/${user?.id || 'guest'}`}
+      />
     </div>
   );
 };
