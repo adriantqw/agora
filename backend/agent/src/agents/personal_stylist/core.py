@@ -1,5 +1,6 @@
 import json
 import mlflow
+import uuid
 
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage
@@ -9,7 +10,8 @@ from langgraph.prebuilt.tool_node import ToolNode
 from langgraph.graph import END
 
 from .states import PersonalStylistState
-from .tools import Txt2ImgGenerator
+from .tools import Txt2ImgGenerator, update_mood_board
+from ..tools import load_images, google_search
 from .schemas import UIInputList, JourneySchema, UserResponse
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
@@ -28,21 +30,24 @@ class PersonalStylistAgent:
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
         mlflow.langchain.autolog()
-        self.agent_config = load_config("agent")["personal_stylist"]
+        self.agent_key = "personal_stylist"
+        self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
 
         # Load separate prompts for journey update and UI generation
         templates = load_prompt_templates()
-        self.journey_update_prompt: str = templates["personal_stylist_journey_update"]
-        self.ui_generation_prompt: str = templates["personal_stylist_ui_generation"]
+        self.journey_update_prompt: str = templates[f"{self.agent_key}_journey_update"]
+        self.ui_generation_prompt: str = templates[f"{self.agent_key}_ui_generation"]
 
         self.checkpointer = MemorySaver()
 
         # Define available tools
         image_generator = Txt2ImgGenerator()
-        self.tools = image_generator.get_tools()
-
+        self.tools = image_generator.get_tools() + [load_images, update_mood_board]
+        if self.agent_config["enable_google_search_tool"]:
+            self.tools.append(google_search)
+            
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
@@ -177,6 +182,15 @@ class PersonalStylistAgent:
         structured_model = self.model.with_structured_output(UIInputList)
         ui_list = structured_model.invoke(state["messages"])
 
+        # Assign unique IDs to UI inputs and their image options if not provided
+        for ui_input in ui_list.ui_inputs:
+            if ui_input.id is None:
+                ui_input.id = str(uuid.uuid4().hex)
+            if ui_input.image_options:
+                for image_option in ui_input.image_options:
+                    if image_option.id is None:
+                        image_option.id = str(uuid.uuid4().hex)
+
         return {"ui_inputs": ui_list.ui_inputs}
 
     def _compile_graph(self):
@@ -222,4 +236,4 @@ class PersonalStylistAgent:
         # Parse UI ends the flow
         workflow.add_edge("parse_ui", END)
 
-        return workflow.compile(checkpointer=self.checkpointer)
+        return workflow.compile(checkpointer=self.checkpointer, name=self.agent_key)
