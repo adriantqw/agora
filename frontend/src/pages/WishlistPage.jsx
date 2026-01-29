@@ -127,7 +127,7 @@ const WishlistPage = () => {
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
                     { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
-                    { icon: Package, label: 'Orders & Returns', active: false, path: '#' },
+                    { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
                     { icon: Heart, label: 'Wishlist', badge: items.length, active: true, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
