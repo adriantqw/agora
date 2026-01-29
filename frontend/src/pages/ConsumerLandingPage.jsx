@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Plus, Mic } from 'lucide-react';
+import { ArrowRight, ImagePlus, Mic } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import { useThemeColors } from '../hooks/useThemeColors';
 
@@ -12,9 +12,8 @@ const ConsumerLandingPage = () => {
   const textareaRef = useRef(null);
   const [textareaHeight, setTextareaHeight] = useState('24px');
 
-  // Image upload
-  const [uploadedImage, setUploadedImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  // Image upload (multiple images support)
+  const [uploadedImages, setUploadedImages] = useState([]);
   const imageInputRef = useRef(null);
 
   // Voice input
@@ -86,38 +85,69 @@ const ConsumerLandingPage = () => {
   }, []);
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
 
-    // Validate file type
+    const MAX_IMAGES = 5;
     const acceptedFormats = ['image/jpeg', 'image/png', 'image/webp'];
-    if (!acceptedFormats.includes(file.type)) {
-      alert('Please upload a JPEG, PNG, or WEBP image');
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    // Check if already at max capacity
+    if (uploadedImages.length >= MAX_IMAGES) {
+      alert(`Maximum ${MAX_IMAGES} images allowed`);
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
       return;
     }
 
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert('Image size must be less than 5MB');
-      return;
+    // Calculate how many more images we can add
+    const remainingSlots = MAX_IMAGES - uploadedImages.length;
+    const filesToProcess = files.slice(0, remainingSlots);
+
+    // Warn if trying to upload more than remaining slots
+    if (files.length > remainingSlots) {
+      alert(`You can only add ${remainingSlots} more image${remainingSlots === 1 ? '' : 's'} (maximum ${MAX_IMAGES} total)`);
     }
 
-    // Read as base64 for preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImagePreview(e.target.result);
-      setUploadedImage(file);
-    };
-    reader.readAsDataURL(file);
-  };
+    // Validate and process each file
+    filesToProcess.forEach(file => {
+      // Validate file type
+      if (!acceptedFormats.includes(file.type)) {
+        alert(`${file.name}: Please upload a JPEG, PNG, or WEBP image`);
+        return;
+      }
 
-  const handleRemoveImage = () => {
-    setUploadedImage(null);
-    setImagePreview(null);
+      // Validate file size
+      if (file.size > maxSize) {
+        alert(`${file.name}: Image size must be less than 5MB`);
+        return;
+      }
+
+      // Read as base64 for preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImages(prev => {
+          // Double-check we haven't exceeded the limit
+          if (prev.length >= MAX_IMAGES) return prev;
+          return [...prev, {
+            file: file,
+            preview: e.target.result,
+            id: Date.now() + Math.random() // Unique ID for each image
+          }];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input so the same file can be uploaded again if removed
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
     }
+  };
+
+  const handleRemoveImage = (imageId) => {
+    setUploadedImages(prev => prev.filter(img => img.id !== imageId));
   };
 
   const handleVoiceInput = () => {
@@ -137,11 +167,11 @@ const ConsumerLandingPage = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim() || uploadedImage) {
+    if (searchQuery.trim() || uploadedImages.length > 0) {
       navigate('/journey', {
         state: {
           searchQuery: searchQuery.trim(),
-          image: imagePreview // Pass base64 image
+          images: uploadedImages.map(img => img.preview) // Pass array of base64 images
         }
       });
     }
@@ -173,8 +203,9 @@ const ConsumerLandingPage = () => {
         alignItems: 'center',
         justifyContent: 'flex-start',
         minHeight: '100vh',
-        padding: '220px 20px 40px',
+        padding: `${uploadedImages.length > 0 ? '140px' : '220px'} 20px 40px`,
         textAlign: 'center',
+        transition: 'padding 0.3s ease',
         position: 'relative',
         zIndex: 10,
       }}>
@@ -260,6 +291,7 @@ const ConsumerLandingPage = () => {
             type="file"
             ref={imageInputRef}
             accept="image/jpeg,image/png,image/webp"
+            multiple
             style={{ display: 'none' }}
             onChange={handleImageUpload}
           />
@@ -268,6 +300,66 @@ const ConsumerLandingPage = () => {
           <div style={{
             padding: '12px 16px',
           }}>
+            {/* Image Previews */}
+            {uploadedImages.length > 0 && (
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginBottom: '12px',
+              }}>
+                {uploadedImages.map((image) => (
+                  <div
+                    key={image.id}
+                    style={{
+                      position: 'relative',
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '2px solid rgba(121, 61, 176, 0.2)',
+                    }}
+                  >
+                    <img
+                      src={image.preview}
+                      alt="Upload preview"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(image.id)}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Textarea */}
             <div style={{
               height: textareaHeight,
               transition: 'height 0.15s ease',
@@ -309,80 +401,38 @@ const ConsumerLandingPage = () => {
             padding: '12px 16px 12px 16px',
             borderTop: '1px solid rgba(121, 61, 176, 0.1)',
           }}>
-            {/* Image Upload Button (Plus Icon) */}
-            <div style={{ position: 'relative' }}>
-              <button
-                type="button"
-                onClick={() => imageInputRef.current?.click()}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  border: imagePreview ? 'none' : '2px dashed rgba(121, 61, 176, 0.4)',
-                  backgroundColor: imagePreview ? 'rgba(121, 61, 176, 0.1)' : 'transparent',
-                  color: '#793DB0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  overflow: 'hidden',
-                }}
-                onMouseEnter={(e) => {
-                  if (!imagePreview) {
-                    e.currentTarget.style.backgroundColor = 'rgba(121, 61, 176, 0.1)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!imagePreview) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
-              >
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Upload preview"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: '50%'
-                    }}
-                  />
-                ) : (
-                  <Plus size={20} strokeWidth={2.5} />
-                )}
-              </button>
-
-              {/* Remove Image Button */}
-              {imagePreview && (
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  style={{
-                    position: 'absolute',
-                    top: '-4px',
-                    right: '-4px',
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    backgroundColor: '#ef4444',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-                  }}
-                >
-                  ×
-                </button>
-              )}
-            </div>
+            {/* Image Upload Button (Image Icon) */}
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploadedImages.length >= 5}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                border: '2px dashed rgba(121, 61, 176, 0.4)',
+                backgroundColor: 'transparent',
+                color: uploadedImages.length >= 5 ? '#a0aec0' : '#793DB0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: uploadedImages.length >= 5 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                opacity: uploadedImages.length >= 5 ? 0.5 : 1,
+              }}
+              onMouseEnter={(e) => {
+                if (uploadedImages.length < 5) {
+                  e.currentTarget.style.backgroundColor = 'rgba(121, 61, 176, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (uploadedImages.length < 5) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              <ImagePlus size={20} strokeWidth={2.5} />
+            </button>
 
             {/* Voice Input Button (Microphone) - HIDDEN FOR NOW */}
             {false && (
