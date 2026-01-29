@@ -158,7 +158,7 @@ const ConsumerProfilePage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
+                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
@@ -332,7 +332,9 @@ const ConsumerProfilePage = () => {
                       <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Your Style DNA</h3>
                       <p style={{ fontSize: '14px', color: colors.text.secondary }}>Based on your recent interactions</p>
                     </div>
-                    <button style={{ 
+                    <button 
+                      onClick={() => navigate('/style-profile')}
+                      style={{ 
                       background: 'none', 
                       border: 'none',
                       padding: '6px 12px',
