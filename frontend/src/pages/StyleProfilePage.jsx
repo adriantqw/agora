@@ -73,7 +73,7 @@ const StyleProfilePage = () => {
             <ChevronRight size={12} />
             <span style={{ cursor: 'pointer' }} onClick={() => navigate('/profile')}>My Account</span>
             <ChevronRight size={12} />
-            <span style={{ color: colors.text.primary, fontWeight: '500' }}>Style DNA</span>
+            <span style={{ color: colors.text.primary, fontWeight: '500' }}>Style Profile</span>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '32px' }}>
