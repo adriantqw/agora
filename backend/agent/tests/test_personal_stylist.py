@@ -27,7 +27,7 @@ async def test_streaming():
     print("\nStreaming events:")
 
     event_count = 0
-    async for event in agent.stream(query, thread_id):
+    async for event in await agent.chat_stream(query, thread_id):
         results = extract_personal_stylist_metadata(event)
         # Print thinking messages
         for msg in results["thinking_messages"]:
