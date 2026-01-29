@@ -220,45 +220,6 @@ const WishlistPage = () => {
                     {items.length} items saved
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select style={{
-                    padding: '10px 16px',
-                    borderRadius: '99px',
-                    background: colors.card.background,
-                    border: `1px solid ${colors.border.subtle}`,
-                    color: colors.text.secondary,
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}>
-                    <option>All Categories</option>
-                    <option>Dresses</option>
-                    <option>Shoes</option>
-                    <option>Accessories</option>
-                  </select>
-                  <select style={{
-                    padding: '10px 16px',
-                    borderRadius: '99px',
-                    background: colors.card.background,
-                    border: `1px solid ${colors.border.subtle}`,
-                    color: colors.text.secondary,
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    outline: 'none',
-                    cursor: 'pointer'
-                  }}>
-                    <option>Recently Added</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>On Sale</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Quick Filters */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
-                <button style={{ padding: '6px 16px', borderRadius: '99px', background: colors.text.primary, color: colors.card.background, fontSize: '12px', fontWeight: '700', border: 'none', cursor: 'pointer' }}>All Items</button>
               </div>
 
               {/* Items Grid */}
