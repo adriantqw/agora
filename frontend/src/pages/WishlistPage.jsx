@@ -125,11 +125,11 @@ const WishlistPage = () => {
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
-                    { icon: LayoutGrid, label: 'Overview', active: false, path: '/' },
+                    { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
                     { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '#' },
                     { icon: Heart, label: 'Wishlist', badge: items.length, active: true, path: '/wishlist' },
-                    { icon: Settings, label: 'Settings', active: false, path: '#' }
+                    { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
                     <button 
                       key={idx} 
