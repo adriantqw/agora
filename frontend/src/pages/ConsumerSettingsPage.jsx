@@ -13,7 +13,8 @@ import {
   Upload,
   Plus,
   Trash2,
-  ChevronRight
+  ChevronRight,
+  Sparkles
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -33,6 +34,7 @@ const ConsumerSettingsPage = () => {
   const [firstName, setFirstName] = useState('Sarah');
   const [lastName, setLastName] = useState('Jenkins');
   const [email] = useState('sarah.jenkins@example.com'); // Read-only
+  const [personality, setPersonality] = useState('Friendly');
   const [showModal, setShowModal] = useState(false);
 
   const userName = user?.full_name || user?.merchant_name || 'Shopper';
@@ -53,6 +55,7 @@ const ConsumerSettingsPage = () => {
   const handleCancel = () => {
     setFirstName('Sarah');
     setLastName('Jenkins');
+    setPersonality('Friendly');
   };
 
   const handleSave = () => {
@@ -311,6 +314,24 @@ const ConsumerSettingsPage = () => {
                   >
                     Fitting Room
                   </button>
+                  <button 
+                    onClick={() => handleTabChange('personality')}
+                    style={{
+                      paddingBottom: '16px',
+                      paddingLeft: '16px',
+                      paddingRight: '16px',
+                      background: 'none',
+                      border: 'none',
+                      borderBottom: `2px solid ${activeTab === 'personality' ? colors.primary.eggPink : 'transparent'}`,
+                      color: activeTab === 'personality' ? colors.primary.eggPink : colors.text.secondary,
+                      fontWeight: activeTab === 'personality' ? '600' : '500',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Eggora-chan
+                  </button>
                 </div>
 
                 {/* Content: Account Details */}
@@ -536,6 +557,85 @@ const ConsumerSettingsPage = () => {
                           <span style={{ fontSize: '12px', fontWeight: '600', marginTop: '8px' }}>Add Angle</span>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Content: Personality */}
+                {activeTab === 'personality' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                    
+                    {/* Info Banner */}
+                    <div style={{
+                      background: `linear-gradient(to right, ${colors.primary.eggPinkLight}, ${colors.card.backgroundAlt})`,
+                      borderRadius: '16px',
+                      padding: '24px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      border: `1px solid ${colors.primary.eggPink}30`
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: colors.card.background,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: colors.primary.eggPink,
+                          boxShadow: colors.shadow.sm
+                        }}>
+                          <Sparkles size={24} />
+                        </div>
+                        <div>
+                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Eggora-chan's Personality</h3>
+                          <p style={{ fontSize: '14px', color: colors.text.secondary, marginTop: '4px' }}>Choose how Eggora-chan interacts with you. This affects her tone and style recommendations.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Options Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+                      {['Friendly', 'Professional', 'Sassy'].map((option) => (
+                        <div 
+                          key={option}
+                          onClick={() => setPersonality(option)}
+                          style={{
+                            border: `2px solid ${personality === option ? colors.primary.eggPink : colors.border.subtle}`,
+                            borderRadius: '16px',
+                            padding: '24px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            background: personality === option ? colors.primary.eggPinkLight + '20' : colors.card.background,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '50%',
+                            border: `2px solid ${personality === option ? colors.primary.eggPink : colors.border.subtle}`,
+                            background: personality === option ? colors.primary.eggPink : 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            alignSelf: 'flex-end'
+                          }}>
+                            {personality === option && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
+                          </div>
+                          
+                          <h4 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>{option}</h4>
+                          <p style={{ fontSize: '13px', color: colors.text.secondary, lineHeight: '1.5' }}>
+                            {option === 'Friendly' && "Warm, casual, and supportive. Like shopping with your best friend."}
+                            {option === 'Professional' && "Efficient, polite, and direct. Focused on getting you the best results."}
+                            {option === 'Sassy' && "Bold, honest, and fun. Won't hesitate to tell you what's hot and what's not."}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
