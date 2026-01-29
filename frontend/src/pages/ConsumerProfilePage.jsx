@@ -131,22 +131,6 @@ const ConsumerProfilePage = () => {
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%' }}
                     />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '4px',
-                      right: '4px',
-                      width: '24px',
-                      height: '24px',
-                      background: colors.primary.eggPink,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `2px solid ${colors.card.background}`,
-                      color: 'white'
-                    }}>
-                      <Edit2 size={12} />
-                    </div>
                   </div>
                   <h2 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>{userName}</h2>
                   <p style={{ fontSize: '12px', color: colors.text.secondary }}>Member since {joinDate}</p>
@@ -158,7 +142,7 @@ const ConsumerProfilePage = () => {
                     { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '#' },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
-                    { icon: Settings, label: 'Settings', active: false, path: '#' }
+                    { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
                     <button 
                       key={idx} 
