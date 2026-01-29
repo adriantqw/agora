@@ -4,14 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-This is the **Agora MerchantHub** - a merchant inventory management platform built with React + Vite.
+This is the **Agora MerchantHub** - a hybrid merchant inventory + consumer shopping platform with AI-powered styling, built with React + Vite.
 
 **Current State:**
 - ✅ Vite project scaffolded with React 18
-- ✅ All merchant pages implemented (Login, Home, Inventory, Bulk Import)
+- ✅ All merchant pages implemented (Login, Home, Inventory, Bulk Import, Orders)
 - ✅ Product inventory management (CRUD, bulk import, bulk delete)
 - ✅ AI product tagging (dummy implementation)
-- ✅ React Router configured with authentication flow
+- ✅ Consumer authentication system (login, profile, session management)
+- ✅ Shopping concierge with chat interface
+- ✅ Saved journeys management
+- ✅ Consumer wishlist/inventory
+- ✅ Share functionality for wishlists
+- ✅ Chat-based journey creation with AI stylist
+- ✅ Responsive design with dark/light theme toggle
+- ✅ React Router configured with dual authentication flow (merchant + consumer)
 - ✅ Dependencies installed
 - ✅ Docker configuration complete (development & production)
 - ✅ Nginx with basic authentication configured
@@ -40,13 +47,31 @@ interface Product {
 ```
 
 **Implemented Screens:**
+
+**Consumer Pages:**
 1. ✅ `src/pages/ConsumerLandingPage.jsx` - Journey-based consumer homepage with AI stylist (public)
-2. ✅ `src/pages/MerchantLoginPage.jsx` - Login with demo credentials
-3. ✅ `src/pages/MerchantHomePage.jsx` - Dashboard home with metrics and quick actions
-4. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
-5. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
-6. ✅ AI Tagging Dialog (in Dashboard) - Shows suggested tags with apply functionality
-7. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard with AI tagging on success step
+2. ✅ `src/pages/ConsumerLoginPage.jsx` - Consumer authentication with email/password
+3. ✅ `src/pages/ConsumerProfilePage.jsx` - User profile management (requires auth)
+4. ✅ `src/pages/ShoppingConciergePage.jsx` - Chat-based AI styling interface
+5. ✅ `src/pages/JourneysPage.jsx` - Saved journeys listing and management
+6. ✅ `src/pages/InventoryPage.jsx` - Consumer wishlist and saved items (requires auth)
+7. ✅ `src/pages/SharedWishlistPage.jsx` - Shared wishlist view (public with token)
+8. ✅ `src/pages/FittingRoomPage.jsx` - Virtual fitting room
+9. ✅ `src/pages/BrowsePage.jsx` - Browse products by category
+10. ✅ `src/pages/SearchResultsPage.jsx` - Product search results
+11. ✅ `src/pages/QuizPage.jsx` - Shopping quiz
+
+**Merchant Pages:**
+12. ✅ `src/pages/MerchantLoginPage.jsx` - Merchant login with demo credentials
+13. ✅ `src/pages/MerchantHomePage.jsx` - Dashboard home with metrics and quick actions
+14. ✅ `src/pages/MerchantDashboardPage.jsx` - Inventory list with search, filter, sort, pagination, and full-page edit view
+15. ✅ `src/pages/MerchantBulkImportPage.jsx` - 4-step import wizard with AI tagging on success step
+16. ✅ `src/pages/MerchantOrdersPage.jsx` - Order management dashboard
+
+**Dialogs & Components:**
+17. ✅ Bulk Delete Confirmation Dialog (in Dashboard)
+18. ✅ AI Tagging Dialog (in Dashboard) - Shows suggested tags with apply functionality
+19. ✅ Share Modal - Share wishlist functionality
 
 **Key Constraints:**
 - No single item add (bulk import only)
@@ -93,18 +118,84 @@ The consumer homepage follows a journey-centric design pattern:
 - **Outfit Cards**: 4 cards per journey with 3:4 aspect ratio, hover effects
 - **AI Integration**: FAB (floating action button) for future AI chat functionality
 
+**Search Bar Features:**
+- **Auto-Expanding Textarea**: Grows from 24px (1 line) → 48px (2 lines) → 72px (3 lines), then scrolls
+  - Container controls height with 0.15s ease transition
+  - Textarea fills container with `height: 100%`
+  - Shrinks back when text is deleted
+- **Multiple Image Upload**: Support for up to 5 images
+  - Image previews displayed at top of search form (80×80px thumbnails)
+  - Individual remove buttons (× icon) on each thumbnail
+  - ImagePlus icon button for uploads (disables at max capacity)
+  - Accepts JPEG, PNG, WEBP formats (5MB max per file)
+  - Dynamic padding: shifts from 220px to 140px top padding when images added
+- **Form Submission**: Navigate to `/journey` with query text and images array
+- **Glassmorphism Container**: Backdrop blur, white overlay, rounded corners
+
 **Key Components:**
 - `JourneyHero`: Search bar with animated typewriter placeholders, status pills
 - `JourneySection`: Grid of outfit cards with journey title and status badge
 - `OutfitCard`: Product card with icon placeholder, AI Pick badge, price, add button
-- `Footer`: 4-column responsive footer with navigation links
 - `Header` (journey variant): Navigation buttons (Journeys, My Inventory, Account) with Lucide icons
 - `Mascot` (fab variant): Simple 60px circular button with Sparkles icon
+- `ShareModal`: Wishlist sharing modal with copy link functionality
+
+**Chat Interface Components:**
+- `ChatFeed`: Scrollable message feed with auto-scroll to latest
+- `AIMessage`: Left-aligned white bubbles with title/description/content
+- `UserMessage`: Right-aligned dark message bubbles
+- `AIAvatar`: 40px egg pink avatar with Sparkles icon
+- `StyleCard`: Interactive aesthetic selection cards with hover effects
+- `SummaryPanel`: Right sidebar (1/3 width) with journey context, scrollable content, fixed action buttons
 
 **Responsive Breakpoints:**
 - Desktop (>1280px): 4-column outfit grid
 - Tablet (768-1024px): 2-column outfit grid
 - Mobile (<768px): 1-column outfit grid, icon-only navigation
+
+## Consumer Authentication & Features
+
+**Authentication System:**
+- Email/password registration and login
+- JWT token-based session management
+- Profile management with editable fields
+- Separate from merchant authentication (different tokens)
+- Service: `consumerAuthService.js`
+- Context: `AuthContext.jsx` (shared with merchant auth)
+
+**Consumer Pages:**
+
+1. **Consumer Login** (`ConsumerLoginPage.jsx`)
+   - Email/password authentication
+   - Session persistence with localStorage
+   - Redirect to profile after successful login
+   - Link to merchant login for vendors
+
+2. **Consumer Profile** (`ConsumerProfilePage.jsx`)
+   - User profile editing (name, email, preferences)
+   - Saved payment methods
+   - Order history view
+   - Account settings
+   - Requires authentication
+
+3. **Saved Journeys** (`JourneysPage.jsx`)
+   - List of all saved journeys
+   - Journey status badges (active, completed, in-progress)
+   - Edit journey details (rename, update preferences)
+   - Delete journeys
+   - Navigate to journey details
+
+4. **Wishlist/Inventory** (`InventoryPage.jsx`)
+   - Saved items and wishlist
+   - Add/remove items
+   - Share wishlist functionality
+   - Price tracking
+   - Stock availability
+
+5. **Shared Wishlists** (`SharedWishlistPage.jsx`)
+   - View shared wishlists via link
+   - Read-only view for non-owners
+   - Add items to own wishlist from shared list
 
 ## Navigation Pattern
 
@@ -198,30 +289,92 @@ See `README.docker.md` for comprehensive Docker documentation.
 
 ```
 src/
-  pages/
-    ConsumerLandingPage.jsx    # Journey-based consumer homepage with AI stylist
-    MerchantHomePage.jsx       # Merchant dashboard home with metrics
-    MerchantLoginPage.jsx      # Merchant login page
-    MerchantDashboardPage.jsx  # Inventory dashboard with full-page edit view
+  pages/ (16 pages total)
+    # Consumer Pages
+    ConsumerLandingPage.jsx    # Journey-based homepage with AI stylist
+    ConsumerLoginPage.jsx      # Consumer authentication
+    ConsumerProfilePage.jsx    # User profile management
+    ShoppingConciergePage.jsx  # Chat-based AI styling
+    JourneysPage.jsx          # Saved journeys management
+    InventoryPage.jsx         # Wishlist and saved items
+    FittingRoomPage.jsx       # Virtual fitting room
+    BrowsePage.jsx            # Browse by category
+    SearchResultsPage.jsx     # Search results
+    QuizPage.jsx              # Shopping quiz
+    SharedWishlistPage.jsx    # Shared wishlist view
+
+    # Merchant Pages
+    MerchantLoginPage.jsx     # Merchant authentication
+    MerchantHomePage.jsx      # Dashboard home with metrics
+    MerchantDashboardPage.jsx # Inventory management
     MerchantBulkImportPage.jsx # Bulk import wizard
+    MerchantOrdersPage.jsx    # Order management
+
   components/
     consumer/
-      JourneyHero/             # Hero section with AI search and typewriter effect
-      JourneySection/          # Journey section with outfit cards grid
-      OutfitCard/              # Individual outfit card component
-      Footer/                  # Consumer footer with links
+      Chat/                   # Chat interface components
+        ChatFeed/ChatFeed.jsx
+        AIMessage/AIMessage.jsx
+        UserMessage/UserMessage.jsx
+        AIAvatar/AIAvatar.jsx
+        StyleCard/StyleCard.jsx
+        SummaryPanel/SummaryPanel.jsx
+      JourneyHero/            # Hero section with AI search
+      JourneySection/         # Journey section with outfit cards
+      OutfitCard/             # Individual outfit card
     common/
-      Header/                  # Header with journey/full/compact variants
-      Mascot/                  # Mascot with default/fab variants
-    dynamic-forms/             # AI-driven question components (See DynamicForms.md)
-      registry/                # Component registry
-      QuestionRenderer.jsx     # Main renderer component
-      ...                      # Individual form components (ImageChoice, FreeText, etc.)
+      Header/                 # Header with variants (landing, journey, full, compact)
+      Mascot/                 # Mascot with variants (default, fab)
+      SearchBar/              # Reusable search bar
+      ShareModal/             # Share wishlist modal
+    dynamic-forms/            # AI-driven question components
+      QuestionRenderer.jsx
+      ImageChoice.jsx, FreeText.jsx, MultiSelect.jsx
+      ScaleRating.jsx, HybridSelect.jsx, ColorPalette.jsx
+      ImageUpload.jsx, SingleChoice.jsx
+      registry/ComponentRegistry.jsx
+    fitting-room/             # Fitting room components (8 components)
+    quiz/                     # Quiz components (3 components)
+    home/                     # Home components (3 components)
+    PDFPreviewTable.jsx       # PDF preview component
+    ThemeToggle.jsx           # Dark/light theme toggle
+
+  services/ (9 services)
+    productService.js         # Merchant inventory CRUD
+    authService.js            # Merchant authentication
+    consumerAuthService.js    # Consumer authentication
+    conciergeService.js       # Shopping concierge logic
+    journeyService.js         # Journey management
+    quizService.js            # Quiz logic
+    fittingRoomService.js     # Virtual fitting room
+    mockPDFService.js         # PDF handling
+    api.js                    # API client base
+
+  contexts/ (4 contexts)
+    AuthContext.jsx           # Merchant auth context
+    ThemeContext.jsx          # Theme switching (light/dark)
+    FittingRoomContext.jsx    # Fitting room state
+    SearchContext.jsx         # Global search state
+
+  hooks/
+    useThemeColors.js         # Centralized theme color hook
+
   data/
-    mockJourneys.js            # Mock journey and outfit data
-  App.jsx                      # Main app with routing & auth
-  main.jsx                     # App entry point
-  index.css                    # Global styles with egg pink palette
+    mockJourneys.js           # Mock journey and outfit data
+    guestMockData.js          # Guest user mock data
+
+  config/
+    consumerTheme.js          # Consumer theme configuration
+    styleGuide.js             # Style guide constants
+
+  utils/
+    iconMapper.js             # Icon mapping utilities
+    styleHelpers.js           # Style helper functions
+
+  App.jsx                     # Main app with routing & auth
+  main.jsx                    # App entry point
+  index.css                   # Global styles
+
 wireframe/                     # Original wireframe components (reference)
 public/                        # Static assets
   favicon.svg                  # SVG favicon (primary)
@@ -231,6 +384,8 @@ scripts/
   favicon-generator.html       # Tool to generate PNG favicons from SVG
 BACKEND_INTEGRATION.md         # API integration requirements
 ```
+
+**NOTE:** Duplicate `src/context/ThemeContext.jsx` exists - use only `src/contexts/ThemeContext.jsx` (cleanup needed)
 
 ## Branding & Assets
 
@@ -251,23 +406,35 @@ To regenerate PNG favicons:
 - **Framework:** React 18.3
 - **Routing:** React Router v6
 - **Styling:** Inline styles (no CSS framework)
-- **State:** Local useState (no global state library yet)
-- **Auth:** Simple boolean state in App.jsx
+- **State Management:** Context API (Auth, Theme, Search, FittingRoom)
+- **Icons:** lucide-react
+- **Theme:** Light/dark mode with localStorage persistence
+- **Auth:** JWT token-based authentication (separate for merchant + consumer)
 
 ## Routes
 
-**Public Routes:**
-- `/` - Journey-based consumer homepage with AI stylist (public)
-- `/journey` - Shopping quiz for outfit curation
-- `/fitting-room` - Virtual fitting room
-- `/browse` - Browse products by category
-- `/search` - Search results page
+**Public Consumer Routes:**
+- `/` - ConsumerLandingPage (journey-based homepage, public)
+- `/login` - ConsumerLoginPage (consumer authentication)
+- `/shared-wishlist/:id` - SharedWishlistPage (view shared wishlist)
+- `/journey` - ShoppingConciergePage (chat-based AI styling)
+- `/fitting-room` - FittingRoomPage (virtual fitting room)
+- `/browse` - BrowsePage (browse products by category)
+- `/browse/:category` - BrowsePage with category filter
+- `/search` - SearchResultsPage (search results)
+- `/quiz` - QuizPage (shopping quiz)
+
+**Protected Consumer Routes (requires authentication):**
+- `/profile` - ConsumerProfilePage (user profile, requires auth)
+- `/journeys` - JourneysPage (saved journeys list, requires auth)
+- `/inventory` - InventoryPage (wishlist, requires auth)
 
 **Merchant Routes:**
 - `/merchant/login` - Merchant login (redirects to home if authenticated)
 - `/merchant` - Merchant home page with dashboard metrics (requires authentication)
 - `/merchant/inventory` - Inventory management (requires authentication)
 - `/merchant/import` - Bulk import wizard (requires authentication)
+- `/merchant/orders` - Order management (requires authentication)
 
 ## Deployment & Production
 
@@ -371,7 +538,88 @@ See backend CLAUDE.md for complete API specification and response formats.
 - **Email:** demo@merchant.com
 - **Password:** Any password ≥6 characters
 
+## Known Issues & Cleanup Tasks
+
+**Code Organization:**
+- ⚠️ Duplicate `ThemeContext.jsx` files exist in both `src/context/` and `src/contexts/` - remove the older `src/context/` version
+- ⚠️ Uncommitted changes on `misc-pages` branch (wishlist, orders, settings pages)
+
+**Current Branch:** `misc-pages` (active development)
+- Recent work: Consumer profile, wishlist, shared wishlist, orders page
+- New components: ShareModal, SearchContext
+- Theme system enhancements with dark/light mode toggle
+
 ## Recent Updates & Progress
+
+### January 29, 2026
+
+**Consumer Authentication & Profile Management (misc-pages branch)**
+- ✅ Implemented `ConsumerLoginPage.jsx` with email/password authentication
+- ✅ Created `ConsumerProfilePage.jsx` for user profile management
+- ✅ Added `consumerAuthService.js` for consumer auth flow
+- ✅ Integrated consumer authentication with backend JWT tokens
+- ✅ Separate consumer auth from merchant auth (different token storage)
+
+**Consumer Wishlist & Sharing Features**
+- ✅ Implemented `InventoryPage.jsx` for wishlist management
+- ✅ Created `SharedWishlistPage.jsx` for viewing shared wishlists
+- ✅ Added `ShareModal.jsx` component for wishlist sharing
+- ✅ Wishlist persistence with backend API integration
+
+**Merchant Orders Page**
+- ✅ Implemented `MerchantOrdersPage.jsx` for order management
+- ✅ Order list with status filters and search
+- ✅ Order details view with line items
+- ✅ Integration with backend orders API
+
+**Saved Journeys Management**
+- ✅ Implemented `JourneysPage.jsx` for saved journeys listing
+- ✅ Journey cards with status badges
+- ✅ Edit and delete journey functionality
+- ✅ Navigate to journey details
+
+**Search & Navigation Improvements**
+- ✅ Created `SearchContext.jsx` for global search state
+- ✅ Added `SearchBar` reusable component
+- ✅ Implemented search results persistence across navigation
+
+**Theme System Enhancement**
+- ✅ Added dark/light theme toggle (`ThemeToggle.jsx`)
+- ✅ Theme persistence with localStorage
+- ✅ Unified theme context in `src/contexts/ThemeContext.jsx`
+- ⚠️ Note: Older duplicate context file exists in `src/context/` (cleanup needed)
+
+### January 30, 2026
+
+**Consumer Landing Page Enhancements (misc-pages branch)**
+- ✅ Implemented auto-expanding textarea for search input
+  - Grows from 24px (1 line) → 48px (2 lines) → 72px (3 lines)
+  - Enables vertical scroll when content exceeds 3 lines
+  - Shrinks back when text is deleted (smooth 0.15s transition)
+  - Container controls height, textarea fills with `height: 100%`
+- ✅ Added multiple image upload support
+  - Maximum 5 images per search query
+  - Image previews displayed at top of search form (80×80px thumbnails)
+  - Individual remove buttons (× icon) on each thumbnail
+  - File validation: JPEG, PNG, WEBP formats (5MB max per file)
+  - Smart capacity management with user feedback
+- ✅ Updated upload button from Plus to ImagePlus icon
+  - Disables and grays out when 5 images uploaded
+  - Visual feedback with opacity and cursor changes
+- ✅ Dynamic layout adjustment
+  - Main padding shifts from 220px to 140px when images added
+  - Prevents overlap with decorative floating bags at bottom
+  - Smooth 0.3s transition between states
+- ✅ Enhanced form submission
+  - Navigates to `/journey` with search query and images array
+  - Passes base64 encoded images to journey page
+
+**Technical Implementation:**
+- State management: `uploadedImages` array with unique IDs
+- Each image object: `{ file, preview, id }`
+- FileReader API for base64 preview generation
+- Validation in `handleImageUpload` prevents exceeding max capacity
+- Auto-resize logic in useEffect monitors `searchQuery` and `uploadedImages.length`
 
 ### January 8, 2026
 

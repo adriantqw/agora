@@ -16,12 +16,15 @@ import {
   ShoppingBag,
   Footprints,
   Glasses,
-  ArrowRight
+  ArrowRight,
+  Share2,
+  Map
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
+import ShareModal from '../components/common/ShareModal';
 
 const ConsumerProfilePage = () => {
   const colors = useThemeColors();
@@ -29,6 +32,8 @@ const ConsumerProfilePage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -38,13 +43,29 @@ const ConsumerProfilePage = () => {
   const userName = user?.full_name || user?.merchant_name || 'Shopper';
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
-  // Mock data for recent saves
-  const recentSaves = [
-    { id: 1, name: 'Silk Midi Dress', price: 245.00, icon: Shirt },
-    { id: 2, name: 'Leather Tote', price: 180.00, icon: ShoppingBag },
-    { id: 3, name: 'Urban Runners', price: 120.00, icon: Footprints },
-    { id: 4, name: 'Retro Frames', price: 85.00, icon: Glasses },
+  // Mock wishlist data (subset for profile view)
+  const wishlistItems = [
+    { id: 1, name: 'Silk Midi Dress', price: 245.00, brand: 'Reformation', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000&auto=format&fit=crop' },
+    { id: 2, name: 'Leather Tote Bag', price: 180.00, brand: 'Cuyana', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1000&auto=format&fit=crop' },
+    { id: 3, name: 'Classic White Sneakers', price: 120.00, brand: 'Veja', image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?q=80&w=1000&auto=format&fit=crop' },
+    { id: 4, name: 'Gold Hoop Earrings', price: 85.00, brand: 'Mejuri', image: 'https://images.unsplash.com/photo-1635767798638-3e2523422dc7?q=80&w=1000&auto=format&fit=crop' },
+    { id: 5, name: 'Wool Blend Coat', price: 350.00, brand: 'Aritzia', image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=1000&auto=format&fit=crop' },
+    { id: 6, name: 'High-Waist Jeans', price: 98.00, brand: 'Levi\'s', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1000&auto=format&fit=crop' },
   ];
+
+  // Custom Icons matching Header
+  const JourneyIcon = ({ size = 20, color = "currentColor", ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M5 21V4C5 4 5 3 7 3C9 3 10 4 12 4C14 4 15 3 17 3C19 3 19 4 19 4V14C19 14 19 15 17 15C15 15 14 14 12 14C10 14 9 15 7 15C5 15 5 14 5 14" fill={color} opacity="0.8"/>
+      <path d="M7 14V21H5V14H7Z" fill={color}/>
+    </svg>
+  );
+
+  const InventoryIcon = ({ size = 20, color = "currentColor", ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M5 21C4.45 21 3.975 20.8083 3.575 20.425C3.19167 20.025 3 19.55 3 19V5C3 4.45 3.19167 3.98333 3.575 3.6C3.975 3.2 4.45 3 5 3H19C19.55 3 20.0167 3.2 20.4 3.6C20.8 3.98333 21 4.45 21 5V19C21 19.55 20.8 20.025 20.4 20.425C20.0167 20.8083 19.55 21 19 21H5ZM12 16C12.6333 16 13.2083 15.8167 13.725 15.45C14.2417 15.0833 14.6 14.6 14.8 14H19V5H5V14H9.2C9.4 14.6 9.75833 15.0833 10.275 15.45C10.7917 15.8167 11.3667 16 12 16Z" fill={color}/>
+    </svg>
+  );
 
   const StatCard = ({ icon: Icon, value, label, colorClass, iconColor, onClick }) => (
     <div style={{
@@ -82,7 +103,7 @@ const ConsumerProfilePage = () => {
         justifyContent: 'center',
         marginBottom: '12px',
       }}>
-        <Icon size={20} fill={iconColor} fillOpacity={0.2} />
+        <Icon size={20} color={iconColor} />
       </div>
       <div style={{ fontSize: '24px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>{value}</div>
       <div style={{ fontSize: '12px', color: colors.text.secondary, fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
@@ -112,8 +133,6 @@ const ConsumerProfilePage = () => {
                 borderRadius: '24px',
                 padding: '24px',
                 boxShadow: colors.shadow.sm,
-                position: 'sticky',
-                top: '100px',
                 border: `1px solid ${colors.border.subtle}`
               }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px' }}>
@@ -131,51 +150,38 @@ const ConsumerProfilePage = () => {
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%' }}
                     />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '4px',
-                      right: '4px',
-                      width: '24px',
-                      height: '24px',
-                      background: colors.primary.eggPink,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `2px solid ${colors.card.background}`,
-                      color: 'white'
-                    }}>
-                      <Edit2 size={12} />
-                    </div>
                   </div>
                   <h2 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>{userName}</h2>
                   <p style={{ fontSize: '12px', color: colors.text.secondary }}>Member since {joinDate}</p>
                 </div>
 
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {[
-                    { icon: LayoutGrid, label: 'Overview', active: true },
-                    { icon: Sliders, label: 'Style Profile', active: false },
-                    { icon: Package, label: 'Orders & Returns', active: false },
-                    { icon: Heart, label: 'Wishlist', badge: 12, active: false },
-                    { icon: Settings, label: 'Settings', active: false }
+                  {[ 
+                    { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
+                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
+                    { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
+                    { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
+                    { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
-                    <a 
+                    <button 
                       key={idx} 
-                      href="#" 
-                      onClick={(e) => e.preventDefault()}
+                      onClick={() => item.path !== '#' && navigate(item.path)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
                         padding: '12px 16px',
                         borderRadius: '12px',
+                        border: 'none',
                         color: item.active ? colors.primary.eggPink : colors.text.secondary,
                         background: item.active ? colors.primary.eggPinkLight : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
-                        fontSize: '14px'
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left'
                       }}
                       onMouseEnter={(e) => {
                         if (!item.active) e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.05)' : '#F9FAFB';
@@ -199,7 +205,7 @@ const ConsumerProfilePage = () => {
                           {item.badge}
                         </span>
                       )}
-                    </a>
+                    </button>
                   ))}
                 </nav>
 
@@ -275,6 +281,7 @@ const ConsumerProfilePage = () => {
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       transition: 'transform 0.2s'
                     }}
+                    onClick={() => navigate('/recommendations')}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >
@@ -297,18 +304,18 @@ const ConsumerProfilePage = () => {
                 {/* Stats Row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                   <StatCard 
-                    icon={Shirt} 
-                    value="142" 
-                    label="Closet Items" 
-                    iconColor="#60A5FA" // Blue
-                    onClick={() => navigate('/inventory')}
-                  />
-                  <StatCard 
-                    icon={Compass} 
+                    icon={JourneyIcon} 
                     value="28" 
                     label="Journeys" 
-                    iconColor={colors.primary.eggPink}
+                    iconColor="#F97316" // Orange
                     onClick={() => navigate('/journeys')}
+                  />
+                  <StatCard 
+                    icon={InventoryIcon} 
+                    value="142" 
+                    label="Inventory Items" 
+                    iconColor="#14B8A6" // Teal
+                    onClick={() => navigate('/inventory')}
                   />
                 </div>
 
@@ -322,10 +329,12 @@ const ConsumerProfilePage = () => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <div>
-                      <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Your Style DNA</h3>
+                      <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Style Profile</h3>
                       <p style={{ fontSize: '14px', color: colors.text.secondary }}>Based on your recent interactions</p>
                     </div>
-                    <button style={{ 
+                    <button 
+                      onClick={() => navigate('/style-profile')}
+                      style={{ 
                       background: 'none', 
                       border: 'none',
                       padding: '6px 12px',
@@ -401,7 +410,7 @@ const ConsumerProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Recent Favorites */}
+                {/* My Wishlist (Formerly Recent Favorites) */}
                 <div style={{
                   background: colors.card.background,
                   borderRadius: '24px',
@@ -410,20 +419,35 @@ const ConsumerProfilePage = () => {
                   border: `1px solid ${colors.border.subtle}`
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary }}>Recent Saves</h3>
+                    <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary }}>My Wishlist</h3>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronLeft size={16} strokeWidth={3} /></button>
-                      <button style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><ChevronRight size={16} strokeWidth={3} /></button>
+                      <button 
+                        onClick={() => navigate('/wishlist')}
+                        style={{ padding: '8px 16px', borderRadius: '99px', border: `1px solid ${colors.border.subtle}`, background: 'transparent', color: colors.text.secondary, fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = colors.primary.eggPink; e.currentTarget.style.color = colors.primary.eggPink; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = colors.border.subtle; e.currentTarget.style.color = colors.text.secondary; }}
+                      >
+                        View All
+                      </button>
+                      <button 
+                        onClick={() => setIsShareModalOpen(true)}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = colors.primary.eggPink; e.currentTarget.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = colors.card.backgroundAlt; e.currentTarget.style.color = colors.text.secondary; }}
+                        title="Share Wishlist"
+                      >
+                        <Share2 size={16} />
+                      </button>
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '16px' }}>
-                    {recentSaves.map((item) => (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
+                    {wishlistItems.slice(0, 5).map((item) => (
                       <div 
                         key={item.id} 
                         style={{ cursor: 'pointer' }} 
                         className="group"
-                        onClick={() => navigate('/inventory')}
+                        onClick={() => navigate('/wishlist')}
                       >
                         <div style={{
                           aspectRatio: '3/4',
@@ -436,7 +460,7 @@ const ConsumerProfilePage = () => {
                           justifyContent: 'center',
                           overflow: 'hidden'
                         }}>
-                          <item.icon size={48} color={colors.text.tertiary} strokeWidth={1} />
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <div style={{
                             position: 'absolute',
                             top: '8px',
@@ -448,14 +472,13 @@ const ConsumerProfilePage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: colors.status.error.text,
+                            color: colors.primary.eggPink,
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                           }}>
                             <Heart size={16} fill="currentColor" />
                           </div>
                         </div>
                         <div style={{ fontSize: '14px', fontWeight: '700', color: colors.text.primary, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
-                        <div style={{ fontSize: '12px', color: colors.text.secondary }}>${item.price.toFixed(2)}</div>
                       </div>
                     ))}
                   </div>
@@ -477,6 +500,11 @@ const ConsumerProfilePage = () => {
           }
         }
       `}</style>
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        shareLink={`${window.location.origin}/wishlist/share/${user?.id || 'guest'}`}
+      />
     </div>
   );
 };

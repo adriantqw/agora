@@ -6,7 +6,7 @@
  */
 
 import { getComponentByType, isComponentSupported } from './registry/ComponentRegistry.jsx';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getQuestionContainerStyle, getQuestionTextStyle } from '../../utils/styleHelpers.js';
 
 /**

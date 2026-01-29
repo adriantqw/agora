@@ -12,6 +12,12 @@ import ConsumerLoginPage from './pages/ConsumerLoginPage'
 import ConsumerProfilePage from './pages/ConsumerProfilePage'
 import JourneysPage from './pages/JourneysPage'
 import InventoryPage from './pages/InventoryPage'
+import WishlistPage from './pages/WishlistPage'
+import ConsumerSettingsPage from './pages/ConsumerSettingsPage'
+import ConsumerOrdersPage from './pages/ConsumerOrdersPage'
+import SharedWishlistPage from './pages/SharedWishlistPage'
+import RecommendationPage from './pages/RecommendationPage'
+import StyleProfilePage from './pages/StyleProfilePage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -71,6 +77,12 @@ function AppRoutes() {
 
       <Route path="/journeys" element={<JourneysPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
+      <Route path="/wishlist/share/:userId" element={<SharedWishlistPage />} />
+      <Route path="/settings" element={<ConsumerSettingsPage />} />
+      <Route path="/orders" element={<ConsumerOrdersPage />} />
+      <Route path="/recommendations" element={<RecommendationPage />} />
+      <Route path="/style-profile" element={<StyleProfilePage />} />
 
       {/* Merchant Routes */}
       <Route
