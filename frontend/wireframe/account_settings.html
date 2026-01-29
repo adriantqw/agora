@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora - Settings</title>
+    
+    <!-- Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        agora: {
+                            pink: '#F294AA',
+                            pinkDark: '#E07D94',
+                            bg: '#F8F9FB',
+                            text: '#1F2937',
+                            muted: '#6B7280',
+                            accent: '#FDF2F4',
+                            success: '#34D399'
+                        }
+                    },
+                    boxShadow: {
+                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8F9FB; }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Tab Transitions */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-gray-800">
+
+    <!-- HEADER -->
+    <header class="bg-agora-pink h-16 flex items-center justify-between px-6 md:px-10 shadow-sm sticky top-0 z-50">
+        <!-- Logo Area -->
+        <a href="index.html" class="flex items-center space-x-2 text-white cursor-pointer hover:opacity-90 transition">
+            <i class="ph-fill ph-smiley text-3xl"></i>
+            <span class="text-xl font-bold tracking-tight">Agora</span>
+        </a>
+
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 w-96 mx-4 border border-white/30">
+            <i class="ph ph-magnifying-glass text-white text-lg"></i>
+            <input type="text" placeholder="Search settings..." class="bg-transparent border-none outline-none text-white placeholder-white/80 ml-2 w-full text-sm">
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex items-center space-x-6 text-white/90">
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-flag text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Journeys</span>
+            </a>
+            <a href="#" class="hidden md:flex flex-col items-center group opacity-80 hover:opacity-100 transition">
+                <i class="ph ph-t-shirt text-xl group-hover:scale-110 transition-transform"></i>
+                <span class="text-[10px] font-medium mt-0.5">Closet</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center group opacity-100 font-semibold cursor-pointer">
+                <div class="bg-white/20 p-1.5 rounded-full mb-0.5 relative">
+                    <i class="ph-fill ph-user text-lg"></i>
+                </div>
+                <div class="w-1 h-1 bg-white rounded-full"></div>
+            </a>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow bg-agora-bg p-4 md:p-8">
+        <div class="container mx-auto max-w-6xl">
+            
+            <!-- Breadcrumbs -->
+            <div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+                <a href="index.html" class="hover:text-agora-pink">Home</a>
+                <i class="ph ph-caret-right text-xs"></i>
+                <a href="profile.html" class="hover:text-agora-pink">My Account</a>
+                <i class="ph ph-caret-right text-xs"></i>
+                <span class="text-gray-800 font-medium">Settings</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-3xl shadow-sm p-6 sticky top-24 fade-in">
+                        <div class="flex flex-col items-center mb-8">
+                            <div class="w-24 h-24 rounded-full bg-pink-50 p-1 mb-3 relative group">
+                                <img id="sidebar-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=ffdfbf" alt="Profile" class="w-full h-full rounded-full object-cover">
+                                
+                                <!-- Trigger Photo Upload -->
+                                <button onclick="document.getElementById('photo-upload').click()" class="absolute bottom-1 right-1 w-8 h-8 bg-agora-pink rounded-full flex items-center justify-center text-white border-2 border-white cursor-pointer hover:bg-pink-600 transition shadow-sm" title="Change Photo">
+                                    <i class="ph-bold ph-camera text-sm"></i>
+                                </button>
+                                <input type="file" id="photo-upload" class="hidden" accept="image/*">
+                            </div>
+                            <h2 class="text-lg font-bold text-gray-900">Sarah Jenkins</h2>
+                            <p class="text-xs text-gray-500">Member since 2023</p>
+                        </div>
+
+                        <nav class="space-y-1">
+                            <a href="profile.html" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-squares-four text-lg"></i>
+                                Overview
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-sliders text-lg"></i>
+                                Style Profile
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-package text-lg"></i>
+                                Orders & Returns
+                            </a>
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-medium transition-colors">
+                                <i class="ph ph-heart text-lg"></i>
+                                Wishlist
+                            </a>
+                            <!-- Active Link Style -->
+                            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-pink-50 text-agora-pink rounded-xl font-semibold transition-colors">
+                                <i class="ph-fill ph-gear text-lg"></i>
+                                Settings
+                            </a>
+                        </nav>
+                        
+                        <div class="mt-8 pt-6 border-t border-gray-100">
+                            <a href="index.html" class="flex items-center gap-3 px-4 py-2 text-red-400 hover:text-red-500 font-medium text-sm transition-colors w-full">
+                                <i class="ph ph-sign-out text-lg"></i>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Settings Header -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 fade-in">
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
+                            <p class="text-gray-500 text-sm mt-1">Manage your account and preferences.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="px-5 py-2.5 rounded-full bg-white border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50">Cancel</button>
+                            <button class="px-5 py-2.5 rounded-full bg-agora-pink text-white font-semibold text-sm shadow-md hover:bg-pink-500 shadow-pink-100">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <!-- Main Content Card -->
+                    <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100 fade-in" style="animation-delay: 0.1s;">
+                        
+                        <!-- Tabs -->
+                        <div class="flex border-b border-gray-100 mb-8">
+                            <button onclick="switchTab('account')" id="tab-account" class="pb-4 px-4 font-semibold text-agora-pink border-b-2 border-agora-pink transition-colors">Account Details</button>
+                            <button onclick="switchTab('fitting')" id="tab-fitting" class="pb-4 px-4 font-medium text-gray-500 hover:text-gray-700 transition-colors">Fitting Room</button>
+                        </div>
+
+                        <!-- TAB 1: Account Details -->
+                        <div id="content-account" class="tab-content active space-y-8">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">First Name</label>
+                                    <input type="text" value="Sarah" class="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-100 focus:border-agora-pink transition-colors text-gray-800 font-medium">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Last Name</label>
+                                    <input type="text" value="Jenkins" class="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-100 focus:outline-none focus:ring-2 focus:ring-pink-100 focus:border-agora-pink transition-colors text-gray-800 font-medium">
+                                </div>
+                                
+                                <!-- Disabled Email Field -->
+                                <div class="space-y-2 md:col-span-2">
+                                    <label class="text-xs font-bold uppercase text-gray-400 tracking-wider">Email Address</label>
+                                    <div class="relative">
+                                        <i class="ph ph-envelope-simple absolute left-4 top-3.5 text-gray-400 text-lg"></i>
+                                        <!-- Added 'disabled' attribute and styling for read-only state -->
+                                        <input type="email" value="sarah.jenkins@example.com" disabled 
+                                            class="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-100 border-gray-100 text-gray-500 font-medium cursor-not-allowed select-none">
+                                        <div class="absolute right-4 top-3.5 text-xs text-gray-400 italic">Cannot be changed</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: Fitting Room (New) -->
+                        <div id="content-fitting" class="tab-content space-y-8">
+                            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 border border-pink-100">
+                                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-agora-pink shadow-sm shrink-0">
+                                    <i class="ph-duotone ph-camera-plus text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">Virtual Fitting Room</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Upload full-body photos to see how items fit you specifically. These photos are private and only used by your AI Stylist.</p>
+                                </div>
+                            </div>
+
+                            <!-- Upload Zone -->
+                            <div class="border-2 border-dashed border-gray-200 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-agora-pink hover:bg-pink-50/20 transition-all cursor-pointer group relative">
+                                <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple accept="image/*">
+                                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-4 group-hover:scale-110 transition-transform group-hover:text-agora-pink group-hover:bg-pink-50">
+                                    <i class="ph-bold ph-upload-simple text-2xl"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900">Click or Drag to Upload</h4>
+                                <p class="text-sm text-gray-500 mt-1">Supports JPG, PNG (Max 10MB)</p>
+                            </div>
+
+                            <!-- Photo Grid -->
+                            <div>
+                                <h4 class="text-sm font-bold uppercase text-gray-400 tracking-wider mb-4">Your Body Profile Photos</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <!-- Photo 1 -->
+                                    <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden group">
+                                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Body Shot" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-white">
+                                            <i class="ph-bold ph-trash"></i>
+                                        </button>
+                                        <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded text-[10px] text-white font-medium">Front</div>
+                                    </div>
+                                    <!-- Photo 2 -->
+                                    <div class="aspect-[3/4] bg-gray-100 rounded-xl relative overflow-hidden group">
+                                        <img src="https://images.unsplash.com/photo-1529139574466-a302d20539ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Body Shot" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                                        <button class="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center text-red-500 opacity-0 group-hover:opacity-100 transition-all shadow-sm hover:bg-white">
+                                            <i class="ph-bold ph-trash"></i>
+                                        </button>
+                                        <div class="absolute bottom-2 left-2 px-2 py-1 bg-black/50 backdrop-blur-sm rounded text-[10px] text-white font-medium">Side</div>
+                                    </div>
+                                    <!-- Add New Placeholder -->
+                                    <div class="aspect-[3/4] bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:bg-gray-100 transition-colors">
+                                        <i class="ph-bold ph-plus text-2xl mb-2"></i>
+                                        <span class="text-xs font-semibold">Add Angle</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white py-12 border-t border-gray-100 text-xs mt-auto">
+        <!-- Consistent footer content -->
+        <div class="container mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="col-span-2 md:col-span-1">
+                <div class="flex items-center space-x-2 text-agora-pink mb-4">
+                    <i class="ph-fill ph-smiley text-2xl"></i>
+                    <span class="text-lg font-bold">Agora</span>
+                </div>
+                <p class="text-gray-400 leading-relaxed mb-4">
+                    Your personal AI stylist for every occasion.
+                </p>
+                <div class="text-gray-300">© 2024 Agora. All rights reserved.</div>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">My Activity</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Journeys</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">My Closet</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Experience</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Start a Journey</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Browse Styles</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold text-gray-900 uppercase tracking-wider mb-4">Support</h4>
+                <ul class="space-y-2 text-gray-500">
+                    <li><a href="#" class="hover:text-agora-pink transition">Help Center</a></li>
+                    <li><a href="#" class="hover:text-agora-pink transition">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Tab Switching Script -->
+    <script>
+        function switchTab(tabName) {
+            // 1. Reset all tabs styles
+            const tabs = ['account', 'fitting'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const content = document.getElementById(`content-${t}`);
+                
+                // Reset text colors and border
+                btn.classList.remove('text-agora-pink', 'border-b-2', 'border-agora-pink');
+                btn.classList.add('text-gray-500');
+                
+                // Hide content
+                content.classList.remove('active');
+            });
+
+            // 2. Activate selected tab
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            const activeContent = document.getElementById(`content-${tabName}`);
+            
+            activeBtn.classList.remove('text-gray-500');
+            activeBtn.classList.add('text-agora-pink', 'border-b-2', 'border-agora-pink');
+            
+            activeContent.classList.add('active');
+        }
+
+        // Photo Upload Logic (Simulation)
+        document.getElementById('photo-upload').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('sidebar-avatar').src = e.target.result;
+                    alert("Profile photo updated successfully!");
+                }
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>

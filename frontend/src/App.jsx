@@ -12,6 +12,7 @@ import ConsumerLoginPage from './pages/ConsumerLoginPage'
 import ConsumerProfilePage from './pages/ConsumerProfilePage'
 import JourneysPage from './pages/JourneysPage'
 import InventoryPage from './pages/InventoryPage'
+import WishlistPage from './pages/WishlistPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -71,6 +72,7 @@ function AppRoutes() {
 
       <Route path="/journeys" element={<JourneysPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/wishlist" element={<WishlistPage />} />
 
       {/* Merchant Routes */}
       <Route
