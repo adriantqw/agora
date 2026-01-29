@@ -170,8 +170,8 @@ const ConsumerProfilePage = () => {
                         gap: '12px',
                         padding: '12px 16px',
                         borderRadius: '12px',
-                        color: item.active ? (isDark ? colors.text.primary : '#1F2937') : colors.text.secondary,
-                        background: item.active ? (isDark ? 'rgba(245, 165, 184, 0.15)' : colors.primary.eggPinkLight) : 'transparent',
+                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
+                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -210,18 +210,23 @@ const ConsumerProfilePage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '12px',
-                      padding: '8px 16px',
+                      padding: '10px 16px',
                       width: '100%',
                       border: 'none',
+                      borderRadius: '12px',
                       background: 'transparent',
                       color: colors.status.error.text,
                       fontWeight: '600',
                       fontSize: '14px',
                       cursor: 'pointer',
-                      transition: 'opacity 0.2s'
+                      transition: 'all 0.2s ease'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-                    onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = isDark ? 'rgba(239, 68, 68, 0.1)' : '#FEF2F2';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                    }}
                   >
                     <LogOut size={18} />
                     Sign Out
@@ -236,30 +241,28 @@ const ConsumerProfilePage = () => {
                 
                 {/* Welcome Banner */}
                 <div style={{
-                  background: isDark 
-                    ? `linear-gradient(135deg, #831843 0%, ${colors.primary.pinkDark} 100%)` 
-                    : `linear-gradient(135deg, ${colors.primary.eggPink} 0%, ${colors.primary.eggPinkLight} 100%)`,
+                  background: colors.gradient.pink,
                   borderRadius: '24px',
                   padding: '32px',
-                  color: isDark ? '#FFFFFF' : '#1F2937',
+                  color: '#FFFFFF',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: isDark ? '0 10px 30px -10px rgba(0, 0, 0, 0.5)' : '0 10px 30px -10px rgba(245, 165, 184, 0.5)'
+                  boxShadow: isDark ? '0 10px 30px -10px rgba(0, 0, 0, 0.5)' : `0 10px 30px -10px ${colors.primary.pink}80`
                 }}>
                   <div style={{ position: 'relative', zIndex: 10 }}>
                     <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Hello, {userName.split(' ')[0]}! ✨</h1>
                     <p style={{ 
-                      opacity: isDark ? 0.9 : 0.8, 
+                      opacity: 0.9, 
                       maxWidth: '480px', 
                       marginBottom: '24px', 
                       lineHeight: '1.5', 
-                      color: isDark ? '#FFFFFF' : '#374151' 
+                      color: '#FFFFFF' 
                     }}>
                       Your closet analysis is complete. Based on the "Spring Collection" trends, we've found 5 items you might love.
                     </p>
                     <button style={{
-                      background: isDark ? colors.primary.eggPink : 'white',
-                      color: isDark ? '#831843' : '#1F2937',
+                      background: 'white',
+                      color: colors.primary.eggPink,
                       border: 'none',
                       padding: '10px 24px',
                       borderRadius: '99px',
@@ -286,7 +289,7 @@ const ConsumerProfilePage = () => {
                     width: '300px',
                     height: '300px',
                     background: 'white',
-                    opacity: isDark ? 0.1 : 0.2,
+                    opacity: 0.2,
                     transform: 'rotate(12deg)'
                   }} />
                 </div>
@@ -304,7 +307,7 @@ const ConsumerProfilePage = () => {
                     icon={Compass} 
                     value="28" 
                     label="Journeys" 
-                    iconColor="#A78BFA" // Purple
+                    iconColor={colors.primary.eggPink}
                     onClick={() => navigate('/journeys')}
                   />
                 </div>
@@ -322,7 +325,24 @@ const ConsumerProfilePage = () => {
                       <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Your Style DNA</h3>
                       <p style={{ fontSize: '14px', color: colors.text.secondary }}>Based on your recent interactions</p>
                     </div>
-                    <button style={{ background: 'none', border: 'none', color: colors.primary.eggPink, fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}>
+                    <button style={{ 
+                      background: 'none', 
+                      border: 'none',
+                      padding: '6px 12px',
+                      borderRadius: '8px',
+                      color: colors.primary.eggPink, 
+                      fontWeight: '600', 
+                      fontSize: '14px', 
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = colors.primary.eggPinkLight;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'none';
+                    }}
+                    >
                       Edit Profile
                     </button>
                   </div>
@@ -334,9 +354,9 @@ const ConsumerProfilePage = () => {
                         borderRadius: '12px',
                         fontSize: '14px',
                         fontWeight: idx === 0 ? '600' : '500',
-                        background: idx === 0 ? (isDark ? 'rgba(245, 165, 184, 0.15)' : colors.primary.eggPinkLight) : colors.card.backgroundAlt,
-                        color: idx === 0 ? (isDark ? colors.primary.eggPink : '#831843') : colors.text.secondary,
-                        border: `1px solid ${idx === 0 ? (isDark ? colors.primary.eggPink : '#831843') : colors.border.light}`
+                        background: idx === 0 ? colors.primary.eggPinkLight : colors.card.backgroundAlt,
+                        color: idx === 0 ? colors.primary.eggPink : colors.text.secondary,
+                        border: `1px solid ${idx === 0 ? colors.primary.eggPink : colors.border.light}`
                       }}>
                         {tag}
                       </span>
@@ -365,8 +385,16 @@ const ConsumerProfilePage = () => {
                         fontSize: '12px',
                         fontWeight: '700',
                         color: colors.text.secondary,
-                        cursor: 'pointer'
-                      }}>
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = colors.primary.eggPinkLight;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = colors.card.background;
+                      }}
+                      >
                         Upload
                       </button>
                     </div>

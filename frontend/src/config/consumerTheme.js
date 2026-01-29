@@ -14,7 +14,7 @@ import STYLE_GUIDE from './styleGuide.js';
 export const CONSUMER_THEME = {
   colors: {
     // Primary colors (Egg pink - replaces Agora blue)
-    primary: 'var(--color-primary-pink)',
+    primary: 'var(--consumer-purple)',
     primaryDark: 'var(--color-primary-pink-dark)',
     primaryLight: 'var(--color-primary-pink-light)',
 
@@ -28,8 +28,8 @@ export const CONSUMER_THEME = {
     accentLight: 'var(--color-egg-pink-light)',
 
     // Neutrals - Map to semantic CSS variables for dark mode support
-    neutral900: 'var(--text-primary)',   // Main text
-    neutral800: 'var(--text-primary)',
+    neutral900: 'var(--consumer-text-primary)',   // Main text
+    neutral800: 'var(--consumer-text-primary)',
     neutral700: 'var(--text-secondary)', // Secondary text
     neutral600: 'var(--text-tertiary)',
     neutral500: 'var(--text-muted)',

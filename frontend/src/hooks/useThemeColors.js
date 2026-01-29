@@ -1,8 +1,12 @@
 import { useMemo, useState, useLayoutEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocation } from 'react-router-dom';
 
 export const useThemeColors = () => {
   const { theme } = useTheme();
+  const location = useLocation();
+  const isMerchant = location.pathname.startsWith('/merchant');
+
   // Force re-compute after theme class is definitely applied
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
@@ -18,6 +22,10 @@ export const useThemeColors = () => {
         .trim();
     };
 
+    const getConsumerColor = (merchantVar, consumerVar) => {
+      return isMerchant ? getColor(merchantVar) : getColor(consumerVar);
+    };
+
     return {
       page: {
         background: getColor('--page-background'),
@@ -30,7 +38,7 @@ export const useThemeColors = () => {
         light: getColor('--color-surface-light'),
       },
       text: {
-        primary: getColor('--text-primary'),
+        primary: getConsumerColor('--text-primary', '--consumer-text-primary'), // Updated for consumer purple
         secondary: getColor('--text-secondary'),
         tertiary: getColor('--text-tertiary'),
         muted: getColor('--text-muted'),
@@ -47,14 +55,14 @@ export const useThemeColors = () => {
         blueLight: getColor('--primary-blue-light'),
         purple: getColor('--primary-purple'),
         purpleDark: getColor('--primary-purple-dark'),
-        // Pink colors for consumer pages
-        pink: getColor('--color-primary-pink'),
+        // Pink colors for consumer pages (Mapped to Consumer Purple when not merchant)
+        pink: getConsumerColor('--color-primary-pink', '--consumer-purple'),
         pinkDark: getColor('--color-primary-pink-dark'),
-        pinkLight: getColor('--color-primary-pink-light'),
+        pinkLight: getConsumerColor('--color-primary-pink-light', '--consumer-purple-light'),
         pinkSecondary: getColor('--color-secondary-pink'),
         // Egg pink colors for journey homepage
-        eggPink: getColor('--color-egg-pink'),
-        eggPinkLight: getColor('--color-egg-pink-light'),
+        eggPink: getConsumerColor('--color-egg-pink', '--consumer-purple'),
+        eggPinkLight: getConsumerColor('--color-egg-pink-light', '--consumer-purple-light'),
       },
       status: {
         success: {
@@ -104,7 +112,7 @@ export const useThemeColors = () => {
         purple: getColor('--gradient-purple'),
         ai: getColor('--gradient-ai'),
         // Pink gradients for consumer pages
-        pink: getColor('--gradient-pink'),
+        pink: getConsumerColor('--gradient-pink', '--consumer-gradient'),
         fittingRoom: getColor('--gradient-fitting-room'),
       },
       shadow: {
@@ -114,7 +122,7 @@ export const useThemeColors = () => {
         purple: getColor('--shadow-purple'),
       },
     };
-  }, [theme, updateTrigger]);
+  }, [theme, updateTrigger, isMerchant]);
 
   return colors;
 };

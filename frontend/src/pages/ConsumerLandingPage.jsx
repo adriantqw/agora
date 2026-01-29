@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 const ConsumerLandingPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,7 @@ const ConsumerLandingPage = () => {
       position: 'relative',
       overflow: 'hidden',
       fontFamily: '"Readex Pro", sans-serif',
+      color: '#2D3748',
     }}>
       <Header variant="landing" showNav={true} />
 

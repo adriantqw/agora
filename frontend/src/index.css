@@ -61,6 +61,10 @@
   --gradient-ai: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
   /* Pink Color Palette for Consumer Pages */
+  --consumer-purple: #793DB0;
+  --consumer-purple-light: #F3E5F5;
+  --consumer-text-primary: var(--text-primary);
+  --consumer-gradient: linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%);
   --color-primary-pink: #F5A5B8;
   --color-primary-pink-dark: #E8879C;
   --color-primary-pink-light: #FDD5DD;
@@ -167,6 +171,9 @@ html.dark-theme {
   --color-surface-light: #181b21;
   --color-border-subtle: #2d333b;
   --section-divider: #f3f4f6;
+  --consumer-text-primary: #f3f4f6;
+  --consumer-purple: #a78bfa;
+  --consumer-purple-light: rgba(121, 61, 176, 0.25);
 }
 
 * {

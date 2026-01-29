@@ -43,7 +43,7 @@ export default function Header({
   const isLanding = variant === 'landing';
   const textColor = isLanding ? '#4A5568' : colors.text.primary;
   const headerBg = isLanding ? 'transparent' : colors.card.background;
-  const logoColor = isLanding ? '#D1667C' : colors.primary.eggPink;
+  const logoColor = isLanding ? '#793DB0' : colors.primary.eggPink;
 
   return (
     <header style={{
