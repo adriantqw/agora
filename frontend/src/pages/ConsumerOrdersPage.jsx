@@ -94,7 +94,7 @@ const ConsumerOrdersPage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
+                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: true, path: '/orders' },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
