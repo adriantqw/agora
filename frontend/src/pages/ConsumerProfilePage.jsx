@@ -281,6 +281,7 @@ const ConsumerProfilePage = () => {
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       transition: 'transform 0.2s'
                     }}
+                    onClick={() => navigate('/recommendations')}
                     onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                     >

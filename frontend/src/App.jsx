@@ -16,6 +16,7 @@ import WishlistPage from './pages/WishlistPage'
 import ConsumerSettingsPage from './pages/ConsumerSettingsPage'
 import ConsumerOrdersPage from './pages/ConsumerOrdersPage'
 import SharedWishlistPage from './pages/SharedWishlistPage'
+import RecommendationPage from './pages/RecommendationPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -79,6 +80,7 @@ function AppRoutes() {
       <Route path="/wishlist/share/:userId" element={<SharedWishlistPage />} />
       <Route path="/settings" element={<ConsumerSettingsPage />} />
       <Route path="/orders" element={<ConsumerOrdersPage />} />
+      <Route path="/recommendations" element={<RecommendationPage />} />
 
       {/* Merchant Routes */}
       <Route
