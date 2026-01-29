@@ -206,7 +206,7 @@ def update_mood_board(
     img_path: str, state: Annotated[dict, InjectedState], tool_call_id: Annotated[str, InjectedToolCallId]
 ):
     """
-    Update Journey state with mood board.
+    Update Journey state with mood board that encapsulates user preferences.
 
     Args:
         img_path (str): File path to the mood board image

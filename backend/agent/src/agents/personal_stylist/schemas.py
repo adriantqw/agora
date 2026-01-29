@@ -16,6 +16,7 @@ class ImageOption(BaseModel):
 class JourneySchema(BaseModel):
     """Base Journey class containing gathered user preferences"""
     title: str = Field(description="User-friendly title of the journey")
+    summary: str = Field(default=None, description="A one-sentence summary of captured user preference")
     time_of_day: Optional[Literal["morning", "afternoon", "evening", "night"]] = Field(default=None, description="Preferred time of day for the outfit style")
     season: Optional[Literal["winter", "autumn", "spring", "summer"]] = Field(description="Seasonal vibe for the outfit")
     occasion: Optional[str] = Field(default=None, description="Occasion for the outfit (e.g., casual, formal, party)")

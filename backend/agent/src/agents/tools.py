@@ -2,7 +2,9 @@
 import base64
 import requests
 from pathlib import Path
+
 from langchain_core.tools import tool
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 @tool
 def load_images(image_urls: list[str]) -> list[dict]:
@@ -40,3 +42,19 @@ def load_images(image_urls: list[str]) -> list[dict]:
             content.append({"type": "text", "text": f"Failed to load {url}: {e}"})
 
     return content
+
+@tool
+def google_search(query: str):
+    """Use this to search for real-time information, weather, or current fashion trends."""
+    # Define search model
+    search_model = ChatGoogleGenerativeAI(
+        model="gemini-3-flash-preview", 
+        thinking_level="minimal", 
+        max_tokens=2048,
+        temperature=0
+    )
+    search_grounding = search_model.bind_tools([{"google_search": {}}])
+    
+    # This model call handles the search internally and returns text
+    res = search_grounding.invoke(query)
+    return res.model_dump_json()

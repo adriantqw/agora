@@ -10,7 +10,7 @@ from langgraph.graph import END
 from .states import MatchmakerState
 from .schemas import MatchResult
 from .tools import search_products
-from ..tools import load_images
+from ..tools import load_images, google_search
 from ..personal_stylist.schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
@@ -39,7 +39,9 @@ class MatchMakerAgent:
         self.system_prompt_best_effort = templates[f"{self.agent_key}_best_match"]
 
         self.checkpointer = MemorySaver()
-        self.tools = [search_products, load_images, {"google_search": {}}]
+        self.tools = [search_products, load_images]
+        if self.agent_config["enable_google_search_tool"]:
+            self.tools.append(google_search)
         self.agent = self._compile_graph()
 
     def match(self, journey: JourneySchema, thread_id: str) -> dict:

@@ -10,6 +10,7 @@ catalogue_ingestor: &base_agent_recipe
       thinking_level: low
       include_thoughts: true
   recursion_limit: 100
+  enable_google_search_tool: false
 
 ## Consumer agents
 ### Personal stylist config
@@ -22,6 +23,7 @@ personal_stylist:
       thinking_level: low
       max_tokens: 4096
   recursion_limit: 25
+  enable_google_search_tool: true
 
 ### Matchmaker config
 matchmaker:
@@ -33,3 +35,4 @@ matchmaker:
       thinking_level: low
       max_tokens: 4096
   recursion_limit: 25
+  enable_google_search_tool: true

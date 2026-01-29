@@ -73,9 +73,8 @@ personal_stylist_ui_generation: |
     ### AVAILABLE TOOLS
     1. **generate** - Generate reference images from detailed text prompts
     2. **batch** - Generate multiple reference images from a list of text prompts
-
-    ### UPDATING THE MOOD BOARD
-    If you have been given sufficient information, call the tools to generate a mood board for the user to peruse.
+    3. **google_search** - Research fashion trends, weather etc
+    4. **update_mood_board** - Update mood board by providing an image path if sufficient information is provided by user (need to generate first)
 
     ### IMAGE PROMPT GUIDELINES
     When generating images, create detailed prompts:
