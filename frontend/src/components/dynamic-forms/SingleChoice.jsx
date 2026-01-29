@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getCardStyle, getStackStyle } from '../../utils/styleHelpers.js';
 
 /**

@@ -4,16 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Status
 
-This is the **Agora MerchantHub Backend API** - a FastAPI-based REST API for merchant authentication and profile management.
+This is the **Agora MerchantHub Backend API** - a FastAPI-based platform for merchant inventory management and consumer shopping with AI-powered personal styling.
 
 **Current State:**
 - ✅ FastAPI application scaffolded
-- ✅ JWT-based authentication system (access & refresh tokens)
+- ✅ JWT-based authentication system (access & refresh tokens) for merchant + consumer
 - ✅ SQLite database with SQLAlchemy ORM
 - ✅ Merchant profile management endpoints
+- ✅ Consumer authentication system (separate from merchant)
 - ✅ Product inventory management (CRUD, bulk import, bulk delete)
 - ✅ AI product tagging (dummy implementation)
 - ✅ **Catalogue ingestion system (PDF extraction with AI agent)**
+- ✅ **Personal Stylist AI Agent** (interactive style preference gathering)
+- ✅ **MatchMaker AI Agent** (product matching via vector search)
+- ✅ **Journey & Outfit models** for consumer shopping experience
+- ✅ ChromaDB vector database with Gemini embeddings
+- ✅ SSE streaming for real-time agent responses
+- ✅ MLflow integration for experiment tracking (optional)
+- ✅ Google search tool integration for agents
 - ✅ Image upload to Cloudflare R2
 - ✅ Docker configuration for Cloud Run deployment
 - ✅ CORS middleware configured
@@ -27,13 +35,18 @@ This is the **Agora MerchantHub Backend API** - a FastAPI-based REST API for mer
 - **Framework:** FastAPI 0.115.6
 - **Server:** Uvicorn with standard features (uvloop, websockets, httptools)
 - **Database:** SQLite 3 with SQLAlchemy 2.0 ORM
+- **Vector Database:** ChromaDB 1.1.0 with Gemini embeddings
 - **Authentication:** JWT tokens via python-jose with cryptography
 - **Password Hashing:** bcrypt via passlib
 - **Validation:** Pydantic 2.10 with email validation
 - **Settings:** pydantic-settings for environment configuration
 - **AI/ML:** LangChain 1.2.0, LangGraph 1.0.5, Google Gemini (langchain-google-genai 4.1.3)
+- **Agent Framework:** LangGraph 1.0.5 with state machines
+- **Experiment Tracking:** MLflow-skinny 3.8.1 (optional)
+- **Search Integration:** Google Search API via LangChain (google-search-results 2.4.2)
 - **Document Processing:** pypdfium2 5.3.0, pytesseract 0.3.13, Pillow 12.1.0
 - **Storage:** Cloudflare R2 (boto3 1.35.0)
+- **Package Manager:** uv (modern pip replacement)
 - **Python Version:** 3.11+ (3.13 in development)
 
 ## Features
@@ -59,6 +72,29 @@ This is the **Agora MerchantHub Backend API** - a FastAPI-based REST API for mer
 - Image upload to Cloudflare R2
 - AI product tagging (dummy implementation)
 
+**Consumer Shopping Experience:**
+- Consumer authentication with JWT tokens (separate from merchant)
+- Journey creation and management (shopping preferences + outfits)
+- Personal Stylist AI Agent for interactive style gathering
+- MatchMaker AI Agent for product recommendations via vector search
+- SSE streaming for real-time chat responses
+- Journey status tracking (active, in-progress, ideation)
+
+**AI Agent Architecture:**
+- Three specialized agents: PersonalStylist, MatchMaker, CatalogueIngestor
+- LangGraph state machines for agent orchestration
+- ChromaDB vector database for product similarity search
+- Google Gemini embeddings for product vectors
+- Tool calling support (search_products, google_search, load_images)
+- Thread-based conversation management with message history
+- Streaming support for real-time agent responses
+
+**Vector Search:**
+- Product embeddings generated with Google Gemini
+- ChromaDB for fast similarity search
+- Automatic product indexing on creation/update
+- Multi-modal search (text + images)
+
 **API Documentation:**
 - Auto-generated OpenAPI 3.0 specification
 - Interactive Swagger UI at `/docs`
@@ -81,40 +117,66 @@ backend/
 │   ├── config.py            # Settings and environment configuration
 │   ├── database.py          # Database connection and session management
 │   ├── dependencies.py      # Dependency injection functions
-│   ├── models/              # SQLAlchemy ORM models
+│   ├── models/              # SQLAlchemy ORM models (9 models total)
 │   │   ├── __init__.py
-│   │   ├── merchant.py      # Merchant database model
-│   │   ├── product.py       # Product database model
-│   │   └── catalogue.py     # Catalogue & CatalogueItem models
-│   ├── schemas/             # Pydantic models for request/response
+│   │   ├── merchant.py      # Merchant, RefreshToken
+│   │   ├── product.py       # Product
+│   │   ├── catalogue.py     # Catalogue, CatalogueItem
+│   │   ├── consumer.py      # Consumer, ConsumerRefreshToken
+│   │   └── journey.py       # Journey, Outfit
+│   ├── schemas/             # Pydantic models for request/response (8 schemas)
 │   │   ├── __init__.py
-│   │   ├── auth.py          # Authentication schemas
+│   │   ├── auth.py          # Merchant authentication schemas
 │   │   ├── merchant.py      # Merchant profile schemas
 │   │   ├── product.py       # Product schemas (CRUD, bulk, AI tagging)
-│   │   └── catalogue.py     # Catalogue schemas (upload, items, conversion)
-│   ├── routes/              # API route handlers
+│   │   ├── catalogue.py     # Catalogue schemas (upload, items, conversion)
+│   │   ├── consumer.py      # Consumer auth schemas
+│   │   ├── stylist.py       # Stylist chat schemas
+│   │   └── journey.py       # Journey and outfit schemas
+│   ├── routes/              # API route handlers (6 routers)
 │   │   ├── __init__.py
-│   │   ├── auth.py          # Authentication endpoints
-│   │   ├── products.py      # Product endpoints
-│   │   └── catalogues.py    # Catalogue ingestion endpoints
-│   ├── services/            # Business logic layer
+│   │   ├── auth.py          # Merchant authentication
+│   │   ├── products.py      # Product CRUD + AI tagging
+│   │   ├── catalogues.py    # Catalogue ingestion workflow
+│   │   ├── consumer_auth.py # Consumer registration/login/refresh
+│   │   ├── stylist.py       # Personal stylist chat interface
+│   │   └── journeys.py      # Journey listing (minimal)
+│   ├── services/            # Business logic layer (7 services)
 │   │   ├── __init__.py
-│   │   ├── auth_service.py  # Authentication service
-│   │   ├── product_service.py  # Product business logic
-│   │   ├── storage_service.py  # Cloudflare R2 file storage
-│   │   └── catalogue_service.py  # Catalogue processing & agent integration
+│   │   ├── auth_service.py
+│   │   ├── product_service.py
+│   │   ├── catalogue_service.py
+│   │   ├── storage_service.py
+│   │   ├── consumer_auth_service.py
+│   │   ├── stylist_service.py
+│   │   └── journey_service.py
 │   └── utils/               # Utility functions
 │       ├── __init__.py
 │       ├── jwt.py           # JWT token creation and validation
 │       └── security.py      # Password hashing utilities
-├── agent/                   # AI Catalogue Ingestion Agent (separate module)
+├── agent/                   # AI Agent Module (3 specialized agents)
 │   ├── config/
-│   │   └── agent.yml        # Agent configuration
+│   │   ├── agent.yml        # Agent configurations (3 agents)
+│   │   ├── model.yml        # LLM settings (Gemini models)
+│   │   └── vector_db.yml    # ChromaDB configuration
 │   ├── src/
 │   │   ├── agents/
-│   │   │   ├── catalogue_ingestor.py  # Main ingestion agent
-│   │   │   ├── schemas.py   # Agent-specific schemas
-│   │   │   └── states.py    # LangGraph state definitions
+│   │   │   ├── catalogue_ingestor/  # PDF extraction agent
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── agent.py
+│   │   │   │   ├── schemas.py
+│   │   │   │   └── states.py
+│   │   │   ├── personal_stylist/    # Style preference gathering
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── agent.py
+│   │   │   │   ├── schemas.py
+│   │   │   │   └── states.py
+│   │   │   ├── matchmaker/          # Product matching via vector search
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── agent.py
+│   │   │   │   ├── schemas.py
+│   │   │   │   └── states.py
+│   │   │   └── tools.py             # Shared agent tools
 │   │   ├── models/
 │   │   │   └── utils.py     # Model loading utilities
 │   │   ├── utils/
@@ -122,7 +184,9 @@ backend/
 │   │   │   └── image.py     # Image processing utilities
 │   │   └── prompts/
 │   │       └── templates.yml  # Prompt templates
-│   └── main.py              # Agent entry point (3 public functions)
+│   ├── README.md            # Agent setup documentation
+│   ├── CLAUDE.md            # Agent architecture details
+│   └── main.py              # Agent entry point (public functions)
 ├── data/                    # Local data storage
 │   ├── uploads/
 │   │   └── catalogues/      # Temp PDF storage
@@ -198,6 +262,58 @@ class CatalogueItem(Base):
     created_at: datetime
 ```
 
+**Consumer Model:**
+```python
+class Consumer(Base):
+    id: str              # Primary key (UUID)
+    email: str           # Unique, indexed
+    hashed_password: str # bcrypt hashed
+    full_name: str       # User's full name
+    is_active: bool      # Account status (default: True)
+    created_at: datetime
+    updated_at: datetime
+
+    # Relationships
+    refresh_tokens: Relationship[ConsumerRefreshToken]
+    journeys: Relationship[Journey]
+```
+
+**Journey Model:**
+```python
+class Journey(Base):
+    id: str              # Primary key (UUID)
+    consumer_id: str     # FK to consumers, CASCADE DELETE
+    title: str           # Journey title (e.g., "Valentine's Date Night")
+    status: str          # "active" | "in-progress" | "ideation"
+    status_color: str    # Hex color for status badge
+    status_label: str    # Display label for status
+    closet_url: str      # URL to closet/mood board (nullable)
+    created_at: datetime
+    updated_at: datetime
+
+    # Relationships
+    consumer: Relationship[Consumer]
+    outfits: Relationship[Outfit]
+```
+
+**Outfit Model:**
+```python
+class Outfit(Base):
+    id: str              # Primary key (UUID)
+    journey_id: str      # FK to journeys, CASCADE DELETE
+    label: str           # Outfit label (e.g., "Romantic Dinner")
+    subtext: str         # Subtitle text (nullable)
+    price: float         # Total outfit price
+    image_url: str       # Image URL for outfit (nullable)
+    icon_name: str       # Icon name from lucide-react (nullable)
+    icon_color: str      # Hex color for icon (nullable)
+    is_ai_pick: bool     # Whether this is an AI recommendation
+    created_at: datetime
+
+    # Relationships
+    journey: Relationship[Journey]
+```
+
 ### Schemas (`app/schemas/`)
 
 Pydantic models for API request/response validation and serialization.
@@ -240,6 +356,21 @@ API endpoint handlers using FastAPI router pattern.
 - `POST /api/catalogues/{id}/create-products` - Create products from selected items
 - `DELETE /api/catalogues/{id}` - Delete catalogue and all items
 
+**Consumer Authentication Routes (`/api/consumer/auth`):**
+- `POST /api/consumer/auth/register` - Register new consumer account
+- `POST /api/consumer/auth/login` - Login with email and password
+- `POST /api/consumer/auth/logout` - Logout and revoke refresh token
+- `POST /api/consumer/auth/refresh` - Refresh access token
+- `GET /api/consumer/auth/me` - Get current consumer profile (protected)
+
+**Personal Stylist Routes (`/api/stylist`):**
+- `POST /api/stylist/chat` - Start or continue stylist chat (sync or streaming)
+- `POST /api/stylist/answers` - Submit UI responses to stylist (sync or streaming)
+- `GET /api/stylist/state/{thread_id}` - Retrieve session state
+
+**Journey Routes (`/api/journeys`):**
+- `GET /api/journeys` - List journeys for current consumer (protected)
+
 ### Services (`app/services/`)
 
 Business logic layer separating route handlers from implementation.
@@ -265,6 +396,46 @@ Business logic layer separating route handlers from implementation.
 - `ingest_catalogue()` - Synchronous PDF ingestion
 - `ingest_catalogue_stream()` - Async streaming ingestion (future use)
 - `parse_final_agent_state()` - Extract items with cropped images
+
+### AI Agent Module (`agent/`)
+
+The agent module contains three specialized AI agents using LangGraph for orchestration.
+
+**PersonalStylistAgent:**
+- Interactive style preference gathering through conversation
+- Generates UI input components (questions) for users
+- Uses Google Gemini for natural language understanding
+- LangGraph state machine with message history
+- SSE streaming support for real-time responses
+- Thread-based session management
+- Outputs structured UI components (image choice, free text, multi-select, etc.)
+- Unique ID assignment for UI components
+
+**MatchMakerAgent:**
+- Product matching via ChromaDB vector search
+- Google Gemini embeddings for product similarity
+- Multi-modal support (text + images)
+- Mood board generation with product recommendations
+- Integration with product inventory
+- Tools: search_products, google_search, load_images
+
+**CatalogueIngestorAgent:** (already documented above)
+- PDF extraction with Google Gemini Vision
+- Item cropping and R2 storage
+- Structured data extraction (names, descriptions, sizes, colours)
+
+**Shared Infrastructure:**
+- ChromaDB vector database for product embeddings
+- Google Gemini models for vision and embeddings
+- LangChain tool calling framework
+- YAML configuration for agent settings
+- Prompt templates for consistency
+
+**Vector Database (ChromaDB):**
+- Collection: product embeddings with metadata
+- Embedding model: Google Gemini text-embedding
+- Automatic indexing on product creation/update
+- Fast similarity search for recommendations
 
 ### Utils (`app/utils/`)
 
@@ -546,6 +717,146 @@ Response: {
 ```
 Note: This is a dummy implementation that returns random tags from predefined categories (material, style, audience). Replace with actual AI service integration in production.
 
+### Consumer Authentication Endpoints
+
+**Register:**
+```
+POST /api/consumer/auth/register
+Body: {
+  "email": "string",
+  "password": "string",
+  "full_name": "string"
+}
+Response: {
+  "access_token": "string",
+  "refresh_token": "string",
+  "token_type": "bearer",
+  "user": {
+    "id": "string",
+    "email": "string",
+    "full_name": "string",
+    "is_active": true
+  }
+}
+```
+
+**Login:**
+```
+POST /api/consumer/auth/login
+Body: {"email": "string", "password": "string"}
+Response: {
+  "access_token": "string",
+  "refresh_token": "string",
+  "token_type": "bearer",
+  "user": {...}
+}
+```
+
+**Get Current Consumer:**
+```
+GET /api/consumer/auth/me
+Headers: Authorization: Bearer <access_token>
+Response: {
+  "id": "string",
+  "email": "string",
+  "full_name": "string",
+  "is_active": true
+}
+```
+
+**Refresh Token:**
+```
+POST /api/consumer/auth/refresh
+Body: {"refresh_token": "string"}
+Response: {
+  "access_token": "string",
+  "refresh_token": "string",
+  "token_type": "bearer"
+}
+```
+
+**Logout:**
+```
+POST /api/consumer/auth/logout
+Headers: Authorization: Bearer <access_token>
+Response: {"message": "Logged out successfully"}
+```
+
+### Personal Stylist Endpoints
+
+**Start or Continue Chat:**
+```
+POST /api/stylist/chat
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "message": "string",
+  "thread_id": "string (optional)"
+}
+Query Parameters:
+  - stream: boolean (default: false) - Enable SSE streaming
+Response (sync): {
+  "thread_id": "string",
+  "response": {
+    "type": "question",
+    "component": {
+      "type": "image-choice",
+      "question": "What's your style vibe?",
+      "options": [...]
+    }
+  }
+}
+Response (stream): Server-Sent Events with JSON chunks
+```
+
+**Submit UI Answers:**
+```
+POST /api/stylist/answers
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "thread_id": "string",
+  "answers": {
+    "question_id": "answer_value"
+  }
+}
+Query Parameters:
+  - stream: boolean (default: false)
+Response: Next question or completion message
+```
+
+**Get Session State:**
+```
+GET /api/stylist/state/{thread_id}
+Headers: Authorization: Bearer <access_token>
+Response: {
+  "thread_id": "string",
+  "messages": [...],
+  "current_step": "string",
+  "user_preferences": {...}
+}
+```
+
+### Journey Endpoints
+
+**List Journeys:**
+```
+GET /api/journeys
+Headers: Authorization: Bearer <access_token>
+Response: {
+  "success": true,
+  "data": [
+    {
+      "id": "string",
+      "title": "string",
+      "status": "active",
+      "statusColor": "#hex",
+      "statusLabel": "string",
+      "closetUrl": "string",
+      "outfits": [...]
+    }
+  ]
+}
+```
+
 ### Catalogue Ingestion Endpoints
 
 **Upload Catalogue:**
@@ -728,6 +1039,19 @@ Creates demo merchant:
 - `R2_BUCKET_NAME` - Bucket name (default: `agora-product-images`)
 - `R2_PUBLIC_URL` - Public URL for R2 bucket
 
+**Vector Database:**
+- `CHROMA_PERSIST_DIR` - ChromaDB persistence directory (default: `data/chroma`)
+- `CHROMA_COLLECTION_NAME` - Collection name for product embeddings (default: `products`)
+
+**MLflow (Optional):**
+- `MLFLOW_TRACKING_URI` - MLflow tracking server URI (default: `http://localhost:5000`)
+- `MLFLOW_EXPERIMENT_NAME` - Experiment name (default: `agora-agents`)
+
+**Agent Configuration:**
+- Agent settings loaded from YAML files in `agent/config/`
+- Model configurations in `agent/config/model.yml`
+- Vector DB settings in `agent/config/vector_db.yml`
+
 ### Configuration Loading
 
 Settings loaded via pydantic-settings from:
@@ -861,6 +1185,61 @@ curl -X POST http://localhost:8000/api/auth/refresh \
 - [ ] Enable Cloud Armor for DDoS protection
 
 ## Recent Updates & Progress
+
+### January 27-29, 2026
+
+**Consumer Authentication System**
+- ✅ Implemented consumer registration, login, logout, token refresh
+- ✅ Created Consumer and ConsumerRefreshToken models
+- ✅ Added consumer_auth.py routes with JWT authentication
+- ✅ Implemented consumer_auth_service.py with token management
+- ✅ Created consumer.py schemas for request/response validation
+- ✅ Separate consumer auth from merchant auth (different token storage)
+- ✅ Protected consumer endpoints with dependency injection
+
+**Personal Stylist AI Agent**
+- ✅ Implemented PersonalStylistAgent with LangGraph state machine
+- ✅ Created stylist.py routes for chat and answer submission
+- ✅ Added SSE streaming support for real-time responses
+- ✅ Implemented stylist_service.py for agent integration
+- ✅ Created stylist.py schemas for chat requests/responses
+- ✅ Thread-based conversation management with message history
+- ✅ Unique ID assignment for UI components
+- ✅ Outputs structured UI components (image choice, free text, etc.)
+
+**MatchMaker AI Agent**
+- ✅ Implemented MatchMakerAgent with vector search capabilities
+- ✅ Integrated ChromaDB for product embeddings
+- ✅ Added Google Gemini embeddings for similarity search
+- ✅ Multi-modal search support (text + images)
+- ✅ Load images tool for mood board generation
+- ✅ Enhanced Google search tool integration
+
+**Journey & Outfit Models**
+- ✅ Created Journey model with status tracking
+- ✅ Created Outfit model with icon customization
+- ✅ Implemented journey.py routes for listing
+- ✅ Added journey_service.py for business logic
+- ✅ Created journey.py schemas for API responses
+- ✅ Consumer → Journey → Outfit relationship hierarchy
+
+**Vector Database Integration**
+- ✅ ChromaDB setup with Google Gemini embeddings
+- ✅ Automatic product indexing on creation/update
+- ✅ Fast similarity search for product recommendations
+- ✅ ChromaDB configuration in `agent/config/vector_db.yml`
+
+**Agent Architecture Improvements**
+- ✅ Enhanced agent configuration with YAML files
+- ✅ Unified tool calling framework across agents
+- ✅ LangGraph state machines for all agents
+- ✅ Streaming support for real-time agent responses
+- ✅ Thread-based session management
+
+**MLflow Integration (Optional)**
+- ✅ Added MLflow-skinny for experiment tracking
+- ✅ Configuration in app/config.py
+- ✅ Optional feature for development/debugging
 
 ### January 9, 2026
 

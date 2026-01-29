@@ -13,7 +13,7 @@ import Header from '../components/common/Header/Header';
 import ChatFeed from '../components/consumer/Chat/ChatFeed/ChatFeed';
 import SummaryPanel from '../components/consumer/Chat/SummaryPanel/SummaryPanel';
 import conciergeService from '../services/conciergeService';
-import { ThemeProvider } from '../context/ThemeContext';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import CONSUMER_THEME from '../config/consumerTheme';
 
 export default function ShoppingConciergePage() {
