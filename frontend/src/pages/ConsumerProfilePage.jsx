@@ -140,7 +140,7 @@ const ConsumerProfilePage = () => {
                   {[
                     { icon: LayoutGrid, label: 'Overview', active: true, path: '/profile' },
                     { icon: Sliders, label: 'Style Profile', active: false, path: '#' },
-                    { icon: Package, label: 'Orders & Returns', active: false, path: '#' },
+                    { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
                     { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
