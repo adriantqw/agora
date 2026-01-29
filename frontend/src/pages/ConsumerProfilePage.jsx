@@ -329,7 +329,7 @@ const ConsumerProfilePage = () => {
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                     <div>
-                      <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Your Style DNA</h3>
+                      <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>Style Profile</h3>
                       <p style={{ fontSize: '14px', color: colors.text.secondary }}>Based on your recent interactions</p>
                     </div>
                     <button 
