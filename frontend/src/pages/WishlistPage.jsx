@@ -11,11 +11,13 @@ import {
   Package,
   Settings,
   LogOut,
+  ShoppingBag
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
+import ShareModal from '../components/common/ShareModal';
 
 const WishlistPage = () => {
   const colors = useThemeColors();
@@ -26,6 +28,8 @@ const WishlistPage = () => {
 
   const userName = user?.full_name || user?.merchant_name || 'Shopper';
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
+  
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -210,7 +214,7 @@ const WishlistPage = () => {
             </div>
 
             {/* Main Content (9 cols) */}
-            <div style={{ gridColumn: 'span 9' }} className="col-span-12 lg:col-span-9">
+            <div style={{ gridColumn: 'span 9' }} className="wishlist-content">
               
               {/* Header & Controls */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
@@ -220,6 +224,36 @@ const WishlistPage = () => {
                     {items.length} items saved
                   </p>
                 </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    onClick={() => setIsShareModalOpen(true)}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '99px',
+                      background: colors.primary.eggPink,
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: `0 4px 12px ${colors.primary.pink}66`,
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  >
+                    <Share2 size={16} strokeWidth={2.5} />
+                    Share
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Filters */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
+                <button style={{ padding: '6px 16px', borderRadius: '99px', background: colors.text.primary, color: colors.card.background, fontSize: '12px', fontWeight: '700', border: 'none', cursor: 'pointer' }}>All Items</button>
               </div>
 
               {/* Items Grid */}
@@ -399,52 +433,6 @@ const WishlistPage = () => {
                 </div>
               )}
 
-              {/* Share List CTA */}
-              <div style={{
-                marginTop: '48px',
-                background: colors.gradient.pink,
-                borderRadius: '24px',
-                padding: '32px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '24px',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: `0 10px 30px -10px ${colors.primary.pink}80`,
-                color: 'white'
-              }}>
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', background: 'white', opacity: 0.1, transform: 'skewX(12deg) translateX(50px)' }}></div>
-                <div style={{ position: 'relative', zIndex: 10 }}>
-                  <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '4px' }}>Share your Wishlist?</h3>
-                  <p style={{ fontSize: '14px', opacity: 0.9 }}>Send your list to friends or a stylist for feedback.</p>
-                </div>
-                <button style={{
-                  position: 'relative',
-                  zIndex: 10,
-                  background: 'white',
-                  color: colors.primary.eggPink,
-                  padding: '12px 24px',
-                  borderRadius: '99px',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
-                  <Share2 size={18} strokeWidth={2.5} />
-                  Share List
-                </button>
-              </div>
-
             </div>
           </div>
         </div>
@@ -471,6 +459,11 @@ const WishlistPage = () => {
           }
         }
       `}</style>
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        shareLink={`${window.location.origin}/wishlist/share/${user?.id || 'guest'}`}
+      />
     </div>
   );
 };
