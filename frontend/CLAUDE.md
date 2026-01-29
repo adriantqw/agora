@@ -118,6 +118,20 @@ The consumer homepage follows a journey-centric design pattern:
 - **Outfit Cards**: 4 cards per journey with 3:4 aspect ratio, hover effects
 - **AI Integration**: FAB (floating action button) for future AI chat functionality
 
+**Search Bar Features:**
+- **Auto-Expanding Textarea**: Grows from 24px (1 line) → 48px (2 lines) → 72px (3 lines), then scrolls
+  - Container controls height with 0.15s ease transition
+  - Textarea fills container with `height: 100%`
+  - Shrinks back when text is deleted
+- **Multiple Image Upload**: Support for up to 5 images
+  - Image previews displayed at top of search form (80×80px thumbnails)
+  - Individual remove buttons (× icon) on each thumbnail
+  - ImagePlus icon button for uploads (disables at max capacity)
+  - Accepts JPEG, PNG, WEBP formats (5MB max per file)
+  - Dynamic padding: shifts from 220px to 140px top padding when images added
+- **Form Submission**: Navigate to `/journey` with query text and images array
+- **Glassmorphism Container**: Backdrop blur, white overlay, rounded corners
+
 **Key Components:**
 - `JourneyHero`: Search bar with animated typewriter placeholders, status pills
 - `JourneySection`: Grid of outfit cards with journey title and status badge
@@ -574,6 +588,38 @@ See backend CLAUDE.md for complete API specification and response formats.
 - ✅ Theme persistence with localStorage
 - ✅ Unified theme context in `src/contexts/ThemeContext.jsx`
 - ⚠️ Note: Older duplicate context file exists in `src/context/` (cleanup needed)
+
+### January 30, 2026
+
+**Consumer Landing Page Enhancements (misc-pages branch)**
+- ✅ Implemented auto-expanding textarea for search input
+  - Grows from 24px (1 line) → 48px (2 lines) → 72px (3 lines)
+  - Enables vertical scroll when content exceeds 3 lines
+  - Shrinks back when text is deleted (smooth 0.15s transition)
+  - Container controls height, textarea fills with `height: 100%`
+- ✅ Added multiple image upload support
+  - Maximum 5 images per search query
+  - Image previews displayed at top of search form (80×80px thumbnails)
+  - Individual remove buttons (× icon) on each thumbnail
+  - File validation: JPEG, PNG, WEBP formats (5MB max per file)
+  - Smart capacity management with user feedback
+- ✅ Updated upload button from Plus to ImagePlus icon
+  - Disables and grays out when 5 images uploaded
+  - Visual feedback with opacity and cursor changes
+- ✅ Dynamic layout adjustment
+  - Main padding shifts from 220px to 140px when images added
+  - Prevents overlap with decorative floating bags at bottom
+  - Smooth 0.3s transition between states
+- ✅ Enhanced form submission
+  - Navigates to `/journey` with search query and images array
+  - Passes base64 encoded images to journey page
+
+**Technical Implementation:**
+- State management: `uploadedImages` array with unique IDs
+- Each image object: `{ file, preview, id }`
+- FileReader API for base64 preview generation
+- Validation in `handleImageUpload` prevents exceeding max capacity
+- Auto-resize logic in useEffect monitors `searchQuery` and `uploadedImages.length`
 
 ### January 8, 2026
 
