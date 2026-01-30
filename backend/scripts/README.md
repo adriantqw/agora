@@ -30,15 +30,15 @@ Scripts to transform external product datasets (Adidas, Myntra, Farfetch) into t
 
 ```bash
 # Import single dataset
-uv run python import_dataset.py --source adidas
-uv run python import_dataset.py --source farfetch
-uv run python import_dataset.py --source myntra --limit 1000
+uv run python -m scripts.import_dataset --source adidas
+uv run python -m scripts.import_dataset --source farfetch
+uv run python -m scripts.import_dataset --source myntra --limit 1000
 
 # Import all datasets
-uv run python import_dataset.py --all --output-dir ./output/
+uv run python -m scripts.import_dataset --all --limit 50
 
 # With options
-uv run python import_dataset.py --source adidas --output ./my_products.csv --limit 500 --verbose
+uv run python -m scripts.import_dataset --source adidas --output ./my_products.csv --limit 500 --verbose
 ```
 
 ## Options
@@ -98,8 +98,35 @@ Generated CSV files are written to `./output/` directory:
 - `myntra_products.csv`
 - `farfetch_products.csv`
 
-To use with the seed script:
+## Seeding the Database
+
+The `seed_database.py` script can now use these datasets directly:
+
 ```bash
-cp backend/scripts/output/adidas_products.csv backend/scripts/sample_products.csv
-python backend/scripts/seed_database.py
+# Use default sample_products.csv
+uv run python scripts/seed_database.py
+
+# Use a specific dataset
+uv run python scripts/seed_database.py --dataset adidas
+uv run python scripts/seed_database.py --dataset myntra      # Default 1000 products
+uv run python scripts/seed_database.py --dataset farfetch
+
+# Use all datasets combined
+uv run python scripts/seed_database.py --dataset all
+
+# Limit products per dataset
+uv run python scripts/seed_database.py --dataset adidas --limit 500
+
+# Skip products or journeys
+uv run python scripts/seed_database.py --skip-products
+uv run python scripts/seed_database.py --skip-journeys
 ```
+
+### Seed Database Options
+
+| Option | Description |
+|--------|-------------|
+| `--dataset`, `-d` | Dataset: adidas, myntra, farfetch, all |
+| `--limit`, `-l` | Max products per dataset |
+| `--skip-products` | Skip seeding products |
+| `--skip-journeys` | Skip seeding journeys |
