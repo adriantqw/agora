@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 """
 Seed database with demo merchant account, consumer account, and sample inventory.
+
+Usage:
+    python seed_database.py                    # Use default sample_products.csv
+    python seed_database.py --dataset adidas   # Use output/adidas_products.csv
+    python seed_database.py --dataset myntra   # Use output/myntra_products.csv
+    python seed_database.py --dataset farfetch # Use output/farfetch_products.csv
+    python seed_database.py --dataset all      # Use all CSVs from output folder
+    python seed_database.py --limit 500        # Limit number of products
+
+Note: Run import_dataset.py first to generate the CSV files in output folder.
 """
 import sys
 import csv
+import argparse
 from pathlib import Path
 from datetime import datetime, timezone
 import uuid
@@ -92,12 +103,25 @@ def seed_demo_consumer():
         db.close()
 
 
-def seed_sample_products():
-    """Create sample inventory products for John's Store from CSV file."""
+def seed_sample_products(dataset: str = None, limit: int = None):
+    """Create sample inventory products for John's Store.
+
+    Args:
+        dataset: Which dataset to use ('adidas', 'myntra', 'farfetch', 'all', or None for default CSV)
+        limit: Maximum number of products to import per dataset
+    """
     db = SessionLocal()
 
     merchant_id = "user_demo123"
-    csv_path = Path(__file__).parent / "sample_products.csv"
+    scripts_dir = Path(__file__).parent
+    output_dir = scripts_dir / "output"
+
+    # CSV files in output folder
+    dataset_files = {
+        "adidas": output_dir / "adidas_products.csv",
+        "myntra": output_dir / "myntra_products.csv",
+        "farfetch": output_dir / "farfetch_products.csv",
+    }
 
     try:
         # Check if products already exist
@@ -106,40 +130,96 @@ def seed_sample_products():
             print(f"Products already exist ({existing_count} items). Skipping seed.")
             return
 
-        # Read products from CSV
-        if not csv_path.exists():
-             print(f"Sample products CSV not found at {csv_path}. Skipping.")
-             return
+        csv_files_to_process = []
 
-        with open(csv_path, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            count = 0
-            for row in reader:
-                # Parse tags from comma-separated string to list
-                tags = [tag.strip() for tag in row["tags"].split(",")]
+        if dataset is None:
+            # Use default sample_products.csv
+            default_csv = scripts_dir / "sample_products.csv"
+            if default_csv.exists():
+                csv_files_to_process.append(("default", default_csv))
+            else:
+                print(f"Sample products CSV not found at {default_csv}. Skipping.")
+                return
+        elif dataset == "all":
+            # Import from all dataset CSVs in output folder
+            for name, csv_path in dataset_files.items():
+                if csv_path.exists():
+                    csv_files_to_process.append((name, csv_path))
+                else:
+                    print(f"  CSV not found: {csv_path}. Run import_dataset.py first.")
+        elif dataset in dataset_files:
+            # Import from specific dataset CSV
+            csv_path = dataset_files[dataset]
+            if csv_path.exists():
+                csv_files_to_process.append((dataset, csv_path))
+            else:
+                print(f"CSV not found: {csv_path}. Run import_dataset.py --source {dataset} first.")
+                return
+        else:
+            print(f"Unknown dataset: {dataset}. Use 'adidas', 'myntra', 'farfetch', or 'all'.")
+            return
 
-                product = Product(
-                    id=str(uuid.uuid4()),
-                    merchant_id=merchant_id,
-                    name=row["name"],
-                    sku=row["sku"],
-                    price=float(row["price"]),
-                    quantity=int(row["quantity"]),
-                    tags=tags,
-                    image=row["image"],
-                    description=row["description"]
-                )
-                db.add(product)
-                count += 1
+        total_count = 0
+        # Add dataset prefix to SKUs when importing multiple datasets to avoid collisions
+        use_prefix = len(csv_files_to_process) > 1
+        for name, csv_path in csv_files_to_process:
+            sku_prefix = f"{name.upper()}-" if use_prefix else ""
+            count = _import_products_from_csv(db, merchant_id, csv_path, limit, sku_prefix)
+            total_count += count
+            print(f"  Imported {count} products from {name}")
 
         db.commit()
-        print(f"✅ Sample products created successfully! ({count} items)")
+        print(f"✅ Sample products created successfully! ({total_count} items total)")
 
     except Exception as e:
         print(f"❌ Error seeding products: {e}")
         db.rollback()
+        raise
     finally:
         db.close()
+
+
+def _import_products_from_csv(db, merchant_id: str, csv_path: Path, limit: int = None, sku_prefix: str = "") -> int:
+    """Import products from a CSV file into the database.
+
+    Args:
+        db: Database session
+        merchant_id: Merchant ID to associate products with
+        csv_path: Path to CSV file
+        limit: Maximum number of products to import
+        sku_prefix: Prefix to add to SKUs (for avoiding collisions when importing multiple datasets)
+
+    Returns count of products imported.
+    """
+    count = 0
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if limit and count >= limit:
+                break
+
+            # Parse tags from comma-separated string to list
+            tags_str = row.get("tags", "")
+            tags = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
+
+            # Add prefix to SKU if provided (for multi-dataset imports)
+            sku = f"{sku_prefix}{row['sku']}" if sku_prefix else row["sku"]
+
+            product = Product(
+                id=str(uuid.uuid4()),
+                merchant_id=merchant_id,
+                name=row["name"],
+                sku=sku,
+                price=float(row["price"]),
+                quantity=int(row["quantity"]),
+                tags=tags,
+                image=row.get("image", ""),
+                description=row.get("description", "")
+            )
+            db.add(product)
+            count += 1
+
+    return count
 
 def seed_journeys():
     """Seed journeys for the demo consumer."""
@@ -303,21 +383,69 @@ def seed_journeys():
         db.close()
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(
+        description="Seed database with demo accounts and sample inventory",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python seed_database.py                    # Use default sample_products.csv
+    python seed_database.py --dataset adidas   # Use output/adidas_products.csv
+    python seed_database.py --dataset myntra   # Use output/myntra_products.csv
+    python seed_database.py --dataset farfetch # Use output/farfetch_products.csv
+    python seed_database.py --dataset all      # Use all CSVs from output folder
+    python seed_database.py --limit 500        # Limit products imported
+
+Note: Run import_dataset.py first to generate CSV files in the output folder.
+        """
+    )
+    parser.add_argument(
+        "--dataset", "-d",
+        choices=["adidas", "myntra", "farfetch", "all"],
+        help="Dataset to use for products (default: sample_products.csv)"
+    )
+    parser.add_argument(
+        "--limit", "-l",
+        type=int,
+        help="Limit number of products to import per dataset"
+    )
+    parser.add_argument(
+        "--skip-products",
+        action="store_true",
+        help="Skip seeding products"
+    )
+    parser.add_argument(
+        "--skip-journeys",
+        action="store_true",
+        help="Skip seeding journeys"
+    )
+
+    args = parser.parse_args()
+
     print("Initializing database...")
     init_db()
     print("✅ Database initialized")
 
     print("\nSeeding demo merchant...")
     seed_demo_merchant()
-    
+
     print("\nSeeding demo consumer...")
     seed_demo_consumer()
 
-    print("\nSeeding sample products...")
-    seed_sample_products()
+    if not args.skip_products:
+        print("\nSeeding sample products...")
+        seed_sample_products(dataset=args.dataset, limit=args.limit)
+    else:
+        print("\nSkipping product seeding (--skip-products)")
 
-    print("\nSeeding journeys...")
-    seed_journeys()
+    if not args.skip_journeys:
+        print("\nSeeding journeys...")
+        seed_journeys()
+    else:
+        print("\nSkipping journey seeding (--skip-journeys)")
 
     print("\n🎉 Database seeding complete!")
+
+
+if __name__ == "__main__":
+    main()
