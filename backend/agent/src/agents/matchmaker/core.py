@@ -11,7 +11,7 @@ from .states import MatchmakerState
 from .schemas import MatchResult
 from .tools import search_products
 from ..tools import load_image, google_search
-from ..personal_stylist.schemas import JourneySchema
+from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 

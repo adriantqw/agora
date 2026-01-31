@@ -11,8 +11,9 @@ from langgraph.graph import END
 
 from .states import PersonalStylistState
 from .tools import Txt2ImgGenerator, update_mood_board
+from .schemas import UIInputList, UserResponse
 from ..tools import load_image, google_search
-from .schemas import UIInputList, JourneySchema, UserResponse
+from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
