@@ -33,9 +33,10 @@ async def test_match_stream():
         # Model streaming tokens (thinking/content)
         if event_type == "on_chat_model_stream":
             chunk = event.get("data", {}).get("chunk")
-            if chunk and hasattr(chunk, "content") and chunk.content:
-                print("-" * 60)
-                print(chunk.content, end="", flush=True)
+            if chunk and hasattr(chunk, "content") and chunk.content and isinstance(chunk, list):
+                if chunk.content[0]["type"] == "thinking":
+                    print("-" * 60)
+                    print(chunk.content[0]["text"], end="", flush=True)
 
         # Tool invocation start
         elif event_type == "on_tool_start":
