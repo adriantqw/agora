@@ -188,7 +188,7 @@ class FittingAssistantAgent:
         return "parse_fit_images"
 
     def _parse_fit_images(self, state: FittingAssistantState):
-        """Extract fittings from tool results in messages."""
+        """Extract fitting sets from tool results in messages."""
         structured_model = self.model.with_structured_output(FittingSets)
         response: FittingSets = structured_model.invoke(state["messages"])
         return {
