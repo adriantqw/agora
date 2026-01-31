@@ -448,7 +448,7 @@ const StyleProfilePage = () => {
                          </svg>
                          <span style={{ position: 'absolute', fontSize: '20px', fontWeight: '800', color: 'white' }}>{profileStrength}%</span>
                       </div>
-                      <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', fontWeight: '700' }}>Archetype Alignment</div>
+                      <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', fontWeight: '700' }}>Profile Strength</div>
                     </div>
                   </div>
                 </div>
