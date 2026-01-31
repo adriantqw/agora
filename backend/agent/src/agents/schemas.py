@@ -52,5 +52,6 @@ class StyleDna(BaseModel):
     description: str = Field(description="A one-sentence description of captured user preference")
     style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
     colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences in hex (e.g., '#FF5733')")
+    brand_preferences: Optional[list[str]] = Field(default_factory=list, description="List of brand preferences")
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
     mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
