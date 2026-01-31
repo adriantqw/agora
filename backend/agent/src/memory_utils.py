@@ -39,11 +39,26 @@ class AgoraMemory:
             user_id (str): User ID
             updated_style_dna (StyleDna): New Style DNA to update memory store
         """
-        return self.memory.put(
+        self.memory.put(
             namespace=(user_id, "memories"), 
             key=uuid.uuid4().hex, 
             value=updated_style_dna.model_dump_json()
         )
+
+        return True
+    
+    def clear_memory(self, user_id: str):
+        """
+        Clear long-term memory for the user
+
+        Args:
+            user_id (str): User ID
+        """
+        memories=self.memory.search((user_id, "memories"))
+        for mem in memories:
+            self.memory.delete((user_id, "memories"), mem.key)
+
+        return True
     
     def get_tools(self) -> list[StructuredTool]:
         """Get the memory util functions as tools for agent use."""
