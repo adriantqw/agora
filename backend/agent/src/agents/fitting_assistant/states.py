@@ -4,7 +4,7 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from .schemas import FittingObject, ProductSelections
+from .schemas import FittingSetObject, ProductSelections
 from ..schemas import JourneySchema
 
 
@@ -20,7 +20,7 @@ class FittingAssistantState(TypedDict):
     product_selections: Optional[ProductSelections]
 
     # Generated lookbook images (accumulator)
-    fitting_sets: Annotated[list[FittingObject], operator.add]
+    fitting_sets: Annotated[list[FittingSetObject], operator.add]
 
     # Agent personality mode
     personality: Optional[str]
