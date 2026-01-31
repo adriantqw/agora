@@ -7,39 +7,40 @@ from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 @tool
-def load_images(image_urls: list[str]) -> list[dict]:
+def load_image(image_url: str) -> list[dict]:
     """
-    Load product images from URLs or file paths for visual analysis.
-    Returns multimodal content with the images embedded for the LLM to see.
+    Load image from URL or file path for visual analysis.
+    Returns multimodal content with the image embedded for the LLM to see.
 
     Args:
-        image_urls: List of image URLs or local file paths to load
+        image_url: Image URL or local file path to load
 
     Returns:
         List containing text summary and image content for LLM vision analysis
     """
-    content = [{"type": "text", "text": f"Loaded {len(image_urls)} product images for visual analysis:"}]
+    content = [{"type": "text", "text": f"Loaded image: {image_url} for visual analysis:"}]
 
-    for url in image_urls:
-        try:
-            path = Path(url)
-            if path.exists():
-                with open(path, "rb") as f:
-                    image_data = f.read()
-            else:
-                response = requests.get(url, timeout=10)
-                response.raise_for_status()
-                image_data = response.content
+    try:
+        path = Path(image_url)
+        if path.exists():
+            with open(path, "rb") as f:
+                image_data = f.read()
+        else:
+            response = requests.get(image_url, timeout=20)
+            response.raise_for_status()
+            image_data = response.content
 
-            image_base64 = base64.b64encode(image_data).decode('utf-8')
-            content_type = "image/png" if url.lower().endswith(".png") else "image/jpeg"
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+        content_type = "image/png" if image_url.lower().endswith(".png") else "image/jpeg"
+        
+        content = [{"type": "text", "text": f"Loaded image: {image_url} for visual analysis:"}]
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:{content_type};base64,{image_base64}"}
+        })
 
-            content.append({
-                "type": "image_url",
-                "image_url": {"url": f"data:{content_type};base64,{image_base64}"}
-            })
-        except Exception as e:
-            content.append({"type": "text", "text": f"Failed to load {url}: {e}"})
+    except Exception as e:
+        content.append({"type": "text", "text": f"Failed to load {image_url}: {e}"})
 
     return content
 
