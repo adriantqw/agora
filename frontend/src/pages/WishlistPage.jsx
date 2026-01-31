@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Heart, 
-  Trash2, 
+import {
+  Heart,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   Share2,
   LayoutGrid,
-  Sliders,
+  Dna,
   Package,
   Settings,
   LogOut,
@@ -18,6 +18,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import ShareModal from '../components/common/ShareModal';
+import wishlistService from '../services/wishlistService';
 
 const WishlistPage = () => {
   const colors = useThemeColors();
@@ -36,40 +37,72 @@ const WishlistPage = () => {
     navigate('/login');
   };
 
-  // Mock Data - Expanded to 12 items
-  const [items, setItems] = useState([
-    { id: 1, name: 'Silk Midi Dress', price: 245.00, brand: 'Reformation', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000&auto=format&fit=crop', inStock: true, onSale: true, originalPrice: 306.00 },
-    { id: 2, name: 'Leather Tote Bag', price: 180.00, brand: 'Cuyana', image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=1000&auto=format&fit=crop', inStock: true, lowStock: true },
-    { id: 3, name: 'Classic White Sneakers', price: 120.00, brand: 'Veja', image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?q=80&w=1000&auto=format&fit=crop', inStock: false },
-    { id: 4, name: 'Gold Hoop Earrings', price: 85.00, brand: 'Mejuri', image: 'https://images.unsplash.com/photo-1635767798638-3e2523422dc7?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 5, name: 'Wool Blend Coat', price: 350.00, brand: 'Aritzia', image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 6, name: 'High-Waist Jeans', price: 98.00, brand: 'Levi\'s', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 7, name: 'Cashmere Sweater', price: 145.00, brand: 'Everlane', image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 8, name: 'Puffer Jacket', price: 220.00, brand: 'North Face', image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1000&auto=format&fit=crop', inStock: true, onSale: true, originalPrice: 275.00 },
-    { id: 9, name: 'Chelsea Boots', price: 195.00, brand: 'Dr. Martens', image: 'https://images.unsplash.com/photo-1608256246200-53e635b5b69f?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 10, name: 'Wide Brim Hat', price: 58.00, brand: 'Lack of Color', image: 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?q=80&w=1000&auto=format&fit=crop', inStock: true },
-    { id: 11, name: 'Crossbody Bag', price: 150.00, brand: 'Madewell', image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=1000&auto=format&fit=crop', inStock: true, lowStock: true },
-    { id: 12, name: 'Statement Necklace', price: 78.00, brand: 'Gorjana', image: 'https://images.unsplash.com/photo-1599643478518-17488fbbcd75?q=80&w=1000&auto=format&fit=crop', inStock: true }
-  ]);
-
+  // Wishlist state
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 12;
+  const [shareLink, setShareLink] = useState('');
 
-  const handleRemove = (id) => {
-    setItems(items.filter(item => item.id !== id));
+  // Fetch wishlist data
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        setLoading(true);
+        const data = await wishlistService.getWishlist(currentPage, itemsPerPage);
+        if (data) {
+          // Map the backend response to match the UI structure
+          const mappedItems = data.items.map(item => ({
+            id: item.id,
+            name: item.product?.name || 'Unknown',
+            price: item.product?.price || 0,
+            brand: item.product?.tags?.[0] || 'Unknown',
+            image: item.product?.image || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1000&auto=format&fit=crop',
+            inStock: (item.product?.quantity || 0) > 0,
+            lowStock: (item.product?.quantity || 0) > 0 && (item.product?.quantity || 0) < 10,
+            notes: item.notes
+          }));
+          setItems(mappedItems);
+          setTotalItems(data.pagination.total);
+          setTotalPages(data.pagination.total_pages);
+        }
+      } catch (err) {
+        console.error('Error fetching wishlist:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, [currentPage]);
+
+  const handleRemove = async (id) => {
+    try {
+      await wishlistService.removeItem(id);
+      setItems(items.filter(item => item.id !== id));
+      setTotalItems(prev => prev - 1);
+    } catch (err) {
+      console.error('Error removing item:', err);
+      alert('Failed to remove item');
+    }
   };
 
-  const filteredItems = items.filter(item => 
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.brand.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
-  const currentItems = filteredItems.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const handleShare = async () => {
+    try {
+      const result = await wishlistService.createShareLink();
+      const link = `${window.location.origin}/shared-wishlist/${result.share_token}`;
+      setShareLink(link);
+      setIsShareModalOpen(true);
+    } catch (err) {
+      console.error('Error creating share link:', err);
+      alert('Failed to create share link');
+    }
+  };
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -77,6 +110,18 @@ const WishlistPage = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '18px', fontWeight: '600', color: colors.text.primary, marginBottom: '8px' }}>Loading wishlist...</div>
+          <div style={{ fontSize: '14px', color: colors.text.secondary }}>Please wait</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -130,9 +175,9 @@ const WishlistPage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
+                    { icon: Dna, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
-                    { icon: Heart, label: 'Wishlist', badge: items.length, active: true, path: '/wishlist' },
+                    { icon: Heart, label: 'Wishlist', active: true, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
                     <button 
@@ -221,12 +266,12 @@ const WishlistPage = () => {
                 <div>
                   <h1 style={{ fontSize: '32px', fontWeight: '800', color: colors.text.primary, marginBottom: '4px' }}>My Wishlist</h1>
                   <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
-                    {items.length} items saved
+                    {totalItems} items saved
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    onClick={() => setIsShareModalOpen(true)}
+                  <button
+                    onClick={handleShare}
                     style={{
                       padding: '10px 16px',
                       borderRadius: '99px',
@@ -257,8 +302,30 @@ const WishlistPage = () => {
               </div>
 
               {/* Items Grid */}
+              {items.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+                  <Heart size={64} style={{ color: colors.text.tertiary, marginBottom: '16px', opacity: 0.3 }} />
+                  <h3 style={{ fontSize: '20px', fontWeight: '700', color: colors.text.primary, marginBottom: '8px' }}>Your wishlist is empty</h3>
+                  <p style={{ fontSize: '14px', color: colors.text.secondary, marginBottom: '24px' }}>Start adding items to save them for later!</p>
+                  <button
+                    onClick={() => navigate('/')}
+                    style={{
+                      padding: '12px 24px',
+                      borderRadius: '99px',
+                      background: colors.primary.eggPink,
+                      border: 'none',
+                      color: 'white',
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Browse Products
+                  </button>
+                </div>
+              ) : (
               <div className="wishlist-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
-                {currentItems.map((item) => (
+                {items.map((item) => (
                   <div 
                     key={item.id} 
                     className="group"
@@ -324,63 +391,17 @@ const WishlistPage = () => {
                       >
                         <Trash2 size={16} />
                       </button>
-
-                      <div className="action-btn" style={{
-                        position: 'absolute',
-                        bottom: '0',
-                        left: '0',
-                        right: '0',
-                        padding: '16px',
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.5), transparent)',
-                        opacity: 0,
-                        transition: 'opacity 0.2s',
-                        display: 'flex',
-                        justifyContent: 'center'
-                      }}>
-                        <button style={{
-                          background: 'white',
-                          color: '#1A202C',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          padding: '8px 16px',
-                          borderRadius: '99px',
-                          border: 'none',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = colors.primary.eggPink;
-                          e.currentTarget.style.color = 'white';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'white';
-                          e.currentTarget.style.color = '#1A202C';
-                        }}
-                        >
-                          Add to Bag
-                        </button>
-                      </div>
                     </div>
 
                     {/* Details */}
                     <div>
-                      <div style={{ fontSize: '12px', color: colors.text.tertiary, marginBottom: '2px' }}>{item.brand}</div>
-                      <h3 style={{ fontSize: '14px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: item.onSale ? '#EF4444' : colors.text.primary }}>
-                          ${item.price.toFixed(2)}
-                        </span>
-                        {item.onSale && (
-                          <span style={{ fontSize: '12px', textDecoration: 'line-through', color: colors.text.muted }}>
-                            ${item.originalPrice.toFixed(2)}
-                          </span>
-                        )}
-                      </div>
+                      <div style={{ fontSize: '12px', color: colors.text.tertiary, marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: '600' }}>{item.brand}</div>
+                      <h3 style={{ fontSize: '15px', fontWeight: '600', color: colors.text.primary, lineHeight: '1.4' }}>{item.name}</h3>
                     </div>
                   </div>
                 ))}
               </div>
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
@@ -459,10 +480,10 @@ const WishlistPage = () => {
           }
         }
       `}</style>
-      <ShareModal 
-        isOpen={isShareModalOpen} 
-        onClose={() => setIsShareModalOpen(false)} 
-        shareLink={`${window.location.origin}/wishlist/share/${user?.id || 'guest'}`}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        shareLink={shareLink}
       />
     </div>
   );

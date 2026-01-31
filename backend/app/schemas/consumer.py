@@ -18,6 +18,10 @@ class ConsumerResponse(ConsumerBase):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    ai_personality: str = 'Friendly'
 
     class Config:
         from_attributes = True

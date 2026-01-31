@@ -654,34 +654,34 @@ export const getAestheticQuestion = () => ({
     {
       id: 'romantic',
       label: 'Romantic',
-      description: 'Soft & dreamy',
-      imageUrl: null,
+      description: 'Soft & dreamy aesthetics',
+      imageUrl: '/vibe_photos.png',
       imagePrompt: 'Romantic style with soft colors',
-      metadata: { tags: ['romantic', 'soft', 'feminine'] }
+      metadata: { tags: ['romantic', 'soft', 'feminine'], objectPosition: '0% 0%' }
     },
     {
       id: 'chic',
       label: 'Chic',
-      description: 'Modern & polished',
-      imageUrl: null,
+      description: 'Modern & polished looks',
+      imageUrl: '/vibe_photos.png',
       imagePrompt: 'Chic modern style',
-      metadata: { tags: ['chic', 'modern', 'elegant'] }
+      metadata: { tags: ['chic', 'modern', 'elegant'], objectPosition: '100% 0%' }
     },
     {
       id: 'edgy',
       label: 'Edgy',
-      description: 'Bold & daring',
-      imageUrl: null,
+      description: 'Bold & daring style',
+      imageUrl: '/vibe_photos.png',
       imagePrompt: 'Edgy bold style',
-      metadata: { tags: ['edgy', 'bold', 'dramatic'] }
+      metadata: { tags: ['edgy', 'bold', 'dramatic'], objectPosition: '0% 100%' }
     },
     {
       id: 'boho',
       label: 'Boho',
-      description: 'Relaxed & free-spirited',
-      imageUrl: null,
+      description: 'Relaxed & free-spirited vibes',
+      imageUrl: '/vibe_photos.png',
       imagePrompt: 'Boho relaxed style',
-      metadata: { tags: ['boho', 'relaxed', 'eclectic'] }
+      metadata: { tags: ['boho', 'relaxed', 'eclectic'], objectPosition: '100% 100%' }
     }
   ]
 });

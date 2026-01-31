@@ -66,10 +66,10 @@ class ProductResponse(BaseModel):
     tags: List[str]
     image: Optional[str]
     description: Optional[str]
-    createdAt: datetime
-    updatedAt: datetime
+    created_at: datetime = Field(alias="createdAt")
+    updated_at: datetime = Field(alias="updatedAt")
 
-    model_config = {"from_attributes": True}
+    model_config = {"from_attributes": True, "populate_by_name": True}
 
     @classmethod
     def from_product(cls, product):
@@ -82,8 +82,8 @@ class ProductResponse(BaseModel):
             tags=product.tags or [],
             image=product.image,
             description=product.description,
-            createdAt=product.created_at,
-            updatedAt=product.updated_at
+            created_at=product.created_at,
+            updated_at=product.updated_at
         )
 
 

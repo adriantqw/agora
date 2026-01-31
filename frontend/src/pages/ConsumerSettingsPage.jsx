@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  LayoutGrid, 
-  Sliders, 
-  Package, 
-  Heart, 
-  Settings, 
-  LogOut, 
-  Edit2, 
-  Camera, 
+import {
+  LayoutGrid,
+  Dna,
+  Package,
+  Heart,
+  Settings,
+  LogOut,
+  Edit2,
+  Camera,
   Mail,
   Upload,
   Plus,
@@ -22,26 +22,56 @@ import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import Modal from '../components/common/Modal';
 import AvatarSelectionModal from '../components/common/AvatarSelectionModal';
+import profileService from '../services/profileService';
 
 const ConsumerSettingsPage = () => {
   const colors = useThemeColors();
   const { theme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  const [activeTab, setActiveTab] = useState('account'); // 'account' | 'fitting'
-  const [firstName, setFirstName] = useState('Sarah');
-  const [lastName, setLastName] = useState('Jenkins');
-  const [email] = useState('sarah.jenkins@example.com'); // Read-only
+  const [activeTab, setActiveTab] = useState('account'); // 'account' | 'fitting' | 'personality'
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [personality, setPersonality] = useState('Friendly');
   const [showModal, setShowModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [bodyPhotos, setBodyPhotos] = useState([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const userName = user?.full_name || user?.merchant_name || 'Shopper';
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
-  const [currentAvatar, setCurrentAvatar] = useState(`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`);
+  const [currentAvatar, setCurrentAvatar] = useState(user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`);
+
+  // Initialize from user object
+  useEffect(() => {
+    if (user) {
+      setFirstName(user.first_name || '');
+      setLastName(user.last_name || '');
+      setEmail(user.email || '');
+      setPersonality(user.ai_personality || 'Friendly');
+      if (user.avatar_url) {
+        setCurrentAvatar(user.avatar_url);
+      }
+    }
+  }, [user]);
+
+  // Fetch fitting photos
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      try {
+        const photos = await profileService.getFittingPhotos();
+        if (photos) setBodyPhotos(photos);
+      } catch (err) {
+        console.error('Error fetching photos:', err);
+      }
+    };
+    fetchPhotos();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -53,18 +83,55 @@ const ConsumerSettingsPage = () => {
   };
 
   const handleCancel = () => {
-    setFirstName('Sarah');
-    setLastName('Jenkins');
-    setPersonality('Friendly');
+    if (user) {
+      setFirstName(user.first_name || '');
+      setLastName(user.last_name || '');
+      setPersonality(user.ai_personality || 'Friendly');
+    }
   };
 
-  const handleSave = () => {
-    // Logic to save settings
-    setShowModal(true);
+  const handleSave = async () => {
+    try {
+      await profileService.updateProfile({
+        first_name: firstName,
+        last_name: lastName,
+        ai_personality: personality
+      });
+      await refreshUser(); // Refresh user data in AuthContext
+      setShowSaveModal(true);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      alert('Failed to save settings');
+    }
   };
 
-  const handleAvatarSelect = (newAvatar) => {
+  const handleAvatarSelect = async (newAvatar) => {
+    // Note: AvatarSelectionModal may need to be updated to handle file uploads
+    // For now, this just sets the avatar locally
     setCurrentAvatar(newAvatar);
+  };
+
+  const handlePhotoUpload = async (file, angle) => {
+    try {
+      setUploadingPhoto(true);
+      const photo = await profileService.uploadFittingPhoto(file, angle);
+      setBodyPhotos([...bodyPhotos, photo]);
+    } catch (err) {
+      console.error('Error uploading photo:', err);
+      alert('Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoDelete = async (photoId) => {
+    try {
+      await profileService.deleteFittingPhoto(photoId);
+      setBodyPhotos(bodyPhotos.filter(p => p.id !== photoId));
+    } catch (err) {
+      console.error('Error deleting photo:', err);
+      alert('Failed to delete photo');
+    }
   };
 
   return (
@@ -138,9 +205,9 @@ const ConsumerSettingsPage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
+                    { icon: Dna, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
-                    { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
+                    { icon: Heart, label: 'Wishlist', active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: true, path: '/settings' }
                   ].map((item, idx) => (
                     <button 
@@ -446,19 +513,41 @@ const ConsumerSettingsPage = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       textAlign: 'center',
-                      cursor: 'pointer',
+                      cursor: uploadingPhoto ? 'wait' : 'pointer',
                       transition: 'all 0.2s',
-                      background: colors.card.background
+                      background: colors.card.background,
+                      position: 'relative'
                     }}
+                    onClick={() => !uploadingPhoto && document.getElementById('photo-upload').click()}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = colors.primary.eggPink;
-                      e.currentTarget.style.backgroundColor = colors.primary.eggPinkLight + '40';
+                      if (!uploadingPhoto) {
+                        e.currentTarget.style.borderColor = colors.primary.eggPink;
+                        e.currentTarget.style.backgroundColor = colors.primary.eggPinkLight + '40';
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = colors.border.subtle;
-                      e.currentTarget.style.backgroundColor = colors.card.background;
+                      if (!uploadingPhoto) {
+                        e.currentTarget.style.borderColor = colors.border.subtle;
+                        e.currentTarget.style.backgroundColor = colors.card.background;
+                      }
                     }}
                     >
+                      <input
+                        id="photo-upload"
+                        type="file"
+                        accept="image/*"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            // Prompt user for angle
+                            const angle = prompt('Enter photo angle (front/side/back):');
+                            if (angle && ['front', 'side', 'back'].includes(angle.toLowerCase())) {
+                              handlePhotoUpload(file, angle.toLowerCase());
+                            }
+                          }
+                        }}
+                      />
                       <div style={{
                         width: '64px',
                         height: '64px',
@@ -472,91 +561,79 @@ const ConsumerSettingsPage = () => {
                       }}>
                         <Upload size={24} />
                       </div>
-                      <h4 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Click or Drag to Upload</h4>
+                      <h4 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>
+                        {uploadingPhoto ? 'Uploading...' : 'Click or Drag to Upload'}
+                      </h4>
                       <p style={{ fontSize: '12px', color: colors.text.secondary, marginTop: '4px' }}>Supports JPG, PNG (Max 10MB)</p>
                     </div>
 
                     {/* Photo Grid */}
                     <div>
                       <h4 style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: colors.text.muted, letterSpacing: '0.05em', marginBottom: '16px' }}>Your Body Profile Photos</h4>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
-                        {/* Photo 1 */}
-                        <div className="group" style={{ aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', position: 'relative', background: colors.card.backgroundAlt }}>
-                          <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Front View" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} />
-                          <button style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: 'white',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#EF4444',
-                            opacity: 0,
-                            cursor: 'pointer',
-                            transition: 'opacity 0.2s',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}
-                          className="delete-btn"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                          <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '10px', fontWeight: '600', padding: '4px 8px', borderRadius: '4px' }}>Front</div>
+                      {bodyPhotos.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '40px', color: colors.text.secondary }}>
+                          <Camera size={48} style={{ opacity: 0.3, marginBottom: '12px' }} />
+                          <p>No photos uploaded yet. Upload your first photo above.</p>
                         </div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+                          {bodyPhotos.map((photo) => (
+                            <div key={photo.id} className="group" style={{ aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', position: 'relative', background: colors.card.backgroundAlt }}>
+                              <img src={photo.image_url} alt={`${photo.angle} view`} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} />
+                              <button
+                                onClick={() => handlePhotoDelete(photo.id)}
+                                style={{
+                                  position: 'absolute',
+                                  top: '8px',
+                                  right: '8px',
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '50%',
+                                  background: 'white',
+                                  border: 'none',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: '#EF4444',
+                                  opacity: 0,
+                                  cursor: 'pointer',
+                                  transition: 'opacity 0.2s',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                }}
+                                className="delete-btn"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                              <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '10px', fontWeight: '600', padding: '4px 8px', borderRadius: '4px', textTransform: 'capitalize' }}>
+                                {photo.angle}
+                              </div>
+                            </div>
+                          ))}
 
-                        {/* Photo 2 */}
-                        <div className="group" style={{ aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', position: 'relative', background: colors.card.backgroundAlt }}>
-                          <img src="https://images.unsplash.com/photo-1529139574466-a302d20539ba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Side View" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.9 }} />
-                          <button style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            background: 'white',
-                            border: 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#EF4444',
-                            opacity: 0,
-                            cursor: 'pointer',
-                            transition: 'opacity 0.2s',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}
-                          className="delete-btn"
+                          {/* Add New */}
+                          <div
+                            style={{
+                              aspectRatio: '3/4',
+                              borderRadius: '12px',
+                              border: `1px solid ${colors.border.subtle}`,
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              color: colors.text.muted,
+                              background: colors.card.background,
+                              transition: 'all 0.2s'
+                            }}
+                            onClick={() => document.getElementById('photo-upload').click()}
+                            onMouseEnter={(e) => e.currentTarget.style.background = colors.card.backgroundAlt}
+                            onMouseLeave={(e) => e.currentTarget.style.background = colors.card.background}
                           >
-                            <Trash2 size={16} />
-                          </button>
-                          <div style={{ position: 'absolute', bottom: '8px', left: '8px', background: 'rgba(0,0,0,0.6)', color: 'white', fontSize: '10px', fontWeight: '600', padding: '4px 8px', borderRadius: '4px' }}>Side</div>
+                            <Plus size={24} />
+                            <span style={{ fontSize: '12px', fontWeight: '600', marginTop: '8px' }}>Add Photo</span>
+                          </div>
                         </div>
-
-                        {/* Add New */}
-                        <div style={{ 
-                          aspectRatio: '3/4', 
-                          borderRadius: '12px', 
-                          border: `1px solid ${colors.border.subtle}`, 
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          cursor: 'pointer', 
-                          color: colors.text.muted,
-                          background: colors.card.background,
-                          transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = colors.card.backgroundAlt}
-                        onMouseLeave={(e) => e.currentTarget.style.background = colors.card.background}
-                        >
-                          <Plus size={24} />
-                          <span style={{ fontSize: '12px', fontWeight: '600', marginTop: '8px' }}>Add Angle</span>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 )}
@@ -658,11 +735,11 @@ const ConsumerSettingsPage = () => {
           }
         }
       `}</style>
-      <Modal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        title="Settings Saved" 
-        message="Your account preferences have been successfully updated." 
+      <Modal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        title="Settings Saved"
+        message="Your account preferences have been successfully updated."
       />
       <AvatarSelectionModal
         isOpen={isAvatarModalOpen}

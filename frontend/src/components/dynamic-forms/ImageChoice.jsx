@@ -90,6 +90,7 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
+                      objectPosition: option.metadata?.objectPosition || 'center',
                       borderRadius: radius.md
                     }}
                   />

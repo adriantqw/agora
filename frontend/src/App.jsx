@@ -78,7 +78,7 @@ function AppRoutes() {
       <Route path="/journeys" element={<JourneysPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/wishlist" element={<WishlistPage />} />
-      <Route path="/wishlist/share/:userId" element={<SharedWishlistPage />} />
+      <Route path="/shared-wishlist/:token" element={<SharedWishlistPage />} />
       <Route path="/settings" element={<ConsumerSettingsPage />} />
       <Route path="/orders" element={<ConsumerOrdersPage />} />
       <Route path="/recommendations" element={<RecommendationPage />} />
