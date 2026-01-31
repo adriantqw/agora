@@ -82,7 +82,7 @@ const ConsumerOrdersPage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={currentAvatar} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />

@@ -27,6 +27,7 @@ class Consumer(Base):
     wishlist_items = relationship("WishlistItem", back_populates="consumer", cascade="all, delete-orphan")
     fitting_room_photos = relationship("FittingRoomPhoto", back_populates="consumer", cascade="all, delete-orphan")
     shared_wishlists = relationship("SharedWishlist", back_populates="consumer", cascade="all, delete-orphan")
+    style_profile = relationship("StyleProfile", back_populates="consumer", uselist=False, cascade="all, delete-orphan")
 
 
 class ConsumerRefreshToken(Base):

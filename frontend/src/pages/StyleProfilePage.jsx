@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Dna, 
-  Check, 
-  Plus, 
-  X, 
+import {
+  Dna,
+  Check,
+  Plus,
+  X,
   Save,
   LayoutGrid,
   Sliders,
@@ -12,7 +12,8 @@ import {
   Heart,
   Settings,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Loader
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -21,6 +22,8 @@ import Header from '../components/common/Header/Header';
 import ColorPickerModal from '../components/common/ColorPickerModal';
 import AddBrandModal from '../components/common/AddBrandModal';
 import SelectVibeModal from '../components/common/SelectVibeModal';
+import Growl from '../components/common/Growl/Growl';
+import styleProfileService from '../services/styleProfileService';
 
 const StyleProfilePage = () => {
   const colors = useThemeColors();
@@ -29,7 +32,14 @@ const StyleProfilePage = () => {
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  const userName = user?.full_name || user?.merchant_name || 'Shopper';
+  const getDisplayName = () => {
+    const individualName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    if (individualName) return individualName;
+    if (user?.full_name) return user.full_name;
+    return user?.merchant_name || 'Shopper';
+  };
+
+  const userName = getDisplayName();
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   const handleLogout = async () => {
@@ -37,23 +47,82 @@ const StyleProfilePage = () => {
     navigate('/login');
   };
 
-  const [selectedVibes, setSelectedVibes] = useState([
-    { name: 'Minimalist', image: 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=400&auto=format&fit=crop' },
-    { name: 'Classic Chic', image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop' }
-  ]);
+  // Backend state
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profileId, setProfileId] = useState(null);
+  const [profileStrength, setProfileStrength] = useState(0);
+  const [styleArchetype, setStyleArchetype] = useState('The Modern Minimalist');
+
+  // Growl notification state
+  const [growl, setGrowl] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
+
+  // Profile data state
+  const [selectedVibes, setSelectedVibes] = useState([]);
   const [selectedFit, setSelectedFit] = useState('Regular');
-  const [brands, setBrands] = useState(['Zara', 'Aritzia', 'Reformation', 'COS']);
+  const [brands, setBrands] = useState([]);
   const [budget, setBudget] = useState(2);
 
   // Color Preferences State
-  const [lovedColors, setLovedColors] = useState(['#000000', '#F5F5F4', '#1E3A8A', '#047857']);
-  const [avoidedColors, setAvoidedColors] = useState(['#FACC15', '#9333EA']);
-  
+  const [lovedColors, setLovedColors] = useState([]);
+  const [avoidedColors, setAvoidedColors] = useState([]);
+
   // Modal State
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [colorPickerType, setColorPickerType] = useState(null); // 'loved' | 'avoided'
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
   const [isVibeModalOpen, setIsVibeModalOpen] = useState(false);
+
+  // Vibe image mapping (hardcoded for now)
+  const vibeImageMap = {
+    'Minimalist': 'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?q=80&w=400&auto=format&fit=crop',
+    'Classic Chic': 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop',
+    'Bohemian': 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=400&auto=format&fit=crop',
+    'Edgy': 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=400&auto=format&fit=crop',
+    'Romantic': 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400&auto=format&fit=crop',
+    'Sporty': 'https://images.unsplash.com/photo-1556906781-9a412961c28c?q=80&w=400&auto=format&fit=crop',
+    'Preppy': 'https://images.unsplash.com/photo-1558769132-cb1aea3c8737?q=80&w=400&auto=format&fit=crop',
+    'Vintage': 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=400&auto=format&fit=crop'
+  };
+
+  // Load profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        const profile = await styleProfileService.getStyleProfile();
+
+        if (profile) {
+          // Map backend data to frontend state
+          setSelectedVibes(
+            profile.vibes.map((name) => ({
+              name,
+              image: vibeImageMap[name] || 'https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=400&auto=format&fit=crop'
+            }))
+          );
+          setLovedColors(profile.loved_colors || []);
+          setAvoidedColors(profile.avoided_colors || []);
+          setSelectedFit(profile.fit_preference || 'Regular');
+          setBudget(profile.budget_tier || 2);
+          setBrands(profile.favorite_brands || []);
+          setProfileId(profile.id);
+          setProfileStrength(profile.profile_strength || 0);
+          setStyleArchetype(profile.style_archetype || 'The Modern Minimalist');
+        }
+      } catch (err) {
+        console.error('Error loading profile:', err);
+        setError('Failed to load style profile');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleOpenColorPicker = (type) => {
     setColorPickerType(type);
@@ -98,6 +167,75 @@ const StyleProfilePage = () => {
     setBrands(brands.filter(brand => brand !== brandToRemove));
   };
 
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setGrowl({ show: false, message: '', type: 'success' });
+
+      const profileData = {
+        vibes: selectedVibes.map(v => v.name),
+        loved_colors: lovedColors,
+        avoided_colors: avoidedColors,
+        fit_preference: selectedFit,
+        budget_tier: budget,
+        favorite_brands: brands
+      };
+
+      if (profileId) {
+        // Update existing profile
+        const updatedProfile = await styleProfileService.updateStyleProfile(profileData);
+        setProfileStrength(updatedProfile.profile_strength);
+        setStyleArchetype(updatedProfile.style_archetype || styleArchetype);
+        setGrowl({
+          show: true,
+          message: 'Style profile updated successfully!',
+          type: 'success'
+        });
+      } else {
+        // Create new profile
+        const newProfile = await styleProfileService.createStyleProfile(profileData);
+        setProfileId(newProfile.id);
+        setProfileStrength(newProfile.profile_strength);
+        setStyleArchetype(newProfile.style_archetype || styleArchetype);
+        setGrowl({
+          show: true,
+          message: 'Style profile saved successfully!',
+          type: 'success'
+        });
+      }
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setGrowl({
+        show: true,
+        message: err.message || 'Failed to save style profile',
+        type: 'error'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header variant="full" showNav={true} />
+        <main style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <Loader size={48} style={{ animation: 'spin 1s linear infinite', color: colors.primary.eggPink }} />
+            <p style={{ marginTop: '16px', color: colors.text.secondary }}>Loading your style profile...</p>
+          </div>
+        </main>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header variant="full" showNav={true} />
@@ -138,7 +276,7 @@ const StyleProfilePage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
@@ -262,9 +400,16 @@ const StyleProfilePage = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#FFFFFF', fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                         <Dna size={16} /> Your Style Archetype
                       </div>
-                      <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>The Modern Minimalist</h1>
+                      <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>{styleArchetype}</h1>
                       <p style={{ opacity: 0.8, fontSize: '14px', lineHeight: '1.6', maxWidth: '480px' }}>
-                        You lean towards clean lines, neutral palettes, and high-quality basics. You prioritize fit and fabric over flashy prints.
+                        {profileStrength === 0
+                          ? 'Start building your style profile by selecting vibes, colors, and brands you love.'
+                          : profileStrength < 50
+                          ? 'Your style is taking shape! Add more preferences to get better recommendations.'
+                          : profileStrength < 80
+                          ? 'You have a well-defined style profile. Keep refining to unlock the best matches.'
+                          : 'You lean towards clean lines, neutral palettes, and high-quality basics. You prioritize fit and fabric over flashy prints.'
+                        }
                       </p>
                     </div>
                     
@@ -272,24 +417,38 @@ const StyleProfilePage = () => {
                       <div style={{
                         width: '72px',
                         height: '72px',
-                        borderRadius: '50%',
-                        border: '4px solid rgba(255, 255, 255, 0.1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         position: 'relative'
                       }}>
-                         <div style={{
-                           position: 'absolute',
-                           inset: -4,
-                           borderRadius: '50%',
-                           border: '4px solid white',
-                           borderTopColor: 'transparent',
-                           transform: 'rotate(-45deg)'
-                         }} />
-                         <span style={{ fontSize: '20px', fontWeight: '800', color: 'white' }}>85%</span>
+                         <svg width="72" height="72" viewBox="0 0 72 72" style={{ transform: 'rotate(-90deg)' }}>
+                           {/* Background Track */}
+                           <circle
+                             cx="36"
+                             cy="36"
+                             r="32"
+                             fill="none"
+                             stroke="rgba(255, 255, 255, 0.1)"
+                             strokeWidth="5"
+                           />
+                           {/* Progress Bar */}
+                           <circle
+                             cx="36"
+                             cy="36"
+                             r="32"
+                             fill="none"
+                             stroke="white"
+                             strokeWidth="5"
+                             strokeDasharray={2 * Math.PI * 32}
+                             strokeDashoffset={2 * Math.PI * 32 * (1 - profileStrength / 100)}
+                             strokeLinecap="round"
+                             style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                           />
+                         </svg>
+                         <span style={{ position: 'absolute', fontSize: '20px', fontWeight: '800', color: 'white' }}>{profileStrength}%</span>
                       </div>
-                      <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', fontWeight: '700' }}>Profile Strength</div>
+                      <div style={{ fontSize: '10px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', fontWeight: '700' }}>Archetype Alignment</div>
                     </div>
                   </div>
                 </div>
@@ -595,10 +754,11 @@ const StyleProfilePage = () => {
 
                 {/* Save Action */}
                 <div style={{ position: 'sticky', bottom: '20px', display: 'flex', justifyContent: 'flex-end', zIndex: 20 }}>
-                  <button 
-                    onClick={() => navigate('/profile')}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
                     style={{
-                      background: colors.primary.eggPink,
+                      background: saving ? colors.text.muted : colors.primary.eggPink,
                       color: 'white',
                       padding: '16px 32px',
                       borderRadius: '99px',
@@ -606,17 +766,31 @@ const StyleProfilePage = () => {
                       fontSize: '16px',
                       border: 'none',
                       boxShadow: '0 10px 25px -5px rgba(244, 114, 182, 0.5)',
-                      cursor: 'pointer',
+                      cursor: saving ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      transition: 'transform 0.2s'
+                      transition: 'transform 0.2s',
+                      opacity: saving ? 0.7 : 1
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    onMouseEnter={(e) => {
+                      if (!saving) e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }}
                   >
-                    <Save size={20} />
-                    Save Style Profile
+                    {saving ? (
+                      <>
+                        <Loader size={20} style={{ animation: 'spin 1s linear infinite' }} />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} />
+                        Save Style Profile
+                      </>
+                    )}
                   </button>
                 </div>
 
@@ -656,6 +830,15 @@ const StyleProfilePage = () => {
         onClose={() => setIsVibeModalOpen(false)}
         onAdd={handleAddVibe}
         currentVibes={selectedVibes}
+      />
+
+      {/* Growl Notification */}
+      <Growl
+        message={growl.message}
+        type={growl.type}
+        show={growl.show}
+        duration={3000}
+        onClose={() => setGrowl({ show: false, message: '', type: 'success' })}
       />
     </div>
   );

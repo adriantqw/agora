@@ -41,7 +41,14 @@ const ConsumerSettingsPage = () => {
   const [bodyPhotos, setBodyPhotos] = useState([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const userName = user?.full_name || user?.merchant_name || 'Shopper';
+  const getDisplayName = () => {
+    const individualName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    if (individualName) return individualName;
+    if (user?.full_name) return user.full_name;
+    return user?.merchant_name || 'Shopper';
+  };
+
+  const userName = getDisplayName();
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
@@ -95,7 +102,8 @@ const ConsumerSettingsPage = () => {
       await profileService.updateProfile({
         first_name: firstName,
         last_name: lastName,
-        ai_personality: personality
+        ai_personality: personality,
+        avatar_url: currentAvatar
       });
       await refreshUser(); // Refresh user data in AuthContext
       setShowSaveModal(true);
@@ -106,9 +114,23 @@ const ConsumerSettingsPage = () => {
   };
 
   const handleAvatarSelect = async (newAvatar) => {
-    // Note: AvatarSelectionModal may need to be updated to handle file uploads
-    // For now, this just sets the avatar locally
-    setCurrentAvatar(newAvatar);
+    try {
+      // If it's a data URL or external URL, we might need to convert it to a file
+      // but the current uploadAvatar service expects a file.
+      // However, if the modal returns a seed-based URL, we might want to save that URL string
+      // directly to the profile instead of uploading a file.
+      
+      // Let's assume for now we want to save the avatar_url string to the profile
+      await profileService.updateProfile({
+        avatar_url: newAvatar
+      });
+      
+      setCurrentAvatar(newAvatar);
+      await refreshUser();
+    } catch (err) {
+      console.error('Error saving avatar:', err);
+      alert('Failed to save avatar');
+    }
   };
 
   const handlePhotoUpload = async (file, angle) => {

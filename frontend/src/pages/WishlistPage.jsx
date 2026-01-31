@@ -163,9 +163,9 @@ const WishlistPage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
-                      style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
                   </div>
                   <h2 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>{userName}</h2>

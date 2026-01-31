@@ -5,9 +5,10 @@ from app.models.consumer import Consumer, ConsumerRefreshToken
 from app.models.journey import Journey, Outfit
 from app.models.wishlist import WishlistItem, SharedWishlist
 from app.models.fitting_room import FittingRoomPhoto
+from app.models.style_profile import StyleProfile
 
 __all__ = [
     "Merchant", "RefreshToken", "Product", "Catalogue", "CatalogueItem",
     "Consumer", "ConsumerRefreshToken", "Journey", "Outfit",
-    "WishlistItem", "SharedWishlist", "FittingRoomPhoto"
+    "WishlistItem", "SharedWishlist", "FittingRoomPhoto", "StyleProfile"
 ]

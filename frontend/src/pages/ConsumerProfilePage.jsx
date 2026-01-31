@@ -19,7 +19,8 @@ import {
   ArrowRight,
   Share2,
   Map,
-  Dna
+  Dna,
+  Loader
 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
@@ -28,6 +29,7 @@ import Header from '../components/common/Header/Header';
 import ShareModal from '../components/common/ShareModal';
 import wishlistService from '../services/wishlistService';
 import journeyService from '../services/journeyService';
+import styleProfileService from '../services/styleProfileService';
 
 const ConsumerProfilePage = () => {
   const colors = useThemeColors();
@@ -41,6 +43,8 @@ const ConsumerProfilePage = () => {
   const [isLoadingWishlist, setIsLoadingWishlist] = useState(true);
   const [stats, setStats] = useState({ journeys: 0, inventory: 0 });
   const [shareLink, setShareLink] = useState('');
+  const [styleProfile, setStyleProfile] = useState(null);
+  const [isLoadingStyleProfile, setIsLoadingStyleProfile] = useState(true);
 
   const handleLogout = async () => {
     await logout();
@@ -61,7 +65,14 @@ const ConsumerProfilePage = () => {
     }
   };
 
-  const userName = user?.full_name || user?.merchant_name || 'Shopper';
+  const getDisplayName = () => {
+    const individualName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    if (individualName) return individualName;
+    if (user?.full_name) return user.full_name;
+    return user?.merchant_name || 'Shopper';
+  };
+
+  const userName = getDisplayName();
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   // Fetch dashboard data
@@ -91,10 +102,18 @@ const ConsumerProfilePage = () => {
             inventory: totalPieces
           });
         }
+
+        // Fetch Style Profile
+        setIsLoadingStyleProfile(true);
+        const profileData = await styleProfileService.getStyleProfile();
+        if (profileData) {
+          setStyleProfile(profileData);
+        }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
       } finally {
         setIsLoadingWishlist(false);
+        setIsLoadingStyleProfile(false);
       }
     };
 
@@ -194,9 +213,9 @@ const ConsumerProfilePage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
-                      style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                      style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
                   </div>
                   <h2 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary, marginBottom: '4px' }}>{userName}</h2>
@@ -295,13 +314,13 @@ const ConsumerProfilePage = () => {
                 
                 {/* Welcome Banner */}
                 <div style={{
-                  background: 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)',
+                  background: colors.card.background,
                   borderRadius: '24px',
                   padding: '32px',
-                  color: '#FFFFFF',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)'
+                  boxShadow: '0 10px 30px -5px rgba(139, 92, 246, 0.15)',
+                  border: `1px solid ${isDark ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.1)'}`,
                 }}>
                   <div style={{ 
                     position: 'relative', 
@@ -313,49 +332,58 @@ const ConsumerProfilePage = () => {
                     flexWrap: 'wrap'
                   }}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
-                      <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>Hello, {userName.split(' ')[0]}! ✨</h1>
+                      <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '8px', color: '#8B5CF6' }}>Hello, {userName.split(' ')[0]}! ✨</h1>
                       <p style={{ 
-                        opacity: 0.9, 
                         maxWidth: '480px', 
                         lineHeight: '1.5', 
-                        color: '#FFFFFF' 
+                        color: colors.text.primary,
+                        fontWeight: '600',
+                        opacity: 0.9
                       }}>
                         Your closet analysis is complete. Based on the "Spring Collection" trends, we've found 5 items you might love.
                       </p>
                     </div>
                     <button style={{
-                      background: 'white',
-                      color: colors.primary.eggPink,
+                      background: '#8B5CF6',
+                      color: 'white',
                       border: 'none',
-                      padding: '12px 28px',
+                      padding: '14px 32px',
                       borderRadius: '99px',
-                      fontWeight: '700',
+                      fontWeight: '800',
                       fontSize: '14px',
                       cursor: 'pointer',
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                      transition: 'transform 0.2s',
+                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+                      transition: 'all 0.2s',
                       whiteSpace: 'nowrap',
                       flexShrink: 0
                     }}
                     onClick={() => navigate('/recommendations')}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.background = '#7C3AED';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.background = '#8B5CF6';
+                    }}
                     >
                       View Recommendations <ArrowRight size={16} strokeWidth={3} />
                     </button>
                   </div>
-                  {/* Abstract shapes */}
+                  
+                  {/* Decorative Subtle Pattern */}
                   <div style={{
                     position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    height: '100%',
-                    width: '50%',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    transform: 'skewX(12deg) translateX(48px)'
+                    right: '-5%',
+                    top: '-10%',
+                    width: '30%',
+                    height: '120%',
+                    background: 'radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%)',
+                    transform: 'skewX(-15deg)',
+                    pointerEvents: 'none'
                   }} />
                 </div>
 
@@ -416,80 +444,156 @@ const ConsumerProfilePage = () => {
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '24px' }}>
                     
-                    {/* Archetype Card */}
-                    <div style={{ 
-                      background: colors.card.backgroundAlt, 
-                      borderRadius: '16px', 
-                      padding: '20px',
-                      border: `1px solid ${colors.border.light}`,
-                      display: 'flex',
-                      gap: '20px',
-                      alignItems: 'center'
-                    }}>
-                       <div style={{
-                         width: '56px',
-                         height: '56px',
-                         borderRadius: '50%',
-                         background: colors.primary.eggPinkLight,
-                         display: 'flex',
-                         alignItems: 'center',
-                         justifyContent: 'center',
-                         color: colors.primary.eggPink,
-                         flexShrink: 0
-                       }}>
-                          <Dna size={28} />
-                       </div>
-                       <div>
-                         <div style={{ fontSize: '11px', fontWeight: '800', color: colors.primary.eggPink, textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>Archetype</div>
-                         <h4 style={{ fontSize: '18px', fontWeight: '800', color: colors.text.primary, marginBottom: '4px' }}>The Modern Minimalist</h4>
-                         <p style={{ fontSize: '14px', color: colors.text.secondary, lineHeight: '1.4' }}>Clean lines, neutral palettes, high-quality basics.</p>
-                       </div>
+                    {/* Archetype Card - DNA Summary Hero Style */}
+                    <div 
+                      onClick={() => navigate('/style-profile')}
+                      style={{
+                        background: 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)',
+                        borderRadius: '20px',
+                        padding: '24px',
+                        color: '#FFFFFF',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: '0 8px 20px -4px rgba(139, 92, 246, 0.3)',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s ease',
+                        minHeight: '140px',
+                        display: 'flex',
+                        alignItems: 'center'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                      {isLoadingStyleProfile ? (
+                        <div style={{ width: '100%', textAlign: 'center', opacity: 0.7 }}>
+                          <Loader size={24} style={{ animation: 'spin 1s linear infinite' }} />
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            height: '100%',
+                            width: '50%',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            transform: 'skewX(12deg) translateX(48px)'
+                          }} />
+                          
+                          <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '24px', flexWrap: 'wrap', width: '100%' }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', color: '#FFFFFF', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <Dna size={14} /> Your Style Archetype
+                              </div>
+                              <h4 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '4px', color: '#FFFFFF' }}>
+                                {styleProfile?.style_archetype || 'Discovering Your Style...'}
+                              </h4>
+                              <p style={{ opacity: 0.8, fontSize: '13px', lineHeight: '1.5', maxWidth: '400px', color: '#FFFFFF', margin: 0 }}>
+                                {styleProfile ? (
+                                  styleProfile.profile_strength < 100 
+                                    ? 'Keep refining your profile to unlock deeper insights.'
+                                    : 'You lean towards clean lines, neutral palettes, and high-quality basics.'
+                                ) : 'Complete your style profile to get personalized recommendations.'}
+                              </p>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <div style={{
+                                width: '52px',
+                                height: '52px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                position: 'relative'
+                              }}>
+                                 <svg width="52" height="52" viewBox="0 0 52 52" style={{ transform: 'rotate(-90deg)' }}>
+                                   {/* Background Track */}
+                                   <circle
+                                     cx="26"
+                                     cy="26"
+                                     r="23"
+                                     fill="none"
+                                     stroke="rgba(255, 255, 255, 0.1)"
+                                     strokeWidth="4"
+                                   />
+                                   {/* Progress Bar */}
+                                   <circle
+                                     cx="26"
+                                     cy="26"
+                                     r="23"
+                                     fill="none"
+                                     stroke="white"
+                                     strokeWidth="4"
+                                     strokeDasharray={2 * Math.PI * 23}
+                                     strokeDashoffset={2 * Math.PI * 23 * (1 - (styleProfile?.profile_strength || 0) / 100)}
+                                     strokeLinecap="round"
+                                     style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                                   />
+                                 </svg>
+                                 <span style={{ position: 'absolute', fontSize: '14px', fontWeight: '800', color: 'white' }}>{styleProfile?.profile_strength || 0}%</span>
+                              </div>
+                              <div style={{ fontSize: '9px', color: 'rgba(255, 255, 255, 0.8)', textTransform: 'uppercase', fontWeight: '700' }}>Strength</div>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Quick Tags */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: colors.text.muted, textTransform: 'uppercase', marginRight: '4px' }}>Vibes:</span>
-                      {['Minimalist', 'Classic Chic'].map((tag) => (
-                        <span key={tag} style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          background: colors.card.background,
-                          border: `1px solid ${colors.border.light}`,
-                          color: colors.text.primary
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                      <div style={{ width: '1px', height: '20px', background: colors.border.light, margin: '0 8px' }}></div>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: colors.text.muted, textTransform: 'uppercase', marginRight: '4px' }}>Brands:</span>
-                      {['Zara', 'Aritzia'].map((tag) => (
-                        <span key={tag} style={{
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '13px',
-                          fontWeight: '600',
-                          background: colors.card.background,
-                          border: `1px solid ${colors.border.light}`,
-                          color: colors.text.primary
-                        }}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                    {!isLoadingStyleProfile && styleProfile && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+                        {styleProfile.vibes?.length > 0 && (
+                          <>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: colors.text.muted, textTransform: 'uppercase', marginRight: '4px' }}>Vibes:</span>
+                            {styleProfile.vibes.map((tag) => (
+                              <span key={tag} style={{
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                background: colors.card.background,
+                                border: `1px solid ${colors.border.light}`,
+                                color: colors.text.primary
+                              }}>
+                                {tag}
+                              </span>
+                            ))}
+                          </>
+                        )}
+                        
+                        {styleProfile.vibes?.length > 0 && styleProfile.favorite_brands?.length > 0 && (
+                          <div style={{ width: '1px', height: '20px', background: colors.border.light, margin: '0 8px' }}></div>
+                        )}
 
-                  </div>
+                        {styleProfile.favorite_brands?.length > 0 && (
+                          <>
+                            <span style={{ fontSize: '12px', fontWeight: '700', color: colors.text.muted, textTransform: 'uppercase', marginRight: '4px' }}>Brands:</span>
+                            {styleProfile.favorite_brands.map((tag) => (
+                              <span key={tag} style={{
+                                padding: '6px 12px',
+                                borderRadius: '8px',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                background: colors.card.background,
+                                border: `1px solid ${colors.border.light}`,
+                                color: colors.text.primary
+                              }}>
+                                {tag}
+                              </span>
+                            ))}
+                          </>
+                        )}
+                      </div>
+                    )}
 
-                  {/* Progress Bar */}
-                  <div style={{ background: colors.card.backgroundAlt, borderRadius: '16px', padding: '24px', border: `1px solid ${colors.border.light}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', color: colors.text.muted }}>Profile Completeness</span>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: colors.primary.eggPink }}>85%</span>
-                    </div>
-                    <div style={{ width: '100%', height: '8px', background: colors.border.light, borderRadius: '99px', overflow: 'hidden' }}>
-                      <div style={{ width: '85%', height: '100%', background: colors.primary.eggPink, borderRadius: '99px' }}></div>
-                    </div>
+                    {!isLoadingStyleProfile && !styleProfile && (
+                      <div style={{ textAlign: 'center', padding: '20px', background: colors.card.backgroundAlt, borderRadius: '16px', border: `1px dashed ${colors.border.subtle}` }}>
+                        <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>
+                          No style profile data yet. <span onClick={() => navigate('/style-profile')} style={{ color: colors.primary.eggPink, fontWeight: '600', cursor: 'pointer' }}>Create yours now &rarr;</span>
+                        </p>
+                      </div>
+                    )}
+
                   </div>
                 </div>
 
@@ -633,6 +737,10 @@ const ConsumerProfilePage = () => {
       </main>
 
       <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
         @media (max-width: 1023px) {
           .profile-sidebar {
             grid-column: span 12 !important;

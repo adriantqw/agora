@@ -25,7 +25,14 @@ const RecommendationPage = () => {
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  const userName = user?.full_name || user?.merchant_name || 'Shopper';
+  const getDisplayName = () => {
+    const individualName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    if (individualName) return individualName;
+    if (user?.full_name) return user.full_name;
+    return user?.merchant_name || 'Shopper';
+  };
+
+  const userName = getDisplayName();
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   // Avatar state
@@ -81,7 +88,7 @@ const RecommendationPage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={currentAvatar} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
