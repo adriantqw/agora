@@ -38,8 +38,19 @@ class JourneySchema(BaseModel):
     season: Optional[Season] = Field(description="Seasonal vibe for the outfit")
     occasion: Optional[str] = Field(default=None, description="Occasion for the outfit (e.g., casual, formal, party)")
     location: Optional[str] = Field(default=None, description="Location or setting (e.g. indoors, beach, office)")
-    style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
-    fit_preferences: Optional[list[FitType]] = Field(default_factory=list, description="List of fit preferences (e.g., )")
+    style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences")
+    fit_preferences: Optional[list[FitType]] = Field(default_factory=list, description="List of fit preferences")
     colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences in hex (e.g., '#FF5733')")
     mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
+    other: Optional[str] = Field(default=None, description="Use this field for any other uncaptured preferences")
+
+# Define style dna schema
+class StyleDna(BaseModel):
+    """Style DNA Pydantic model containing user-preferences based on long-term historical interactions"""
+    title: str = Field(description="User-friendly title of the journey")
+    description: str = Field(description="A one-sentence description of captured user preference")
+    style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
+    colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences in hex (e.g., '#FF5733')")
+    budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
+    mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
