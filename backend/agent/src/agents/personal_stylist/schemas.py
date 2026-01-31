@@ -38,6 +38,7 @@ class UIInputType(BaseModel):
     max_label: Optional[str] = Field(default=None, description="Label for the high end, e.g., 'Luxury'. For scale-rating type only.")
 
 class UIInputList(BaseModel):
+    message: str = Field(description="Message in response to the user, accompanying the UI components")
     ui_inputs: list[UIInputType] = Field(
         description="List of UI components to display. Each component has a 'type' field that determines its structure."
     )

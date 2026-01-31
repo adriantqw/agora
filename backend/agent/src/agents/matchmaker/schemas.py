@@ -16,6 +16,7 @@ class ProductMatchSet(BaseModel):
 
 class MatchResult(BaseModel):
     """List of matched products."""
+    message: str = Field(description="Message in response to the user, accompanying the matches")
     matches: list[ProductMatch | ProductMatchSet] = Field(
         default_factory=list, 
         description="A list of product matches or product match sets to present to the user"

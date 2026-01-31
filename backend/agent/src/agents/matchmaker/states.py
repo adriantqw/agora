@@ -11,3 +11,4 @@ class MatchmakerState(TypedDict):
     journey: Optional[JourneySchema]
     matches: Annotated[list[ProductMatch], operator.add]
     iteration_count: Optional[int]
+    personality: Optional[str]
