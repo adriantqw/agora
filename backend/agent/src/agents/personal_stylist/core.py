@@ -45,6 +45,7 @@ class PersonalStylistAgent:
         # Load personality configuration
         self.personality_config: dict = load_config("personality")
 
+        # Define checkpointer
         self.checkpointer = MemorySaver()
 
         # Define available tools
