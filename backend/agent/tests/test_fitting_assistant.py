@@ -120,8 +120,7 @@ async def run_all_tests():
     print("INTEGRATION TESTS (require valid API keys)")
     print("-" * 60)
 
-    # Uncomment to run integration tests:
-    # await test_fit_stream()
+    await test_fit_stream()
 
     print()
     print("=" * 60)

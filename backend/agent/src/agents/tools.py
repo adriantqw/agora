@@ -167,14 +167,15 @@ class Txt2ImgGenerator:
 
         return {"status": "failed", "image_path": None, "error": last_error}
 
-    async def generate(self, prompt: str, aspect_ratio: str = None, example_img_paths: list[str] | None = None):
+    async def generate(self, prompt: str, aspect_ratio: str = None, reference_img_paths: list[str] | None = None):
         """
-        Generate an image from a text prompt with retry logic.
+        Generate an image from a text prompt with retry logic. Use this to generate 1 image at a time.
+        Has the benefit of being able to use reference images to generate the image.
 
         Args:
             prompt (str): The detailed and rich text prompt to generate the image from.
             aspect_ratio (str, optional): Desired aspect ratio for the image, e.g., "16:9". Defaults to None.
-            example_img_paths (list[str], optional): List of example image paths to guide the generation. Defaults to [].
+            reference_img_paths (list[str], optional): List of reference image paths to guide the generation. Defaults to [].
 
         Returns:
             dict: A dictionary containing the status, path to the generated image, and optional error.
@@ -192,7 +193,7 @@ class Txt2ImgGenerator:
             prompt=prompt,
             writer=writer,
             max_retries=1,
-            example_img_paths=example_img_paths
+            example_img_paths=reference_img_paths
         )
 
         if result["status"] == "completed":
@@ -204,7 +205,7 @@ class Txt2ImgGenerator:
     
     async def batch(self, prompts: list[str], aspect_ratio: str = None):
         """
-        Generate images from a batch of text prompts with retry logic.
+        Generate images from a batch of text prompts with retry logic. Use this to generate multiple images in parallel.
 
         Args:
             prompts (list[str]): List of detailed and rich text prompts to generate images from.
