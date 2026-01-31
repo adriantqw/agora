@@ -130,3 +130,10 @@ uv run python scripts/seed_database.py --skip-journeys
 | `--limit`, `-l` | Max products per dataset |
 | `--skip-products` | Skip seeding products |
 | `--skip-journeys` | Skip seeding journeys |
+
+## Syncing the Vector DB Catalogue
+Script to sync Vector DB with Agora DB
+
+```bash
+uv run python -m scripts.bulk_sync_vector_db
+```

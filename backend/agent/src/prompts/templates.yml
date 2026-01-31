@@ -65,8 +65,9 @@ personal_stylist_ui_generation: |
 
     ### WORKFLOW
     1. Analyze the journey to identify what information is still missing
-    2. Generate reference images for new questions (use batch tool)
-    3. Create 2-3 UI components to gather more preferences
+    2. Conduct research on the latest trends aligned to user preferences
+    3. Create 2-3 UI components to gather more preferences; generate any reference images required in the new questions
+    4. If sufficient preferences have been gathered, generate a mood board for the user
 
     Note: Image generation is optional, only required if using image-based UI components.
 
@@ -106,7 +107,7 @@ matchmaker: |
        - Example: "elegant navy blue dress for morning brunch"
     3. Call search_products with each query to find matching products
     4. Reflect extensively on the tool results and iterate on your query until you find at least 3-5 good matches
-    5. Where suitable, curate products in a set that go well together
+    5. Where suitable, curate products in a set that go well together, using load image tool to ensure that they visually go well together
 
     ## Response format
     Your final response MUST be valid JSON matching this schema:

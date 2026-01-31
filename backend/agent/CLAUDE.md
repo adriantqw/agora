@@ -113,8 +113,8 @@ vdb.search("elegant navy dress", n_results=10)  # Similarity search
 
 ```bash
 cd backend
-python -m agent.tests.test_matchmaker
-python -m agent.tests.test_personal_stylist
+uv run python -m agent.tests.test_matchmaker
+uv run python -m agent.tests.test_personal_stylist
 ```
 
 ## Adding a New Agent

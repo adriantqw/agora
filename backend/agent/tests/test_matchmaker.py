@@ -30,20 +30,19 @@ async def test_match_stream():
 
     async for event in agent.match_stream(journey, thread_id):
         event_type = event.get("event")
-
         # Model streaming tokens (thinking/content)
         if event_type == "on_chat_model_stream":
             chunk = event.get("data", {}).get("chunk")
             if chunk and hasattr(chunk, "content") and chunk.content:
+                print("-" * 60)
                 print(chunk.content, end="", flush=True)
 
         # Tool invocation start
         elif event_type == "on_tool_start":
-            print()
-            print("-" * 60)
             logger.info(f"🔧 Tool call: {event.get('name')}")
             tool_input = event.get("data", {}).get("input")
             if tool_input:
+                print("-" * 60)
                 logger.info(f"   Input: {tool_input}")
 
         # Tool invocation end
@@ -54,13 +53,11 @@ async def test_match_stream():
                 output_str = str(output)
                 if len(output_str) > 500:
                     output_str = output_str[:500] + "..."
+                print("-" * 60)
                 logger.info(f"   Output: {output_str}")
-            print("-" * 60)
 
         # Chain/graph completion
         elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
-            print()
-            print("=" * 60)
             logger.info("✅ Graph completed")
 
     # Get final state
