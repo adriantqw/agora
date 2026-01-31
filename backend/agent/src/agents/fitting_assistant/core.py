@@ -7,7 +7,8 @@ from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
 from langgraph.graph import END
 
-from .schemas import ProductSelections
+from .states import FittingAssistantState
+from .schemas import ProductSelections, FittingSets
 from ..tools import load_image, Txt2ImgGenerator, google_search
 from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
@@ -49,14 +50,167 @@ class FittingAssistantAgent:
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
-    def fit(self, journey: JourneySchema, product_selections: ProductSelections):
+    def fit(
+        self, journey: JourneySchema, product_selections: ProductSelections,
+        thread_id: str, message: str = None, personality: str = 'friendly'
+    ) -> dict:
         """
-        Invoke fitting room assistant graph
-        
+        Invoke fitting room assistant graph.
+
         Args:
-            journey:
-            product_selections:
+            journey: JourneySchema with user preferences
+            product_selections: ProductSelections with user's selected products
+            thread_id: Unique identifier for the conversation thread
+            message: Optional user refinement message
+            personality: Agent personality configuration (e.g. 'friendly')
+
+        Returns:
+            dict: Agent state including messages and fit_images
         """
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(
+                f"Personality '{personality}' not valid. "
+                f"Available personalities are: {list(self.personality_config.keys())}"
+            )
+
+        # Compile user message
+        message_list = [
+            ("user", f"Create lookbooks for these selections: {product_selections.model_dump_json()}")
+        ]
+        if message:
+            message_list.append(("user", message))
+
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id},
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Invoke the agent
+        return self.agent.invoke({
+            "journey": journey,
+            "product_selections": product_selections,
+            "messages": message_list,
+            "personality": personality
+        }, config=config)
+
+    async def fit_stream(
+        self, journey: JourneySchema, product_selections: ProductSelections,
+        thread_id: str, message: str = None, personality: str = 'friendly'
+    ):
+        """
+        Stream invoke fitting room assistant graph.
+
+        Args:
+            journey: JourneySchema with user preferences
+            product_selections: ProductSelections with user's selected products
+            thread_id: Unique identifier for the conversation thread
+            message: Optional user refinement message
+            personality: Agent personality configuration (e.g. 'friendly')
+
+        Yields:
+            Stream events from the agent execution
+        """
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(
+                f"Personality '{personality}' not valid. "
+                f"Available personalities are: {list(self.personality_config.keys())}"
+            )
+
+        # Compile user message
+        message_list = [
+            ("user", f"Create lookbooks for these selections: {product_selections.model_dump_json()}")
+        ]
+        if message:
+            message_list.append(("user", message))
+
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id},
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Stream the agent events
+        return self.agent.astream_events({
+            "journey": journey,
+            "product_selections": product_selections,
+            "messages": message_list,
+            "personality": personality
+        }, config=config, version="v2")
+
+    def get_state(self, thread_id: str):
+        """
+        Get the current state for a thread.
+
+        Args:
+            thread_id: Unique identifier for the conversation thread
+
+        Returns:
+            StateSnapshot: Current state of the agent for this thread
+        """
+        config = {"configurable": {"thread_id": thread_id}}
+        return self.agent.get_state(config)
+
+    def _invoke_model(self, state: FittingAssistantState):
+        """Invoke the model to generate lookbook images."""
+        journey = state.get("journey")
+        product_selections = state.get("product_selections")
+
+        # Get personality instructions from state
+        personality = state.get("personality", "friendly")
+        personality_instructions = self.personality_config.get(
+            personality,
+            self.personality_config["friendly"]
+        )
+
+        # Format the system prompt with all placeholders
+        prompt = self.system_prompt.format(
+            personality_instructions=personality_instructions,
+            journey=journey.model_dump_json() if journey else "No preferences",
+            journey_schema=JourneySchema.model_json_schema(),
+            user_selections=product_selections.model_dump_json() if product_selections else "No selections"
+        )
+
+        messages = [SystemMessage(content=prompt)] + state["messages"]
+
+        # Bind tools and invoke model
+        response = self.model.bind_tools(self.tools).invoke(messages)
+
+        return {"messages": [response]}
+
+    def _should_continue(self, state: FittingAssistantState):
+        """Determine whether to continue processing."""
+        last_message: AIMessage = state["messages"][-1]
+        if last_message.tool_calls:
+            return "tools"
+        return "parse_fit_images"
+
+    def _parse_fit_images(self, state: FittingAssistantState):
+        """Extract fittings from tool results in messages."""
+        structured_model = self.model.with_structured_output(FittingSets)
+        response: FittingSets = structured_model.invoke(state["messages"])
+        return {
+            "messages": [AIMessage(content=response.message)],
+            "fitting_sets": response.fitting_sets
+        }
 
     def _compile_graph(self):
-        pass
+        """Compile the agent's state graph."""
+        workflow = StateGraph(FittingAssistantState)
+        tool_node = ToolNode(self.tools)
+
+        workflow.add_node("agent", self._invoke_model)
+        workflow.add_node("tools", tool_node)
+        workflow.add_node("parse_fit_images", self._parse_fit_images)
+
+        workflow.set_entry_point("agent")
+        workflow.add_conditional_edges("agent", self._should_continue, {
+            "tools": "tools",
+            "parse_fit_images": "parse_fit_images"
+        })
+        workflow.add_edge("tools", "agent")
+        workflow.add_edge("parse_fit_images", END)
+
+        return workflow.compile(checkpointer=self.checkpointer, name=self.agent_key)

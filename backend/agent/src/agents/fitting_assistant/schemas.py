@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, FilePath, FileUrl
 
+# User input schemas
 class ProductSelected(BaseModel):
     """A product selected for fitting by the user."""
     id: str = Field(description="Product or catalogue id of the selected product")
@@ -16,3 +17,14 @@ class ProductSelections(BaseModel):
         default_factory=list, 
         description="A list of product or product sets selected for fitting by the user."
     )
+
+# Agent response schemas
+class FittingObject(BaseModel):
+    title: str = Field(description="User-facing fitted image title")
+    description: str = Field(description="User-facing fitted image set description")
+    product_ids: list[str] = Field(description="List of product or catalogue ids of the products used to generate the image")
+    image_path: FilePath | FileUrl = Field(description="Path to the image file from image generation")
+
+class FittingSets(BaseModel):
+    message: str = Field(description="Message in response to the user, accompanying the fitting room images")
+    fitting_sets: list[FittingObject] = Field(default_factory=list, description="List of fitting room images")
