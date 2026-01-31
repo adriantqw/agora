@@ -21,3 +21,6 @@ class PersonalStylistState(TypedDict):
     # UI
     ui_inputs: Annotated[list[UIInputType], operator.add]
     ui_answers: Annotated[list[UserResponse], operator.add]
+
+    # Personality
+    personality: Optional[str]

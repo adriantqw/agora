@@ -3,7 +3,7 @@ import mlflow
 import uuid
 
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
@@ -40,6 +40,9 @@ class PersonalStylistAgent:
         self.journey_update_prompt: str = templates[f"{self.agent_key}_journey_update"]
         self.ui_generation_prompt: str = templates[f"{self.agent_key}_ui_generation"]
 
+        # Load personality configuration
+        self.personality_config: dict = load_config("personality")
+
         self.checkpointer = MemorySaver()
 
         # Define available tools
@@ -51,61 +54,81 @@ class PersonalStylistAgent:
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
-    def chat(self, message: str, thread_id: str) -> dict:
+    def chat(self, message: str, thread_id: str, personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
             dict: Agent state including messages, ui_inputs, ui_answers, journey
         """
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
-        return self.agent.invoke({"messages": [("user", message)]}, config=config)
+        return self.agent.invoke({"messages": [("user", message)], "personality": personality}, config=config)
     
-    def submit_answers(self, thread_id: str, answers: list[UserResponse]) -> dict:
+    def submit_answers(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
         """
         Submit UI answers to update the journey.
-        
+
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
-        
+            personality: Agent personality configuration (e.g. 'friendly')
+
         Returns:
             dict: Updated agent state
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
-        return self.agent.invoke({"ui_answers": answers}, config=config)
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-    async def chat_stream(self, message: str, thread_id: str):
+        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        return self.agent.invoke({"ui_answers": answers, "personality": personality}, config=config)
+
+    async def chat_stream(self, message: str, thread_id: str, personality: str = 'friendly'):
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            personality: Agent personality configuration (e.g. 'friendly')
 
         Yields:
             Event dictionaries from the agent execution
         """
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
-        return self.agent.astream_events({"messages": [("user", message)]}, config=config, version="v2")
+        return self.agent.astream_events({"messages": [("user", message)], "personality": personality}, config=config, version="v2")
     
-    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse]) -> dict:
+    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
-        
+
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
-        
+            personality: Agent personality configuration (e.g. 'friendly')
+
         Returns:
             dict: Updated agent state
         """
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
-        return self.agent.astream_events({"ui_answers": answers}, config=config, version="v2")
+        return self.agent.astream_events({"ui_answers": answers, "personality": personality}, config=config, version="v2")
 
     def get_state(self, thread_id: str):
         """
@@ -158,8 +181,13 @@ class PersonalStylistAgent:
         """Invoke the model to generate UI components."""
         journey = state.get("journey")
 
-        # Format prompt with journey context
+        # Get personality instructions from state
+        personality = state.get("personality", "friendly")
+        personality_instructions = self.personality_config.get(personality, self.personality_config["friendly"])
+
+        # Format prompt with journey context and personality
         prompt = self.ui_generation_prompt.format(
+            personality_instructions=personality_instructions,
             journey_state=journey.model_dump_json() if journey else "No preferences yet",
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
@@ -180,10 +208,10 @@ class PersonalStylistAgent:
         """Parse UI components from agent's final response using structured output."""
         # Use structured output to get UI components
         structured_model = self.model.with_structured_output(UIInputList)
-        ui_list = structured_model.invoke(state["messages"])
+        final_response: UIInputList = structured_model.invoke(state["messages"])
 
         # Assign unique IDs to UI inputs and their image options if not provided
-        for ui_input in ui_list.ui_inputs:
+        for ui_input in final_response.ui_inputs:
             if ui_input.id is None:
                 ui_input.id = str(uuid.uuid4().hex)
             if ui_input.image_options:
@@ -191,7 +219,10 @@ class PersonalStylistAgent:
                     if image_option.id is None:
                         image_option.id = str(uuid.uuid4().hex)
 
-        return {"ui_inputs": ui_list.ui_inputs}
+        return {
+            "messages": [AIMessage(final_response.message)],
+            "ui_inputs": final_response.ui_inputs
+        }
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
