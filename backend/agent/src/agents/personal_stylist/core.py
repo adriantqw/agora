@@ -10,7 +10,8 @@ from langgraph.prebuilt.tool_node import ToolNode
 from langgraph.graph import END
 
 from .states import PersonalStylistState
-from .tools import Txt2ImgGenerator, update_mood_board
+from .tools import update_mood_board
+from ..tools import Txt2ImgGenerator
 from .schemas import UIInputList, UserResponse
 from ..tools import load_image, google_search
 from ..schemas import JourneySchema
@@ -180,7 +181,7 @@ class PersonalStylistAgent:
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
-        journey = state.get("journey")
+        journey: JourneySchema = state.get("journey")
 
         # Get personality instructions from state
         personality = state.get("personality", "friendly")
