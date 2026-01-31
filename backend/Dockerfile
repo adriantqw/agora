@@ -52,6 +52,9 @@ COPY --chown=appuser:appuser scripts ./scripts
 COPY --chown=appuser:appuser run.py .
 COPY --chown=appuser:appuser agora.db ./agora.db
 
+# Sync vector database
+RUN python -m scripts.bulk_sync_vector_db
+
 USER appuser
 EXPOSE 8080
 
