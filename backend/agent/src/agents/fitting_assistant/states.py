@@ -4,7 +4,7 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from .schemas import FittingSetObject, ProductSelections
+from .schemas import FittingSetObject
 from ..schemas import JourneySchema
 
 
