@@ -1,56 +1,28 @@
-"""
-Simple test script for the Personal Stylist Agent.
-
-Usage:
-    cd backend
-    python -m agent.tests.test_personal_stylist
-"""
-
+"""Test script for PersonalStylistAgent."""
 import asyncio
-import traceback
-import uuid
-from agent.src.agents.personal_stylist.core import PersonalStylistAgent
-from agent.src.utils.stream import extract_personal_stylist_metadata
+from uuid import uuid4
+
+from ..src.agents.personal_stylist.core import PersonalStylistAgent
+from .utils import stream_and_print
 
 
-async def test_streaming():
-    """Test streaming agent responses."""
-    print("\n" + "=" * 60)
-    print("Testing Streaming")
-    print("=" * 60)
-
+async def test_chat_stream():
+    """Test streaming chat."""
     agent = PersonalStylistAgent()
-    thread_id = uuid.uuid4().hex
+    thread_id = uuid4().hex
     query = "I'm looking for a casual outfit for brunch"
 
-    print(f"\nUser: {query}")
-    print("\nStreaming events:")
+    print("\n" + "=" * 60)
+    print("PERSONAL STYLIST STREAM TEST")
+    print("=" * 60)
+    print(f"Thread ID: {thread_id}")
+    print(f"Query: {query}")
+    print("=" * 60)
 
-    event_count = 0
-    async for event in await agent.chat_stream(query, thread_id):
-        results = extract_personal_stylist_metadata(event)
-        # Print thinking messages
-        for msg in results["thinking_messages"]:
-            print(f"[Thinking]: {msg}")
+    event_stream = await agent.chat_stream(query, thread_id)
 
-        # Print UI components generated
-        for ui in results["ui_components"]:
-            print(f"[UI Component]: {ui}")
-
-        event_count += 1
-
-    final_state = agent.get_state(thread_id)
-    print("\nFinal Agent State:")
-    print(final_state)
-    print(f"\nTotal events processed: {event_count}")
+    return await stream_and_print(event_stream, output_key="ui_inputs")
 
 
 if __name__ == "__main__":
-    print("\n\nRunning agent tests...")
-    try:
-        # Run async streaming test
-        print("\n\nRunning streaming test...")
-        asyncio.run(test_streaming())
-    except Exception as e:
-        print(f"\nError during agent test: {e}")
-        traceback.print_exc()
+    asyncio.run(test_chat_stream())

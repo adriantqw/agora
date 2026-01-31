@@ -11,7 +11,7 @@ from .states import MatchmakerState
 from .schemas import MatchResult
 from .tools import search_products
 from ..tools import load_image, google_search
-from ..personal_stylist.schemas import JourneySchema
+from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -46,13 +46,14 @@ class MatchMakerAgent:
             self.tools.append(google_search)
         self.agent = self._compile_graph()
 
-    def match(self, journey: JourneySchema, thread_id: str, personality: str = 'friendly') -> dict:
+    def match(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences.
 
         Args:
             journey: JourneySchema with user preferences
             thread_id: Unique identifier for the conversation thread
+            message: Optional user message to refine the match
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -61,22 +62,33 @@ class MatchMakerAgent:
         # Validate personality
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        # Compile user message
+        message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
+        if message:
+            message_list.append([("user", message)])
 
-        # Invoke agent
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id}, 
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Invoke the agent
         return self.agent.invoke({
             "journey": journey,
-            "messages": [("user", f"Find products matching: {journey.model_dump_json()}")],
+            "messages": message_list,
             "personality": personality
         }, config=config)
     
-    def match_stream(self, journey: JourneySchema, thread_id: str, personality: str = 'friendly') -> dict:
+    def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences in streaming mode.
 
         Args:
             journey: JourneySchema with user preferences
             thread_id: Unique identifier for the conversation thread
+            message: Optional user message to refine the match
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -85,11 +97,22 @@ class MatchMakerAgent:
         # Validate personality
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        # Compile user message
+        message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
+        if message:
+            message_list.append([("user", message)])
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id}, 
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Invoke the agent
         return self.agent.astream_events({
             "journey": journey,
-            "messages": [("user", f"Find products matching: {journey.model_dump_json()}")],
+            "messages": message_list,
             "personality": personality
         }, config=config, version="v2")
 

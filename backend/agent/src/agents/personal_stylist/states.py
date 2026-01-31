@@ -4,11 +4,8 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from .schemas import (
-    UserResponse,
-    JourneySchema,
-    UIInputType,
-)
+from .schemas import UserResponse, UIInputType
+from ..schemas import JourneySchema
 
 
 class PersonalStylistState(TypedDict):

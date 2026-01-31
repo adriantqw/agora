@@ -10,9 +10,11 @@ from langgraph.prebuilt.tool_node import ToolNode
 from langgraph.graph import END
 
 from .states import PersonalStylistState
-from .tools import Txt2ImgGenerator, update_mood_board
+from .tools import update_mood_board
+from ..tools import Txt2ImgGenerator
+from .schemas import UIInputList, UserResponse
 from ..tools import load_image, google_search
-from .schemas import UIInputList, JourneySchema, UserResponse
+from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -43,6 +45,7 @@ class PersonalStylistAgent:
         # Load personality configuration
         self.personality_config: dict = load_config("personality")
 
+        # Define checkpointer
         self.checkpointer = MemorySaver()
 
         # Define available tools
@@ -179,7 +182,7 @@ class PersonalStylistAgent:
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
-        journey = state.get("journey")
+        journey: JourneySchema = state.get("journey")
 
         # Get personality instructions from state
         personality = state.get("personality", "friendly")
