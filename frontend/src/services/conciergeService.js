@@ -1088,7 +1088,7 @@ export const getLocationQuestion = () => ({
 });
 
 /**
- * Get Budget question configuration (Scale Rating)
+ * Get Budget question configuration (Scale Rating) — legacy fallback
  *
  * @returns {Object} Question object
  */
@@ -1101,6 +1101,25 @@ export const getBudgetScaleQuestion = () => ({
   step: 1,
   minLabel: '$',
   maxLabel: '$$$$$',
+  required: true
+});
+
+/**
+ * Get Budget question configuration (Dual-Handle Range Slider)
+ *
+ * @returns {Object} Question object compatible with QuestionRenderer
+ */
+export const getBudgetRangeQuestion = () => ({
+  id: 'budget-range',
+  type: 'range-slider',
+  question: 'What is your budget range?',
+  min: 0,
+  max: 1000,
+  step: 50,
+  defaultMin: 100,
+  defaultMax: 500,
+  minLabel: '$0',
+  maxLabel: '$1,000',
   required: true
 });
 
@@ -1156,7 +1175,7 @@ export const generateBatch1 = () => ({
     getSeasonQuestion(),
     getTimeOfDayQuestion(),
     getLocationQuestion(),
-    getBudgetScaleQuestion(),
+    getBudgetRangeQuestion(),
     getStyleLeaningQuestion(),
     getAgeRangeQuestion()
   ]
@@ -1275,6 +1294,7 @@ export default {
   getSeasonQuestion,
   getLocationQuestion,
   getBudgetScaleQuestion,
+  getBudgetRangeQuestion,
 
   // Batch generation functions
   generateBatch1,

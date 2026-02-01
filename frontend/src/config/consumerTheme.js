@@ -61,6 +61,7 @@ export const CONSUMER_THEME = {
   },
 
   // Keep all other properties from STYLE_GUIDE
+  constraints: STYLE_GUIDE.constraints,
   spacing: STYLE_GUIDE.spacing,
   radius: STYLE_GUIDE.radius,
   typography: STYLE_GUIDE.typography,

@@ -29,7 +29,7 @@ const applyThemeClass = (theme) => {
   document.documentElement.classList.add(`${theme}-theme`);
 };
 
-export const ThemeProvider = ({ children }) => {
+export const ThemeProvider = ({ children, theme: themeProp }) => {
   const [theme, setTheme] = useState(() => {
     const initialTheme = getInitialTheme();
     // Ensure theme class is applied synchronously (inline script should have already done this)
@@ -55,7 +55,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={themeProp || { theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

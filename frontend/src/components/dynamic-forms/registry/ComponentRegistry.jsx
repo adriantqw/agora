@@ -13,6 +13,7 @@ import ScaleRating from '../ScaleRating.jsx';
 import ColorPalette from '../ColorPalette.jsx';
 import ImageUpload from '../ImageUpload.jsx';
 import HybridSelect from '../HybridSelect.jsx';
+import RangeSlider from '../RangeSlider.jsx';
 
 /**
  * Component Registry Object
@@ -26,6 +27,7 @@ export const COMPONENT_REGISTRY = {
   'scale-rating': ScaleRating,
   'color-palette': ColorPalette,
   'hybrid-select': HybridSelect,
+  'range-slider': RangeSlider,
 
   // Image upload component (for inspiration photos)
   'image-upload': ImageUpload,

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Map, CalendarHeart, CloudRain, Banknote, Edit2, Plus, Save, Home, Pencil, X } from 'lucide-react';
+import { Map, CalendarHeart, CloudRain, Banknote, Edit2, Plus, Home, Pencil, X, Clock, Sun, MapPin, Flame, Tag, Scissors } from 'lucide-react';
 import { useThemeColors } from '../../../../hooks/useThemeColors';
+import QuestionRenderer from '../../../dynamic-forms/QuestionRenderer.jsx';
 
-export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnHome }) {
+export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnHome, isReady, questionConfigs, onFieldEdit }) {
   const colors = useThemeColors();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState(journey.title || 'New Journey');
+  const [editingField, setEditingField] = useState(null);
 
   // Sync titleInput with journey.title when it changes
   useEffect(() => {
@@ -24,42 +26,187 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
     setIsEditingTitle(false);
   };
 
-  const SummaryItem = ({ label, value, icon: Icon, onEditClick }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <span
-        style={{
-          fontSize: '12px',
-          color: colors.text.secondary,
-          fontWeight: '600',
-        }}
-      >
-        {label}
-      </span>
-      <div
-        style={{
+  // Helper: render a value as small pills
+  const renderPills = (items) => {
+    if (!items || items.length === 0) return null;
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+        {items.map((item, i) => (
+          <span key={i} style={{
+            borderRadius: '9999px',
+            padding: '2px 8px',
+            fontSize: '12px',
+            background: colors.card.backgroundAlt || '#f7f8fa',
+            color: colors.text.secondary,
+            fontWeight: '600',
+            border: `1px solid ${colors.border.subtle}`,
+          }}>
+            {item}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  // Format budget for display: object { min, max } or legacy number
+  const formatBudget = (budget) => {
+    if (budget == null) return null;
+    if (typeof budget === 'object' && budget.min != null && budget.max != null) {
+      return `$${budget.min.toLocaleString()} – $${budget.max.toLocaleString()}`;
+    }
+    return `$${Number(budget).toLocaleString()}`;
+  };
+
+  // Format location: combine locationType + locationDetail
+  const formatLocation = () => {
+    if (!journey.locationType) return null;
+    const labelMap = { indoors: 'Indoors', outdoors: 'Outdoors', beach: 'At the Beach', office: 'Office/Professional' };
+    const type = labelMap[journey.locationType] || journey.locationType;
+    return journey.locationDetail ? `${type} — ${journey.locationDetail}` : type;
+  };
+
+  // Capitalize first letter
+  const capitalize = (str) => str ? str.charAt(0).toUpperCase() + str.slice(1) : null;
+
+  const SummaryItem = ({ label, value, icon: Icon, onEditClick, fieldName }) => (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <span
+          style={{
+            fontSize: '12px',
+            color: colors.text.secondary,
+            fontWeight: '600',
+          }}
+        >
+          {label}
+        </span>
+        <div
+          style={{
+            background: colors.card.background,
+            padding: '12px 16px',
+            borderRadius: '12px',
+            fontSize: '14px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            border: `1px solid ${colors.border.subtle}`,
+          }}
+        >
+          {Icon && <Icon size={14} color={colors.primary.eggPink} />}
+          <span style={{ flex: 1, color: colors.text.primary }}>{value || 'Not set'}</span>
+          {onEditClick && (
+            <Edit2
+              size={12}
+              color={colors.text.muted}
+              style={{ cursor: 'pointer', marginLeft: 'auto' }}
+              onClick={onEditClick}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Inline edit card */}
+      {editingField === fieldName && questionConfigs?.[fieldName] && (
+        <div style={{
+          background: colors.card.background,
+          borderRadius: '12px',
+          border: `1px solid ${colors.border.subtle}`,
+          padding: '16px',
+          marginTop: '-12px',
+        }}>
+          <QuestionRenderer
+            question={questionConfigs[fieldName]}
+            onAnswer={(answer) => {
+              onFieldEdit && onFieldEdit(fieldName, answer);
+              setEditingField(null);
+            }}
+          />
+          <button
+            onClick={() => setEditingField(null)}
+            style={{
+              marginTop: '12px',
+              background: 'transparent',
+              border: `1px solid ${colors.border.subtle}`,
+              borderRadius: '8px',
+              padding: '6px 14px',
+              fontSize: '13px',
+              color: colors.text.secondary,
+              cursor: 'pointer',
+              fontWeight: '600',
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  // Pill-value SummaryItem: renders value as pills instead of text
+  const SummaryItemPills = ({ label, values, icon: Icon, onEditClick, fieldName }) => (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <span style={{ fontSize: '12px', color: colors.text.secondary, fontWeight: '600' }}>
+          {label}
+        </span>
+        <div style={{
           background: colors.card.background,
           padding: '12px 16px',
           borderRadius: '12px',
-          fontSize: '14px',
-          fontWeight: '600',
           display: 'flex',
           alignItems: 'center',
           gap: '10px',
           border: `1px solid ${colors.border.subtle}`,
-        }}
-      >
-        {Icon && <Icon size={14} color={colors.primary.eggPink} />}
-        <span style={{ flex: 1, color: colors.text.primary }}>{value || 'Not set'}</span>
-        {onEditClick && (
-          <Edit2
-            size={12}
-            color={colors.text.muted}
-            style={{ cursor: 'pointer', marginLeft: 'auto' }}
-            onClick={onEditClick}
-          />
-        )}
+          flexWrap: 'wrap',
+        }}>
+          {Icon && <Icon size={14} color={colors.primary.eggPink} style={{ flexShrink: 0 }} />}
+          <div style={{ flex: 1 }}>
+            {values && values.length > 0
+              ? renderPills(values)
+              : <span style={{ fontSize: '14px', fontWeight: '600', color: colors.text.primary }}>Not set</span>
+            }
+          </div>
+          {onEditClick && (
+            <Edit2 size={12} color={colors.text.muted} style={{ cursor: 'pointer', marginLeft: 'auto' }} onClick={onEditClick} />
+          )}
+        </div>
       </div>
-    </div>
+
+      {editingField === fieldName && questionConfigs?.[fieldName] && (
+        <div style={{
+          background: colors.card.background,
+          borderRadius: '12px',
+          border: `1px solid ${colors.border.subtle}`,
+          padding: '16px',
+          marginTop: '-12px',
+        }}>
+          <QuestionRenderer
+            question={questionConfigs[fieldName]}
+            onAnswer={(answer) => {
+              onFieldEdit && onFieldEdit(fieldName, answer);
+              setEditingField(null);
+            }}
+          />
+          <button
+            onClick={() => setEditingField(null)}
+            style={{
+              marginTop: '12px',
+              background: 'transparent',
+              border: `1px solid ${colors.border.subtle}`,
+              borderRadius: '8px',
+              padding: '6px 14px',
+              fontSize: '13px',
+              color: colors.text.secondary,
+              cursor: 'pointer',
+              fontWeight: '600',
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+    </>
   );
 
   return (
@@ -162,22 +309,90 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           label="Occasion Type"
           value={journey.occasion}
           icon={CalendarHeart}
-          // onEditClick={() => onEdit && onEdit('occasion')}
+          fieldName="occasion"
+          onEditClick={() => setEditingField('occasion')}
         />
 
         <SummaryItem
           label="Weather / Location"
           value={journey.weather}
           icon={CloudRain}
-          // onEditClick={() => onEdit && onEdit('weather')}
+          fieldName="weather"
+          onEditClick={() => setEditingField('weather')}
         />
 
         <SummaryItem
           label="Budget Range"
-          value={journey.budget}
+          value={formatBudget(journey.budget)}
           icon={Banknote}
-          // onEditClick={() => onEdit && onEdit('budget')}
+          fieldName="budget"
+          onEditClick={() => setEditingField('budget')}
         />
+
+        {/* New fields from Batch 1 */}
+        <SummaryItemPills
+          label="Season"
+          values={journey.season}
+          icon={Sun}
+          fieldName="season"
+          onEditClick={() => setEditingField('season')}
+        />
+
+        <SummaryItemPills
+          label="Time of Day"
+          values={journey.timeOfDay}
+          icon={Clock}
+          fieldName="timeOfDay"
+          onEditClick={() => setEditingField('timeOfDay')}
+        />
+
+        <SummaryItem
+          label="Location"
+          value={formatLocation()}
+          icon={MapPin}
+          fieldName="locationType"
+          onEditClick={() => setEditingField('locationType')}
+        />
+
+        <SummaryItem
+          label="Style Lane"
+          value={journey.styleLeaning}
+          icon={Scissors}
+          fieldName="styleLeaning"
+          onEditClick={() => setEditingField('styleLeaning')}
+        />
+
+        <SummaryItem
+          label="Shopping For"
+          value={journey.ageRange}
+          icon={Tag}
+          fieldName="ageRange"
+          onEditClick={() => setEditingField('ageRange')}
+        />
+
+        <SummaryItem
+          label="Aesthetic"
+          value={capitalize(journey.aesthetic)}
+          icon={Flame}
+          fieldName="aesthetic"
+          onEditClick={() => setEditingField('aesthetic')}
+        />
+
+        {journey.riskTolerance != null && (
+          <SummaryItem
+            label="Style Risk"
+            value={`${journey.riskTolerance} / 10`}
+            icon={Flame}
+          />
+        )}
+
+        {journey.attributes && journey.attributes.length > 0 && (
+          <SummaryItemPills
+            label="Attributes"
+            values={journey.attributes}
+            icon={Tag}
+          />
+        )}
 
         {/* Key Pieces Preview */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -292,36 +507,40 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
         borderTop: `2px solid ${colors.border.divider}`,
         background: colors.page.background,
       }}>
-        {/* Save Journey Button */}
+        {/* "Let's Goooo!" CTA — pill shape, disabled when not ready */}
         <button
-          onClick={onSaveJourney}
+          onClick={isReady ? onSaveJourney : undefined}
+          disabled={!isReady}
           style={{
-            background: colors.primary.eggPink,
-            color: '#1a202c', // Dark text for contrast on pink
+            background: isReady ? colors.primary.eggPink : colors.text.muted,
+            color: isReady ? '#1a202c' : '#fff',
             border: 'none',
-            borderRadius: '12px',
+            borderRadius: '9999px',
             padding: '14px 20px',
             fontSize: '14px',
             fontWeight: '700',
-            cursor: 'pointer',
+            cursor: isReady ? 'pointer' : 'not-allowed',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
             transition: 'all 0.2s',
-            boxShadow: '0 4px 12px rgba(255, 183, 197, 0.3)'
+            boxShadow: isReady ? '0 4px 12px rgba(255, 183, 197, 0.3)' : 'none',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+            if (isReady) {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.3)';
+            if (isReady) {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.3)';
+            }
           }}
         >
-          <Save size={16} />
-          Save Journey
+          Let's Goooo!
         </button>
 
         {/* Return to Home Button */}

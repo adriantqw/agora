@@ -3,7 +3,7 @@
  *
  * AI-powered conversational shopping assistant with split layout:
  * - Left: Chat feed with user messages and AI responses
- * - Right: Summary panel showing journey context
+ * - Right: Summary panel showing journey context (desktop) / bottom-sheet drawer (mobile)
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -12,9 +12,12 @@ import { useThemeColors } from '../hooks/useThemeColors';
 import Header from '../components/common/Header/Header';
 import ChatFeed from '../components/consumer/Chat/ChatFeed/ChatFeed';
 import SummaryPanel from '../components/consumer/Chat/SummaryPanel/SummaryPanel';
+import SummaryDrawer from '../components/consumer/Chat/SummaryDrawer/SummaryDrawer';
 import conciergeService from '../services/conciergeService';
+import journeyService from '../services/journeyService';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import CONSUMER_THEME from '../config/consumerTheme';
+import { Map } from 'lucide-react';
 
 export default function ShoppingConciergePage() {
   const location = useLocation();
@@ -34,7 +37,7 @@ export default function ShoppingConciergePage() {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Journey context state
+  // Journey context state — all fields declared up front
   const [journeyContext, setJourneyContext] = useState({
     title: '',
     status: 'Creating Style Profile...',
@@ -47,6 +50,13 @@ export default function ShoppingConciergePage() {
     attributes: [],
     inspirationImage: null,
     additionalContext: null,
+    // Fields populated by Batch 1
+    styleLeaning: null,
+    ageRange: null,
+    timeOfDay: null,
+    season: null,
+    locationType: null,
+    locationDetail: null,
   });
 
   // Answer tracking state
@@ -57,8 +67,21 @@ export default function ShoppingConciergePage() {
   const [batchAnswers, setBatchAnswers] = useState({});  // Answers for current batch only
   const [batchNumber, setBatchNumber] = useState(0);
 
+  // Ref holding current batch's questions for real-time lookup in handleAnswer
+  const currentBatchQuestionsRef = useRef([]);
+
   // Conversation tracking
   const [currentStep, setCurrentStep] = useState('aesthetic');
+
+  // Mobile responsive
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 900);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Generate unique message ID
   const generateMessageId = () => `msg-${Date.now()}-${Math.random()}`;
@@ -84,6 +107,7 @@ export default function ShoppingConciergePage() {
     const batchId = `batch-${Date.now()}`;
     if (questions && questions.length > 0) {
       setCurrentBatchId(batchId);
+      currentBatchQuestionsRef.current = questions;
     }
 
     // Simulate AI thinking delay
@@ -105,6 +129,60 @@ export default function ShoppingConciergePage() {
       ]);
       setIsTyping(false);
     }, 800);
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Real-time context updater — extracted so handleAnswer can call it immediately
+  // ---------------------------------------------------------------------------
+  const updateJourneyContextFromAnswer = useCallback((questionId, answer) => {
+    if (questionId === 'greeting-query') {
+      const query = answer.value;
+      const extractedOccasion = conciergeService.extractOccasion(query);
+      const extractedLocation = conciergeService.extractLocation(query);
+      setJourneyContext((prev) => ({
+        ...prev,
+        title: extractedOccasion || 'New Journey',
+        occasion: extractedOccasion,
+        weather: extractedLocation,
+        status: 'Creating Style Profile...',
+      }));
+    } else if (questionId === 'aesthetic-visual-mood') {
+      const aesthetic = conciergeService.processAestheticAnswer(answer);
+      setJourneyContext(prev => ({ ...prev, aesthetic }));
+    } else if (questionId === 'risk-tolerance-scale') {
+      const riskTolerance = conciergeService.processRiskAnswer(answer);
+      setJourneyContext(prev => ({ ...prev, riskTolerance }));
+    } else if (questionId === 'style-attributes') {
+      const attributes = conciergeService.processAttributesAnswer(answer);
+      setJourneyContext(prev => ({ ...prev, attributes }));
+    } else if (questionId === 'inspiration-image') {
+      const inspirationImage = conciergeService.processImageAnswer(answer);
+      setJourneyContext(prev => ({ ...prev, inspirationImage }));
+    } else if (questionId === 'additional-context') {
+      const additionalContext = conciergeService.processContextAnswer(answer);
+      setJourneyContext(prev => ({ ...prev, additionalContext }));
+    } else if (questionId === 'budget-range') {
+      setJourneyContext(prev => ({ ...prev, budget: { min: answer.min, max: answer.max } }));
+    } else if (questionId === 'budget-scale') {
+      const budget = answer.value ? parseFloat(answer.value) : null;
+      setJourneyContext(prev => ({ ...prev, budget }));
+    } else if (questionId === 'style-leaning') {
+      const styleLeaning = answer.selectedOptions?.[0] || answer.value;
+      setJourneyContext(prev => ({ ...prev, styleLeaning }));
+    } else if (questionId === 'age-range') {
+      const ageRange = answer.selectedOptions?.[0] || answer.value;
+      setJourneyContext(prev => ({ ...prev, ageRange }));
+    } else if (questionId === 'time-of-day') {
+      const timeOfDay = answer.selectedOptions || [];
+      setJourneyContext(prev => ({ ...prev, timeOfDay }));
+    } else if (questionId === 'season') {
+      const season = answer.selectedOptions || [];
+      setJourneyContext(prev => ({ ...prev, season }));
+    } else if (questionId === 'location-hybrid') {
+      const locationType = answer.selectedOptions?.[0] || 'other';
+      const locationDetail = answer.value;
+      setJourneyContext(prev => ({ ...prev, locationType, locationDetail }));
+    }
   }, []);
 
   // Handle initial query from landing page
@@ -143,24 +221,27 @@ export default function ShoppingConciergePage() {
         // No initial query - start with greeting
         const greetingBatch = conciergeService.generateGreetingBatch();
         addAIMessage(greetingBatch);
-        // Set a special batch number to identify this as the greeting
-        setBatchNumber(0); 
+        setBatchNumber(0);
         setJourneyContext(prev => ({ ...prev, status: 'Starting...' }));
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
 
-  // Handle answer submission from QuestionRenderer
+  // Handle answer submission from QuestionRenderer — updates sidebar in real time
   const handleAnswer = useCallback((answer) => {
-    // Store in batch-specific state (not global currentAnswers yet)
+    // Store in batch-specific state
     setBatchAnswers((prev) => ({
       ...prev,
       [answer.questionId]: answer
     }));
 
-    // DO NOT add user message here - wait for batch submit
-  }, []);
+    // Real-time sidebar update: look up question from current batch ref
+    const question = currentBatchQuestionsRef.current.find(q => q.id === answer.questionId);
+    if (question) {
+      updateJourneyContextFromAnswer(question.id, answer);
+    }
+  }, [updateJourneyContextFromAnswer]);
 
   // Handle batch submit button click
   const handleBatchSubmit = useCallback(() => {
@@ -173,7 +254,6 @@ export default function ShoppingConciergePage() {
     const allRequiredAnswered = requiredQuestions.every(q => batchAnswers[q.id]);
 
     if (!allRequiredAnswered) {
-      // Show validation error or keep button disabled
       return;
     }
 
@@ -184,7 +264,7 @@ export default function ShoppingConciergePage() {
         if (!answer) return null;
         return conciergeService.formatAnswerForBatchSummary(question, answer);
       })
-      .filter(Boolean);  // Remove null/undefined entries
+      .filter(Boolean);
 
     const summaryText = summaryParts.length > 0
       ? summaryParts.join(' • ')
@@ -196,69 +276,11 @@ export default function ShoppingConciergePage() {
     // Merge batch answers into global currentAnswers
     setCurrentAnswers(prev => ({ ...prev, ...batchAnswers }));
 
-    // Process answers and update journey context
-    batchMessage.questions.forEach(question => {
-      const answer = batchAnswers[question.id];
-      if (!answer) return;
-
-      // Update journey context based on question type
-      if (question.id === 'greeting-query') {
-        // Special handling for greeting query
-        const query = answer.value;
-        const extractedOccasion = conciergeService.extractOccasion(query);
-        const extractedLocation = conciergeService.extractLocation(query);
-        
-        setJourneyContext((prev) => ({
-          ...prev,
-          title: extractedOccasion || 'New Journey',
-          occasion: extractedOccasion,
-          weather: extractedLocation,
-          status: 'Creating Style Profile...'
-        }));
-      } else if (question.id === 'aesthetic-visual-mood') {
-        const aesthetic = conciergeService.processAestheticAnswer(answer);
-        setJourneyContext(prev => ({ ...prev, aesthetic }));
-      } else if (question.id === 'risk-tolerance-scale') {
-        const riskTolerance = conciergeService.processRiskAnswer(answer);
-        setJourneyContext(prev => ({ ...prev, riskTolerance }));
-      } else if (question.id === 'style-attributes') {
-        const attributes = conciergeService.processAttributesAnswer(answer);
-        setJourneyContext(prev => ({ ...prev, attributes }));
-      } else if (question.id === 'inspiration-image') {
-        const inspirationImage = conciergeService.processImageAnswer(answer);
-        setJourneyContext(prev => ({ ...prev, inspirationImage }));
-      } else if (question.id === 'additional-context') {
-        const additionalContext = conciergeService.processContextAnswer(answer);
-        setJourneyContext(prev => ({ ...prev, additionalContext }));
-      } else if (question.id === 'budget-scale') {
-        const budget = answer.value ? parseFloat(answer.value) : null;
-        setJourneyContext(prev => ({ ...prev, budget }));
-      } else if (question.id === 'style-leaning') {
-        const styleLeaning = answer.selectedOptions?.[0] || answer.value;
-        setJourneyContext(prev => ({ ...prev, styleLeaning }));
-      } else if (question.id === 'age-range') {
-        const ageRange = answer.selectedOptions?.[0] || answer.value;
-        setJourneyContext(prev => ({ ...prev, ageRange }));
-      } else if (question.id === 'time-of-day') {
-        const timeOfDay = answer.selectedOptions || [];
-        setJourneyContext(prev => ({ ...prev, timeOfDay }));
-      } else if (question.id === 'season') {
-        const season = answer.selectedOptions || [];
-        setJourneyContext(prev => ({ ...prev, season }));
-      } else if (question.id === 'location-hybrid') {
-        const locationType = answer.selectedOptions?.[0] || 'other';
-        const locationDetail = answer.value;
-        setJourneyContext(prev => ({ ...prev, locationType, locationDetail }));
-      }
-      // Add more question processing as needed
-    });
-
-    // Clear batch answers
+    // Context is already up-to-date from real-time updates in handleAnswer.
+    // Clear batch answers and progress to next batch.
     setBatchAnswers({});
 
-    // Progress to next batch
     if (batchNumber === 0) {
-      // Transition from Greeting to Batch 1
       setBatchNumber(1);
       setTimeout(() => {
         const batch1 = conciergeService.generateBatch1();
@@ -288,16 +310,14 @@ export default function ShoppingConciergePage() {
     }
   }, [batchAnswers, currentBatchId, messages, batchNumber, addUserMessage, addAIMessage]);
 
-  // Handle next step button click
+  // Handle next step button click (legacy single-question flow)
   const handleNextStep = useCallback((messageId) => {
-    // Find the message that triggered next step
     const message = messages.find((msg) => msg.id === messageId);
     if (!message || !message.question) return;
 
     const answer = currentAnswers[message.question.id];
     if (!answer) return;
 
-    // Update journey context based on question type
     if (message.question.type === 'image-choice' && message.question.id === 'aesthetic-visual-mood') {
       const aesthetic = conciergeService.processAestheticAnswer(answer);
       setJourneyContext((prev) => ({
@@ -306,47 +326,30 @@ export default function ShoppingConciergePage() {
         status: 'Building Your Journey...',
       }));
       setCurrentStep('risk');
-
-      // Generate next AI response
       setTimeout(() => {
         const response = conciergeService.generateConversationResponse('risk');
         addAIMessage(response);
       }, 500);
     } else if (message.question.type === 'scale-rating') {
       const riskTolerance = conciergeService.processRiskAnswer(answer);
-      setJourneyContext((prev) => ({
-        ...prev,
-        riskTolerance,
-      }));
+      setJourneyContext((prev) => ({ ...prev, riskTolerance }));
       setCurrentStep('attributes');
-
-      // Generate next AI response
       setTimeout(() => {
         const response = conciergeService.generateConversationResponse('attributes');
         addAIMessage(response);
       }, 500);
     } else if (message.question.type === 'multi-select') {
       const attributes = conciergeService.processAttributesAnswer(answer);
-      setJourneyContext((prev) => ({
-        ...prev,
-        attributes,
-      }));
+      setJourneyContext((prev) => ({ ...prev, attributes }));
       setCurrentStep('inspiration');
-
-      // Generate next AI response
       setTimeout(() => {
         const response = conciergeService.generateConversationResponse('inspiration');
         addAIMessage(response);
       }, 500);
     } else if (message.question.type === 'image-upload') {
       const inspirationImage = conciergeService.processImageAnswer(answer);
-      setJourneyContext((prev) => ({
-        ...prev,
-        inspirationImage,
-      }));
+      setJourneyContext((prev) => ({ ...prev, inspirationImage }));
       setCurrentStep('context');
-
-      // Generate next AI response
       setTimeout(() => {
         const response = conciergeService.generateConversationResponse('context');
         addAIMessage(response);
@@ -359,8 +362,6 @@ export default function ShoppingConciergePage() {
         status: 'Journey Complete!',
       }));
       setCurrentStep('complete');
-
-      // Generate completion message
       setTimeout(() => {
         addAIMessage({
           title: 'Perfect! Your journey is ready.',
@@ -374,11 +375,8 @@ export default function ShoppingConciergePage() {
   // Handle header search
   const handleHeaderSearch = (query) => {
     if (!query || !query.trim()) return;
-
-    // Add new user message to chat feed
     addUserMessage(query);
 
-    // Extract context and generate AI response
     const extractedOccasion = conciergeService.extractOccasion(query);
     const extractedLocation = conciergeService.extractLocation(query);
 
@@ -389,39 +387,105 @@ export default function ShoppingConciergePage() {
       title: extractedOccasion || prev.title || 'New Journey',
     }));
 
-    // Generate follow-up AI response
     const response = conciergeService.generateConversationResponse('aesthetic');
     addAIMessage(response);
-
-    // Clear search input
     setHeaderSearchQuery('');
   };
 
   // Handle edit actions from summary panel
   const handleEditContext = (field, value) => {
-    console.log('Edit field:', field, 'Value:', value);
-
     if (field === 'title') {
-      setJourneyContext(prev => ({
-        ...prev,
-        title: value,
-      }));
-    } else {
-      // Future: Allow re-asking questions or editing other context fields
+      setJourneyContext(prev => ({ ...prev, title: value }));
     }
   };
 
-  // Handle Save Journey button
-  const handleSaveJourney = () => {
-    // Future: Save to backend/localStorage
-    console.log('Saving journey:', journeyContext);
-    alert('Journey saved! (Feature coming soon)');
+  // ---------------------------------------------------------------------------
+  // isReady — all required fields filled
+  // ---------------------------------------------------------------------------
+  const requiredFields = ['occasion', 'season', 'timeOfDay', 'locationType', 'styleLeaning', 'ageRange', 'aesthetic', 'budget'];
+  const isReady = requiredFields.every(field => {
+    const val = journeyContext[field];
+    if (Array.isArray(val)) return val.length > 0;
+    return val != null;
+  });
+
+  // ---------------------------------------------------------------------------
+  // Question configs for inline sidebar editing (Feature 5)
+  // ---------------------------------------------------------------------------
+  const questionConfigs = {
+    budget: conciergeService.getBudgetRangeQuestion(),
+    aesthetic: conciergeService.getAestheticQuestion(),
+    season: conciergeService.getSeasonQuestion(),
+    timeOfDay: conciergeService.getTimeOfDayQuestion(),
+    locationType: conciergeService.getLocationQuestion(),
+    styleLeaning: conciergeService.getStyleLeaningQuestion(),
+    ageRange: conciergeService.getAgeRangeQuestion(),
+    occasion: { id: 'occasion', type: 'free-text', question: 'What is the occasion?', required: true },
+    weather: { id: 'weather', type: 'free-text', question: 'Where / what weather?', required: false },
+  };
+
+  // Map sidebar field names back to question IDs for updateJourneyContextFromAnswer
+  const fieldToQuestionId = {
+    budget: 'budget-range',
+    aesthetic: 'aesthetic-visual-mood',
+    season: 'season',
+    timeOfDay: 'time-of-day',
+    locationType: 'location-hybrid',
+    styleLeaning: 'style-leaning',
+    ageRange: 'age-range',
+    occasion: 'occasion',
+    weather: 'weather',
+  };
+
+  const handleFieldEdit = useCallback((field, answer) => {
+    const questionId = fieldToQuestionId[field];
+    if (questionId) {
+      // Special handling for free-text fields that map directly
+      if (field === 'occasion') {
+        setJourneyContext(prev => ({
+          ...prev,
+          occasion: answer.value || prev.occasion,
+          title: answer.value || prev.title,
+        }));
+      } else if (field === 'weather') {
+        setJourneyContext(prev => ({ ...prev, weather: answer.value || prev.weather }));
+      } else {
+        updateJourneyContextFromAnswer(questionId, answer);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateJourneyContextFromAnswer]);
+
+  // Handle Save Journey button — calls journeyService
+  const handleSaveJourney = async () => {
+    const saved = await journeyService.saveJourney(journeyContext);
+    if (saved?.id) {
+      setJourneyContext(prev => ({ ...prev, id: saved.id, status: 'Journey Saved!' }));
+    }
   };
 
   // Handle Return to Home button
   const handleReturnHome = () => {
     navigate('/');
   };
+
+  // Shared props for SummaryPanel
+  const summaryProps = {
+    journey: journeyContext,
+    onEdit: handleEditContext,
+    onSaveJourney: handleSaveJourney,
+    onReturnHome: handleReturnHome,
+    isReady,
+    questionConfigs,
+    onFieldEdit: handleFieldEdit,
+  };
+
+  // FAB badge: count of filled required fields
+  const filledCount = requiredFields.filter(field => {
+    const val = journeyContext[field];
+    if (Array.isArray(val)) return val.length > 0;
+    return val != null;
+  }).length;
 
   return (
     <div style={{ minHeight: '100vh', background: colors.page.background }}>
@@ -439,7 +503,7 @@ export default function ShoppingConciergePage() {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '2fr 1fr',
+            gridTemplateColumns: isMobile ? '1fr' : '2fr 1fr',
             height: 'calc(100vh - 65px)',
             overflow: 'hidden',
           }}
@@ -453,15 +517,76 @@ export default function ShoppingConciergePage() {
             onBatchSubmit={handleBatchSubmit}
           />
 
-          {/* RIGHT: Summary Panel */}
-          <SummaryPanel
-            journey={journeyContext}
-            onEdit={handleEditContext}
-            onSaveJourney={handleSaveJourney}
-            onReturnHome={handleReturnHome}
-          />
+          {/* RIGHT: Summary Panel (desktop only) */}
+          {!isMobile && (
+            <SummaryPanel {...summaryProps} />
+          )}
         </div>
       </ThemeProvider>
+
+      {/* Mobile: FAB + Drawer */}
+      {isMobile && (
+        <>
+          {/* FAB */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            style={{
+              position: 'fixed',
+              bottom: '24px',
+              right: '24px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: colors.primary.eggPink,
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 16px rgba(255, 183, 197, 0.45)',
+              zIndex: 100,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.08)';
+              e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 183, 197, 0.55)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 183, 197, 0.45)';
+            }}
+            aria-label="Open journey summary"
+          >
+            <Map size={24} color="#1a202c" />
+            {/* Badge */}
+            <span style={{
+              position: 'absolute',
+              top: '-2px',
+              right: '-2px',
+              background: '#1a202c',
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '700',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: `2px solid ${colors.page.background}`,
+            }}>
+              {filledCount}/{requiredFields.length}
+            </span>
+          </button>
+
+          {/* Bottom-sheet Drawer */}
+          <SummaryDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            {...summaryProps}
+          />
+        </>
+      )}
 
       {/* CSS Animations */}
       <style>{`
@@ -472,19 +597,6 @@ export default function ShoppingConciergePage() {
 
         @keyframes spin {
           to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 900px) {
-          .journey-layout {
-            grid-template-columns: 1fr !important;
-            height: auto !important;
-            overflow: visible !important;
-          }
-
-          aside {
-            border-left: none !important;
-            border-top: 2px solid ${colors.border.divider} !important;
-          }
         }
       `}</style>
     </div>
