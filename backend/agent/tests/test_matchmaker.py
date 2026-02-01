@@ -1,72 +1,44 @@
-"""Test script for MatchMakerAgent match_stream."""
+"""Test script for MatchMakerAgent."""
 import asyncio
-import logging
 from uuid import uuid4
 
 from ..src.agents.matchmaker.core import MatchMakerAgent
-from ..src.agents.personal_stylist.schemas import JourneySchema
+from ..src.agents.schemas import JourneySchema
+from .utils import stream_and_print
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
+def create_mock_journey() -> JourneySchema:
+    """Create a mock journey for testing with valid enum values."""
+    return JourneySchema(
+        title="Evening Party",
+        summary="A glamorous evening party outfit with classic elegance",
+        occasion="party",
+        location="venue",
+        style_preferences=["classic", "classy"],
+        fit_preferences=["tailored", "slim"],
+        colour_preferences=["#000000", "#FFD700"],
+        time_of_day="evening",
+        season="winter",
+        budget_rating=4
+    )
 
 
 async def test_match_stream():
     """Test streaming match."""
     agent = MatchMakerAgent()
-
-    journey = JourneySchema(
-        title="Evening Party",
-        occasion="party",
-        style_preferences=["bold", "glamorous"],
-        colour_preferences=["black", "gold"],
-        time_of_day="evening",
-        season="winter"
-    )
-
+    journey = create_mock_journey()
     thread_id = f"test-stream-{uuid4()}"
-    logger.info(f"Testing stream match with thread_id: {thread_id}")
-    logger.info(f"Journey: {journey.model_dump_json(indent=2)}")
-    print("-" * 60)
 
-    async for event in agent.match_stream(journey, thread_id):
-        event_type = event.get("event")
+    print("\n" + "=" * 60)
+    print("MATCHMAKER STREAM TEST")
+    print("=" * 60)
+    print(f"Thread ID: {thread_id}")
+    print(f"Journey: {journey.title}")
+    print("=" * 60)
 
-        # Model streaming tokens (thinking/content)
-        if event_type == "on_chat_model_stream":
-            chunk = event.get("data", {}).get("chunk")
-            if chunk and hasattr(chunk, "content") and chunk.content:
-                print(chunk.content, end="", flush=True)
+    event_stream = agent.match_stream(journey, thread_id)
 
-        # Tool invocation start
-        elif event_type == "on_tool_start":
-            print()
-            print("-" * 60)
-            logger.info(f"🔧 Tool call: {event.get('name')}")
-            tool_input = event.get("data", {}).get("input")
-            if tool_input:
-                logger.info(f"   Input: {tool_input}")
-
-        # Tool invocation end
-        elif event_type == "on_tool_end":
-            output = event.get("data", {}).get("output")
-            if output:
-                # Truncate long outputs
-                output_str = str(output)
-                if len(output_str) > 500:
-                    output_str = output_str[:500] + "..."
-                logger.info(f"   Output: {output_str}")
-            print("-" * 60)
-
-        # Chain/graph completion
-        elif event_type == "on_chain_end" and event.get("name") == "LangGraph":
-            print()
-            print("=" * 60)
-            logger.info("✅ Graph completed")
-
-    # Get final state
-    state = agent.get_state(thread_id)
-    logger.info(f"Final matches count: {len(state.values.get('matches', []))}")
-    return state
+    return await stream_and_print(event_stream, output_key="matches")
 
 
 if __name__ == "__main__":

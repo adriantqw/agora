@@ -1,7 +1,7 @@
 import mlflow
 from dotenv import load_dotenv
 
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, AIMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
@@ -10,8 +10,8 @@ from langgraph.graph import END
 from .states import MatchmakerState
 from .schemas import MatchResult
 from .tools import search_products
-from ..tools import load_images, google_search
-from ..personal_stylist.schemas import JourneySchema
+from ..tools import load_image, google_search
+from ..schemas import JourneySchema
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -35,47 +35,85 @@ class MatchMakerAgent:
         self.recursion_limit = self.agent_config["recursion_limit"]
 
         templates = load_prompt_templates()
-        self.system_prompt = templates[self.agent_key]
-        self.system_prompt_best_effort = templates[f"{self.agent_key}_best_match"]
+        self.system_prompt: str = templates[self.agent_key]
+        self.system_prompt_best_effort: str = templates[f"{self.agent_key}_best_match"]
+
+        self.personality_config: dict = load_config("personality")
 
         self.checkpointer = MemorySaver()
-        self.tools = [search_products, load_images]
+        self.tools = [search_products, load_image]
         if self.agent_config["enable_google_search_tool"]:
             self.tools.append(google_search)
         self.agent = self._compile_graph()
 
-    def match(self, journey: JourneySchema, thread_id: str) -> dict:
+    def match(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences.
 
         Args:
             journey: JourneySchema with user preferences
             thread_id: Unique identifier for the conversation thread
+            message: Optional user message to refine the match
+            personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
             dict: Agent state including messages and matches
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        # Compile user message
+        message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
+        if message:
+            message_list.append([("user", message)])
+
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id}, 
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Invoke the agent
         return self.agent.invoke({
             "journey": journey,
-            "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
+            "messages": message_list,
+            "personality": personality
         }, config=config)
     
-    def match_stream(self, journey: JourneySchema, thread_id: str) -> dict:
+    def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences in streaming mode.
 
         Args:
             journey: JourneySchema with user preferences
             thread_id: Unique identifier for the conversation thread
+            message: Optional user message to refine the match
+            personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
             dict: Agent state including messages and matches
         """
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        # Validate personality
+        if personality not in self.personality_config:
+            raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        # Compile user message
+        message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
+        if message:
+            message_list.append([("user", message)])
+
+        # Compile the config
+        config = {
+            "configurable": {"thread_id": thread_id}, 
+            "recursion_limit": self.recursion_limit
+        }
+
+        # Invoke the agent
         return self.agent.astream_events({
             "journey": journey,
-            "messages": [("user", f"Find products matching: {journey.model_dump_json()}")]
+            "messages": message_list,
+            "personality": personality
         }, config=config, version="v2")
 
     def get_state(self, thread_id: str):
@@ -90,35 +128,41 @@ class MatchMakerAgent:
         """
         config = {"configurable": {"thread_id": thread_id}}
         return self.agent.get_state(config)
-
+    
     def _invoke_model(self, state: MatchmakerState):
         """Invoke the model to generate search queries."""
         journey = state.get("journey")
         iteration_count = state.get("iteration_count", 0)
 
+        # Get personality instructions from state
+        personality = state.get("personality", "friendly")
+        personality_instructions = self.personality_config.get(personality, self.personality_config["friendly"])
+
         # If approaching recursion limit use best effort system prompt
         if iteration_count >= (self.recursion_limit - 1):
             prompt = self.system_prompt_best_effort.format(
+                personality_instructions=personality_instructions,
                 journey=journey.model_dump_json() if journey else "No preferences",
                 journey_schema=JourneySchema.model_json_schema(),
                 match_results_schema=MatchResult.model_json_schema()
             )
-            model = self.model
+            messages = [SystemMessage(content=prompt)] + state["messages"]
+            response = self.model.invoke(messages)
         else:
             prompt = self.system_prompt.format(
+                personality_instructions=personality_instructions,
                 journey=journey.model_dump_json() if journey else "No preferences",
                 journey_schema=JourneySchema.model_json_schema(),
                 match_results_schema=MatchResult.model_json_schema()
             )
-            model = self.model.bind_tools(self.tools)
+            messages = [SystemMessage(content=prompt)] + state["messages"]
+            response = self.model.bind_tools(self.tools).invoke(messages)
 
-        messages = [SystemMessage(content=prompt)] + state["messages"]
-        response = model.invoke(messages)
         return {"messages": [response], "iteration_count": iteration_count + 1}
 
     def _should_continue(self, state: MatchmakerState):
         """Determine whether to continue processing."""
-        last_message = state["messages"][-1]
+        last_message: AIMessage = state["messages"][-1]
         if last_message.tool_calls:
             return "tools"
         return "parse_matches"
@@ -126,8 +170,11 @@ class MatchMakerAgent:
     def _parse_matches(self, state: MatchmakerState):
         """Extract matches from tool results in messages."""
         structured_model = self.model.with_structured_output(MatchResult)
-        response = structured_model.invoke(state["messages"])
-        return {"matches": response.matches}
+        response: MatchResult = structured_model.invoke(state["messages"])
+        return {
+            "messages": [AIMessage(response.message)],
+            "matches": response.matches
+        }
 
     def _compile_graph(self):
         """Compile the agent's state graph."""

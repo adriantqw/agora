@@ -4,11 +4,8 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
-from .schemas import (
-    UserResponse,
-    JourneySchema,
-    UIInputType,
-)
+from .schemas import UserResponse, UIInputType
+from ..schemas import JourneySchema
 
 
 class PersonalStylistState(TypedDict):
@@ -21,3 +18,6 @@ class PersonalStylistState(TypedDict):
     # UI
     ui_inputs: Annotated[list[UIInputType], operator.add]
     ui_answers: Annotated[list[UserResponse], operator.add]
+
+    # Personality
+    personality: Optional[str]
