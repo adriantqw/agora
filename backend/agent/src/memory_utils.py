@@ -1,23 +1,43 @@
+import os
+from pathlib import Path
+
 from langgraph.store.sqlite import SqliteStore
 from langchain_core.tools import StructuredTool
 import uuid
 
 from .agents.schemas import StyleDna
 
+# Default database path - can be overridden via environment variable
+DEFAULT_DB_PATH = "agora_memory.db"
+
+
 class AgoraMemory:
     """
     Agora long-term memory util class
     """
     def __init__(self):
-        """Initialise Agora long-term memory engine"""
+        """Initialise Agora long-term memory engine."""
+        self.db_path = DEFAULT_DB_PATH
         self.memory = self._initialise_memory_store()
 
     def _initialise_memory_store(self):
-        """Initialise sqlite langgraph memory store"""
-        with SqliteStore.from_conn_string(":memory:") as store:
-            store.setup()
+        """Initialise sqlite langgraph memory store.
 
+        Note: We manually enter the context manager and store it so the
+        connection remains open for the lifetime of the AgoraMemory instance.
+        """
+        self._store_context = SqliteStore.from_conn_string(self.db_path)
+        store = self._store_context.__enter__()
+        store.setup()
         return store
+
+    def __del__(self):
+        """Clean up the store connection when the AgoraMemory instance is destroyed."""
+        if hasattr(self, '_store_context') and self._store_context:
+            try:
+                self._store_context.__exit__(None, None, None)
+            except Exception:
+                pass  # Ignore errors during cleanup
     
     def retrieve_memory(self, user_id: str):
         """

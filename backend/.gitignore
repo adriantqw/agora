@@ -45,6 +45,8 @@ Thumbs.db
 mlflow.db
 *.ipynb
 
+agora_memory.db
+
 /data/
 
 # Testing
