@@ -4,7 +4,7 @@ import {
   BadgeCheck, 
   ArrowLeft,
   LayoutGrid, 
-  Sliders, 
+  Dna, 
   Package, 
   Heart, 
   Settings, 
@@ -25,7 +25,14 @@ const RecommendationPage = () => {
   const navigate = useNavigate();
   const isDark = theme === 'dark';
 
-  const userName = user?.full_name || user?.merchant_name || 'Shopper';
+  const getDisplayName = () => {
+    const individualName = `${user?.first_name || ''} ${user?.last_name || ''}`.trim();
+    if (individualName) return individualName;
+    if (user?.full_name) return user.full_name;
+    return user?.merchant_name || 'Shopper';
+  };
+
+  const userName = getDisplayName();
   const joinDate = new Date(user?.created_at || Date.now()).getFullYear();
 
   // Avatar state
@@ -81,7 +88,7 @@ const RecommendationPage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={currentAvatar} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
@@ -93,9 +100,9 @@ const RecommendationPage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
+                    { icon: Dna, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: false, path: '/orders' },
-                    { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
+                    { icon: Heart, label: 'Wishlist', active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
                     <button 

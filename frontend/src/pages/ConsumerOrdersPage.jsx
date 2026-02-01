@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   LayoutGrid, 
-  Sliders, 
+  Dna, 
   Package, 
   Heart, 
   Settings, 
@@ -82,7 +82,7 @@ const ConsumerOrdersPage = () => {
                     position: 'relative'
                   }}>
                     <img 
-                      src={currentAvatar} 
+                      src={user?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userName}&backgroundColor=ffdfbf`} 
                       alt="Profile" 
                       style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
                     />
@@ -94,9 +94,9 @@ const ConsumerOrdersPage = () => {
                 <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {[ 
                     { icon: LayoutGrid, label: 'Overview', active: false, path: '/profile' },
-                    { icon: Sliders, label: 'Style Profile', active: false, path: '/style-profile' },
+                    { icon: Dna, label: 'Style Profile', active: false, path: '/style-profile' },
                     { icon: Package, label: 'Orders & Returns', active: true, path: '/orders' },
-                    { icon: Heart, label: 'Wishlist', badge: 12, active: false, path: '/wishlist' },
+                    { icon: Heart, label: 'Wishlist', active: false, path: '/wishlist' },
                     { icon: Settings, label: 'Settings', active: false, path: '/settings' }
                   ].map((item, idx) => (
                     <button 

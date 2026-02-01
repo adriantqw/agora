@@ -16,8 +16,13 @@ export default function Header({
 
   const getDisplayName = () => {
     if (!isAuthenticated || !user) return 'Account';
-    const name = user.full_name || user.merchant_name || 'Account';
-    return name.split(' ')[0];
+    
+    const individualName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    if (individualName) return individualName.split(' ')[0];
+    
+    if (user.full_name) return user.full_name.split(' ')[0];
+    
+    return (user.merchant_name || 'Account').split(' ')[0];
   };
 
   // Custom SVGs for all Header variants
