@@ -48,3 +48,15 @@ fitting_assistant:
       max_tokens: 4096
   recursion_limit: 25
   enable_google_search_tool: false
+
+### Style DNA config
+style_dna:
+  <<: *base_agent_recipe
+  model:
+    <<: *base_model_recipe
+    params:
+      <<: *base_model_params_recipe
+      thinking_level: low
+      max_tokens: 4096
+  recursion_limit: 15
+  enable_google_search_tool: true
