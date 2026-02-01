@@ -1,13 +1,10 @@
-import os
-from pathlib import Path
-
 from langgraph.store.sqlite import SqliteStore
 from langchain_core.tools import StructuredTool
 import uuid
 
-from .agents.schemas import StyleDna
+from .schemas import StyleDna
 
-# Default database path - can be overridden via environment variable
+# Default database path
 DEFAULT_DB_PATH = "agora_memory.db"
 
 
