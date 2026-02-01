@@ -68,9 +68,7 @@ def google_search(query: str):
     return res.model_dump_json()
 
 class Txt2ImgGenerator:
-    """
-    A tool to generate images from text prompts using a specified image generation model.
-    """
+    """A tool to generate images from text prompts using a specified image generation model."""
     def __init__(self):
         """Initialize the Txt2ImgGenerator with model configuration."""
         self.config_data = load_config("model")["image_model"]

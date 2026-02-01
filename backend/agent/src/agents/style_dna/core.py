@@ -1,8 +1,6 @@
 """Style DNA Agent for maintaining long-term user style profiles."""
 import mlflow
-import os
 from pydantic import FileUrl, FilePath
-from serpapi import GoogleSearch
 from dotenv import load_dotenv
 
 from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
@@ -11,17 +9,15 @@ from langgraph.graph import StateGraph, END
 from langgraph.prebuilt.tool_node import ToolNode
 
 from .states import StyleDnaState
+from .schemas import GoogleImageSearchQuery
 from ..tools import load_image, google_search
 from ..schemas import StyleDna, JourneySchema
+from ...utils.google_img_search import search_images
 from ...memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
 load_dotenv()
-
-SERP_API_KEY=os.getenv("SERP_API_KEY")
-if not SERP_API_KEY:
-    raise ValueError("SERP_API_KEY no in environment variables")
 
 class StyleDnaAgent:
     """
@@ -271,19 +267,22 @@ class StyleDnaAgent:
         # Get latest StyleDna
         updated_dna: StyleDna = state.get("updated_style_dna")
 
+        prompt = f"""
+        Given the identified celebrity and style: 
+        - Celebrity: {updated_dna.celebrity_style_twin}
+        - Style profile: {updated_dna.celebrity_twin_reasoning}
+
+        Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
+        """
+        structured_model = self.model.with_structured_output(GoogleImageSearchQuery)
+        query = structured_model.invoke(HumanMessage(prompt)).query
+
         # Search celebrity images if no existing images
         if updated_dna.celebrity_style_twin and not updated_dna.celebrity_twin_images:
-            search_results = GoogleSearch({
-                "engine": "google_images_light",
-                "q": updated_dna.celebrity_style_twin,
-                "api_key": SERP_API_KEY
-            }).get_dict()
+            search_results = search_images(query)
             
-            if search_results.get("images_results"):
-                # Top 3 image search results
-                image_results_top3 = [sr["thumbnail"] for sr in search_results["images_results"][:3]]
-                if image_results_top3:
-                    updated_dna = updated_dna.model_copy(update={"celebrity_twin_images": image_results_top3})
+            if search_results:
+                updated_dna = updated_dna.model_copy(update={"celebrity_twin_images": search_results})
         
         return {"updated_style_dna": updated_dna}
 
@@ -334,8 +333,11 @@ class StyleDnaAgent:
         # Tools loop back to agent
         workflow.add_edge("tools", "agent")
 
-        # Parse DNA leads to save
-        workflow.add_edge("parse_dna", "save_memory")
+        # Parse DNA leads to find celeb image
+        workflow.add_edge("parse_dna", "find_celebrity_image")
+
+        # Find celeb image leads to save memory
+        workflow.add_edge("find_celebrity_image", "save_memory")
 
         # Save memory ends the flow
         workflow.add_edge("save_memory", END)

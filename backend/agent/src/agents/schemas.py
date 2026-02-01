@@ -95,6 +95,6 @@ class StyleDna(BaseModel):
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
     celebrity_style_twin: str = Field(..., description="Name of celebrity with identical aesthetic logic.")
     celebrity_twin_reasoning: str = Field(..., description="User-facing reason for celebrity style DNA choice.")
-    celebrity_twin_images: Optional[list[FilePath | FileUrl]] = Field(default_factory=list, description="Image URLs/ files for celebrity twin (optional: auto-generated if not provided)")
+    celebrity_twin_images: Optional[list[FilePath | FileUrl]] = Field(default_factory=list, description="Image URLs or files for celebrity twin (for post-processing purposes ONLY)")
     mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
     reasoning: str = Field(description="Internal reasoning for Style DNA attributes chosen.")
