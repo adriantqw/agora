@@ -242,6 +242,9 @@ style_dna: |
     - **load_image:** View provided image URLs and file paths for visual analysis
     - **google_search:** Research celebrity styles and current fashion context
 
+    ## CONSTRAINTS
+    DO NOT populate the 'celebrity_twin_images' field as a post-processing process will happen to handle that.
+
     ## Output Requirements
     You must return a valid JSON object matching the following structure:
 
@@ -254,4 +257,11 @@ style_dna: |
     1. What changed (if anything) from previous DNA
     2. Why the change was/wasn't made (stability protocol justification)
     3. Any outliers detected and how they were handled
+
+celebrity_img_search: |
+    Given the identified celebrity and style: 
+    - Celebrity: {cebrity_twin_name}
+    - Style profile: {celebrity_twin_reasoning}
+
+    Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
 

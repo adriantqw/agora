@@ -42,6 +42,7 @@ class StyleDnaAgent:
         # Load prompts
         templates = load_prompt_templates()
         self.system_prompt: str = templates[self.agent_key]
+        self.system_prompt_celebrity_img_search: str = templates["celebrity_img_search"]
 
         # Initialize memory
         self.memory = AgoraMemory()
@@ -267,15 +268,12 @@ class StyleDnaAgent:
         # Get latest StyleDna
         updated_dna: StyleDna = state.get("updated_style_dna")
 
-        prompt = f"""
-        Given the identified celebrity and style: 
-        - Celebrity: {updated_dna.celebrity_style_twin}
-        - Style profile: {updated_dna.celebrity_twin_reasoning}
-
-        Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
-        """
+        prompt = self.system_prompt_celebrity_img_search.format(
+            cebrity_twin_name=updated_dna.celebrity_style_twin,
+            celebrity_twin_reasoning=updated_dna.celebrity_twin_reasoning
+        )
         structured_model = self.model.with_structured_output(GoogleImageSearchQuery)
-        query = structured_model.invoke(HumanMessage(prompt)).query
+        query = structured_model.invoke([HumanMessage(prompt)]).query
 
         # Search celebrity images if no existing images
         if updated_dna.celebrity_style_twin and not updated_dna.celebrity_twin_images:
