@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from agent.src.agents.catalogue_ingestor.core import CatalogueIngestor
-from agent.src.utils.stream import extract_catalogue_ingestor_metadata
+from agent.src.utils.stream import AgentEventParser
 from app.models.catalogue import Catalogue, CatalogueItem
 from app.schemas.product import ProductCreate
 from app.schemas.catalogue import CreateProductsItem
@@ -77,10 +77,11 @@ async def process_catalogue_background(
         current_page = 0
         items_count = 0
         final_state = None
+        event_parser = AgentEventParser("catalogue_ingestor")
 
         async for event in await catalogue_ingestor.stream_ingest(temp_pdf_path):
             # Extract metadata from the event
-            metadata = extract_catalogue_ingestor_metadata(event)
+            metadata = event_parser.parse(event)
             
             # Debug: log what metadata was extracted
             if metadata["current_page"] is not None or metadata["item_count"] is not None:

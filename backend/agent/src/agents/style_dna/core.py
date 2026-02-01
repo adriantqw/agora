@@ -13,7 +13,7 @@ from .schemas import GoogleImageSearchQuery
 from ..tools import load_image, google_search
 from ..schemas import StyleDna, JourneySchema
 from ...utils.google_img_search import search_images
-from ...memory_utils import AgoraMemory
+from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 

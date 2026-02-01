@@ -1,9 +1,14 @@
 """Shared utilities for agent tests."""
 
+from ..src.utils.stream import AgentEventParser
+
 
 def extract_thinking(event: dict) -> str | None:
     """
     Extract thinking text from a stream event.
+
+    Uses AgentEventParser internally but returns a single string
+    for backward compatibility with test scripts.
 
     Args:
         event: LangGraph stream event
@@ -11,9 +16,12 @@ def extract_thinking(event: dict) -> str | None:
     Returns:
         Thinking text if present, None otherwise
     """
+    # Use a generic parser - thinking extraction is the same for all agents
+    # We'll use catalogue_ingestor but any agent type works for thinking
     if event.get("event") != "on_chat_model_stream":
         return None
 
+    # Direct extraction for efficiency (avoid parser overhead)
     chunk = event.get("data", {}).get("chunk")
     if not chunk or not hasattr(chunk, "content") or not chunk.content:
         return None
@@ -102,6 +110,17 @@ def print_final_state(state: dict, output_key: str = "matches") -> None:
                 print(f"\nMessage: {content}")
 
     items = state.get(output_key, [])
+    # Handle Pydantic model with nested items
+    if hasattr(items, output_key):
+        items = getattr(items, output_key)
+    elif hasattr(items, 'matches'):
+        items = items.matches
+    elif hasattr(items, 'fitting_sets'):
+        items = items.fitting_sets
+
+    if not isinstance(items, list):
+        items = [items] if items else []
+
     print(f"\nGenerated {len(items)} item(s):")
     for i, item in enumerate(items, 1):
         if hasattr(item, "title"):
@@ -138,6 +157,66 @@ async def stream_and_print(event_stream, output_key: str = "matches") -> dict | 
             print_thinking(thinking)
 
         # Log tool calls
+        tool_call = extract_tool_call(event)
+        if tool_call:
+            print_tool_call(tool_call)
+
+        # Capture final output
+        output = extract_final_output(event)
+        if output:
+            final_output = output
+
+    # Print final output
+    if final_output:
+        print_final_state(final_output, output_key)
+
+    return final_output
+
+
+async def stream_with_parser(
+    event_stream,
+    agent_type: str,
+    output_key: str = "matches"
+) -> dict | None:
+    """
+    Stream events using AgentEventParser for structured metadata extraction.
+
+    This is the recommended way to process agent streams as it provides
+    agent-specific metadata extraction.
+
+    Args:
+        event_stream: Async generator from agent.*_stream() methods
+        agent_type: One of: catalogue_ingestor, personal_stylist, matchmaker,
+                    fitting_assistant, style_dna
+        output_key: Key for the main output list in final state
+
+    Returns:
+        Final output dict or None
+
+    Example:
+        result = await stream_with_parser(
+            agent.match_stream(journey, thread_id),
+            agent_type="matchmaker",
+            output_key="matches"
+        )
+    """
+    parser = AgentEventParser(agent_type)
+
+    print("\n[THINKING]")
+    print("-" * 60)
+
+    final_output = None
+
+    async for event in event_stream:
+        # Parse event with agent-specific parser
+        metadata = parser.parse(event)
+
+        # Print thinking messages
+        if metadata.get("thinking_messages"):
+            for msg in metadata["thinking_messages"]:
+                print(msg, end="", flush=True)
+
+        # Log tool calls (still use direct extraction for tools)
         tool_call = extract_tool_call(event)
         if tool_call:
             print_tool_call(tool_call)
