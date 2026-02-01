@@ -47,9 +47,9 @@ class JourneySchema(BaseModel):
 
 # Define style dna schema
 class StyleDna(BaseModel):
-    """Style DNA Pydantic model containing user-preferences based on long-term historical interactions"""
-    title: str = Field(description="User-friendly title of the journey")
-    description: str = Field(description="A one-sentence description of captured user preference")
+    """Style DNA pydantic model containing user-preferences based on long-term historical interactions"""
+    title: str = Field(description="User-friendly title of the style archetype")
+    description: str = Field(description="A one-sentence description of captured style archetype")
     style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences (e.g., bohemian, classic, classy)")
     colour_preferences: Optional[list[str]] = Field(default_factory=list, description="List of colour preferences in hex (e.g., '#FF5733')")
     brand_preferences: Optional[list[str]] = Field(default_factory=list, description="List of brand preferences")
