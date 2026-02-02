@@ -265,3 +265,12 @@ celebrity_img_search: |
 
     Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
 
+style_dna_prompt: |
+    ## OPTIONAL
+    You are also given additional information on the user's long-term preferences (Style DNA). 
+    If applicable, use it to provide a tailored experience to the user:
+
+    <style_dna>
+    {user_style_dna}
+    </style_dna>
+
