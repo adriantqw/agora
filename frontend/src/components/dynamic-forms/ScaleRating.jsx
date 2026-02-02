@@ -5,7 +5,6 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 import STYLE_GUIDE from '../../config/styleGuide.js';
 
 /**
@@ -17,8 +16,7 @@ import STYLE_GUIDE from '../../config/styleGuide.js';
  */
 
 export default function ScaleRating({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, radius, constraints } = theme;
+  const { colors, spacing, typography, radius, constraints } = STYLE_GUIDE;
 
   const {
     min = constraints['scale-rating'].defaultMin,

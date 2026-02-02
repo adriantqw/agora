@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getCardStyle } from '../../utils/styleHelpers.js';
 import { Check, Plus } from 'lucide-react';
 
@@ -19,8 +19,7 @@ import { Check, Plus } from 'lucide-react';
  */
 
 export default function HybridSelect({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, radius } = theme;
+  const { colors, spacing, typography, radius } = STYLE_GUIDE;
 
   const { 
     options = [], 
@@ -116,7 +115,7 @@ export default function HybridSelect({ question, onAnswer, currentAnswer, disabl
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled, theme),
+                ...getCardStyle(isSelected, disabled),
                 padding: spacing.md,
                 display: 'flex',
                 alignItems: 'center',

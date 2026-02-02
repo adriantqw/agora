@@ -59,6 +59,7 @@
   --gradient-blue: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
   --gradient-purple: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
   --gradient-ai: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-user-answer: linear-gradient(135deg, #667eea, #e53e3e);
 
   /* Pink Color Palette for Consumer Pages */
   --consumer-purple: #793DB0;
@@ -152,6 +153,7 @@ html.dark-theme {
   --gradient-blue: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   --gradient-purple: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
   --gradient-ai: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --gradient-user-answer: linear-gradient(135deg, #8b5cf6, #f87171);
 
   /* Pink Color Palette - Vibrant & Glowing for Dark Mode */
   --color-primary-pink: #FF9EB5;

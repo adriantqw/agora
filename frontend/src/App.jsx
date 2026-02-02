@@ -18,6 +18,7 @@ import ConsumerOrdersPage from './pages/ConsumerOrdersPage'
 import SharedWishlistPage from './pages/SharedWishlistPage'
 import RecommendationPage from './pages/RecommendationPage'
 import StyleProfilePage from './pages/StyleProfilePage'
+import CurateMyLookPage from './pages/CurateMyLookPage'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/journey" element={<ShoppingConciergePage />} />
       <Route path="/search" element={<SearchResultsPage />} />
       <Route path="/fitting-room" element={<FittingRoomPage />} />
+      <Route path="/curate-my-fit" element={<CurateMyLookPage />} />
       <Route path="/browse" element={<BrowsePage />} />
       <Route path="/browse/:category" element={<BrowsePage />} />
       

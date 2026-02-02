@@ -17,7 +17,7 @@ export default function SearchResultsPage() {
   const hasFilters = filterCount > 0 || useExistingPreferences;
 
   const handleRefineSearch = () => {
-    navigate('/journey');
+    navigate('/curate-my-fit');
   };
 
   const handleRemoveFilter = (category, label) => {
@@ -36,7 +36,7 @@ export default function SearchResultsPage() {
       <Header
         variant="full"
         showNav={true}
-        onQuizClick={() => navigate('/journey')}
+        onQuizClick={() => navigate('/curate-my-fit')}
       />
 
       <div style={{

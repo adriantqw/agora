@@ -17,7 +17,7 @@ export default function BrowsePage() {
       <Header
         variant="full"
         showNav={true}
-        onQuizClick={() => navigate('/journey')}
+        onQuizClick={() => navigate('/curate-my-fit')}
       />
 
       <div style={{

@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getCardStyle, getStackStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -17,8 +17,7 @@ import { getCardStyle, getStackStyle } from '../../utils/styleHelpers.js';
  */
 
 export default function SingleChoice({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, radius } = theme;
+  const { colors, spacing, typography, radius } = STYLE_GUIDE;
 
   const [selectedOption, setSelectedOption] = useState(
     currentAnswer?.selectedOptions?.[0] || currentAnswer?.value || null
@@ -43,7 +42,7 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
   return (
     <div style={{ fontFamily: typography.fontFamily }}>
       {/* Options List */}
-      <div style={getStackStyle(theme)}>
+      <div style={getStackStyle()}>
         {options.map((option) => {
           const isSelected = selectedOption === option.id;
           const isHovered = hoveredOption === option.id;
@@ -55,7 +54,7 @@ export default function SingleChoice({ question, onAnswer, currentAnswer, disabl
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled, theme),
+                ...getCardStyle(isSelected, disabled),
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: spacing.md,

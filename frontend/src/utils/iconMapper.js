@@ -32,7 +32,15 @@ import {
   CloudSnow,
   Armchair,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  MapPin,
+  Store,
+  User,
+  Ruler,
+  HelpCircle,
+  DollarSign,
+  Clock,
+  Cloud
 } from 'lucide-react';
 
 const iconMap = {
@@ -69,7 +77,15 @@ const iconMap = {
   CloudSnow,
   Armchair,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  MapPin,
+  Store,
+  User,
+  Ruler,
+  HelpCircle,
+  DollarSign,
+  Clock,
+  Cloud
 };
 
 export const getIconByName = (name) => {

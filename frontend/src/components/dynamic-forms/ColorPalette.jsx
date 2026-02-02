@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getCardStyle, getGridStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -18,8 +18,7 @@ import { getCardStyle, getGridStyle } from '../../utils/styleHelpers.js';
  */
 
 export default function ColorPalette({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, radius, spacing, typography, transitions, shadows } = theme;
+  const { colors, radius, spacing, typography, transitions, shadows } = STYLE_GUIDE;
 
   const [hoveredOption, setHoveredOption] = useState(null);
   const [selectedOption, setSelectedOption] = useState(currentAnswer?.value || null);
@@ -39,7 +38,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
   };
 
   const containerStyle = layout === 'grid'
-    ? getGridStyle(columns, theme)
+    ? getGridStyle(columns)
     : { display: 'flex', flexDirection: 'column', gap: spacing.md };
 
   return (
@@ -57,7 +56,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled, theme),
+                ...getCardStyle(isSelected, disabled),
                 transform: isHovered && !disabled ? 'translateY(-4px)' : 'translateY(0)',
                 boxShadow: isSelected
                   ? theme.shadows.pink || shadows.blue

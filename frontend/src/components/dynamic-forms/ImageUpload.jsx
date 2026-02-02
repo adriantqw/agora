@@ -7,7 +7,7 @@
 
 import { useState, useRef } from 'react';
 import { UploadCloud, X } from 'lucide-react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 
 /**
  * @typedef {Object} ImageUploadProps
@@ -18,8 +18,7 @@ import { useTheme } from '../../contexts/ThemeContext';
  */
 
 export default function ImageUpload({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, radius, spacing, typography, transitions } = theme;
+  const { colors, radius, spacing, typography, transitions } = STYLE_GUIDE;
 
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState(null);

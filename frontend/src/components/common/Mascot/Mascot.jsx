@@ -26,6 +26,13 @@ export default function Mascot({
         right: '20px',
         zIndex: 50,
       }
+    : position === 'bottom-left'
+    ? {
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        zIndex: 50,
+      }
     : {
         position: 'relative',
         display: 'inline-block',
@@ -109,38 +116,34 @@ export default function Mascot({
   }
 
   // Default mascot variant
+  const isLetsGo = message === "Let's Goooo!";
+
   return (
     <div className="mascot-container" style={containerStyle}>
       {/* Speech Bubble */}
       {showSpeechBubble && message && (
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          right: '0',
-          marginBottom: '12px',
-          background: 'white',
-          border: '2px solid #F5A5B8',
-          borderRadius: '16px',
-          padding: '12px 16px',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: '#1a202c',
-          whiteSpace: 'nowrap',
-          boxShadow: '0 4px 12px rgba(245, 165, 184, 0.25)',
-          animation: 'fadeIn 0.3s ease-in-out',
-        }}>
-          {message}
-          {/* Speech bubble arrow */}
-          <div style={{
+        <div
+          onClick={onClick}
+          style={{
             position: 'absolute',
-            bottom: '-8px',
-            right: '24px',
-            width: '0',
-            height: '0',
-            borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent',
-            borderTop: '8px solid #F5A5B8',
-          }} />
+            bottom: position === 'bottom-left' ? '100%' : '40px',
+            ...(position === 'bottom-left' ? { left: '20px' } : { right: '85px' }),
+            ...(position === 'bottom-left' && { marginBottom: '12px' }),
+            background: isLetsGo ? 'var(--gradient-user-answer)' : 'white',
+            border: isLetsGo ? 'none' : '2px solid #F5A5B8',
+            borderRadius: '16px 16px 4px 16px',
+            padding: '16px 24px',
+            fontSize: '17px',
+            fontWeight: '600',
+            color: isLetsGo ? '#ffffff' : '#1a202c',
+            whiteSpace: 'nowrap',
+            boxShadow: isLetsGo
+              ? '0 6px 20px rgba(102, 126, 234, 0.35)'
+              : '0 4px 12px rgba(245, 165, 184, 0.25)',
+            animation: 'fadeIn 0.3s ease-in-out',
+            cursor: onClick ? 'pointer' : 'default',
+          }}>
+          {message}
         </div>
       )}
 
@@ -183,9 +186,15 @@ export default function Mascot({
         @media (max-width: 768px) {
           .mascot-container {
             bottom: 16px !important;
-            right: 16px !important;
             transform: scale(0.8);
+          }
+          .mascot-container[style*="right"] {
+            right: 16px !important;
             transform-origin: bottom right;
+          }
+          .mascot-container[style*="left"] {
+            left: 16px !important;
+            transform-origin: bottom left;
           }
         }
       `}</style>

@@ -2,7 +2,6 @@
 
 **Project Status:** Ready for Dev  
 **Objective:** Build a responsive, split-screen "Journey Creation" flow where user inputs on the left real-time update the summary sidebar on the right.  
-**Team Structure:** Designed for 2-3 Developers working in parallel.
 
 ---
 
@@ -23,7 +22,7 @@
 | **Alert/Error** | Coral Red | `#FF6B6B` | "Not set" warnings |
 
 ### Typography
-* **Font Family:** Rounded Sans-serif (e.g., *Nunito, Quicksand, or Poppins*).
+* **Font Family:** "Readex Pro", sans-serif
 * **Hierarchy:**
     * `H1`: Journey Titles (Bold, 24px)
     * `H2`: Section Headers (Semi-Bold, 18px)
@@ -148,10 +147,6 @@ Smooth scroll when clicking "Confirm" in Part 1.
 Fade-in effect for Part 2 components.
 
 Bobbing animation for the Mascot.
-
-Responsiveness:
-
-Mobile View: Hide Right Sidebar. Convert it to a "Drawer" or "Modal" accessible via a floating "View Summary" button.
 
 Asset Implementation:
 
