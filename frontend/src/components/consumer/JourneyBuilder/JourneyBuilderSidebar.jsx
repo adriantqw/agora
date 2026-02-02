@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Pencil } from 'lucide-react';
+import { Layers, Pencil, Sparkles, Goal } from 'lucide-react';
 import { getIconByName } from '../../../utils/iconMapper';
 
 // Map foundation labels to icons
@@ -14,20 +14,20 @@ const FOUNDATION_ICONS = {
   'Budget': 'DollarSign',
 };
 
-function SectionHeader({ label }) {
+function SectionHeader({ label, icon: Icon }) {
   return (
     <div style={{
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
-      fontSize: '11px',
+      fontSize: '13px',
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: '0.08em',
-      color: 'var(--consumer-purple)',
+      color: 'var(--text-secondary)',
       marginBottom: '10px',
     }}>
-      <Sparkles size={12} color='var(--consumer-purple)' />
+      {Icon && <Icon size={14} color='var(--text-secondary)' />}
       {label}
     </div>
   );
@@ -134,7 +134,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
 
   return (
     <div style={{
-      height: '100%',
+      height: '95%',
       overflow: 'hidden',
       background: 'var(--card-background)',
       borderRadius: '16px',
@@ -149,7 +149,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
         padding: '20px 16px',
       }}>
         {/* Top header */}
-        <SectionHeader label="Current Journey Summary" />
+        <SectionHeader label="Current Journey Summary" icon={Goal} />
 
         {/* Journey title - editable */}
         {isEditingTitle ? (
@@ -203,7 +203,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
 
         {/* Foundations section */}
         <div style={{ marginBottom: '16px' }}>
-          <SectionHeader label="Journey Foundations" />
+          <SectionHeader label="Journey Foundations" icon={Layers} />
           {foundations.map((item, i) => (
             <FoundationRow key={i} label={item.label} values={item.values} />
           ))}
@@ -211,7 +211,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
 
         {/* Style DNA section */}
         <div>
-          <SectionHeader label="Style DNA" />
+          <SectionHeader label="Style Vibe" icon={Sparkles} />
 
           {currentBatch < 1 ? (
             <div className="sidebar-shimmer-container">

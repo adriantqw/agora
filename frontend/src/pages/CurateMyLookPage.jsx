@@ -355,7 +355,7 @@ export default function CurateMyLookPage() {
         </div>
 
         {/* Right column — full-height sidebar */}
-        <div style={{ height: '100%', overflow: 'hidden' }}>
+        <div style={{ height: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', marginRight: '16px' }}>
           <JourneyBuilderSidebar
             foundations={foundations}
             narrativeText={narrativeText}
