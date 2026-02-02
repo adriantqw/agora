@@ -26,6 +26,13 @@ export default function Mascot({
         right: '20px',
         zIndex: 50,
       }
+    : position === 'bottom-left'
+    ? {
+        position: 'fixed',
+        bottom: '20px',
+        left: '20px',
+        zIndex: 50,
+      }
     : {
         position: 'relative',
         display: 'inline-block',
@@ -119,12 +126,12 @@ export default function Mascot({
           onClick={onClick}
           style={{
             position: 'absolute',
-            bottom: '100%',
-            right: '20px',
-            marginBottom: '12px',
+            bottom: position === 'bottom-left' ? '100%' : '40px',
+            ...(position === 'bottom-left' ? { left: '20px' } : { right: '85px' }),
+            ...(position === 'bottom-left' && { marginBottom: '12px' }),
             background: isLetsGo ? 'var(--gradient-user-answer)' : 'white',
             border: isLetsGo ? 'none' : '2px solid #F5A5B8',
-            borderRadius: '16px',
+            borderRadius: '16px 16px 4px 16px',
             padding: '16px 24px',
             fontSize: '17px',
             fontWeight: '600',
@@ -137,17 +144,6 @@ export default function Mascot({
             cursor: onClick ? 'pointer' : 'default',
           }}>
           {message}
-          {/* Speech bubble arrow */}
-          <div style={{
-            position: 'absolute',
-            bottom: '-8px',
-            right: '24px',
-            width: '0',
-            height: '0',
-            borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent',
-            borderTop: isLetsGo ? '8px solid #e53e3e' : '8px solid #F5A5B8',
-          }} />
         </div>
       )}
 
@@ -190,9 +186,15 @@ export default function Mascot({
         @media (max-width: 768px) {
           .mascot-container {
             bottom: 16px !important;
-            right: 16px !important;
             transform: scale(0.8);
+          }
+          .mascot-container[style*="right"] {
+            right: 16px !important;
             transform-origin: bottom right;
+          }
+          .mascot-container[style*="left"] {
+            left: 16px !important;
+            transform-origin: bottom left;
           }
         }
       `}</style>

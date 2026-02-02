@@ -293,21 +293,21 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
       padding: '24px 28px',
       animation: 'fadeInBatch 0.4s ease-out',
     }}>
-      {/* Header: sparkle + label */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        fontSize: '12px',
-        fontWeight: '700',
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
-        color: 'var(--consumer-purple)',
-        marginBottom: '16px',
-      }}>
-        <Sparkles size={14} color='var(--consumer-purple)' />
-        {batch.label.toUpperCase()}
-      </div>
+        {/* Header: sparkle + label */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          fontSize: '12px',
+          fontWeight: '700',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          color: 'var(--text-muted)',
+          marginBottom: '12px',
+        }}>
+          <Sparkles size={14} color='var(--text-muted)' />
+          {batch.label.toUpperCase()}
+        </div>
 
       {/* Rows — every question renders as a chip-row */}
       {batch.questions.map(question => (

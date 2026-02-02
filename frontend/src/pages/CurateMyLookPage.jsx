@@ -302,11 +302,14 @@ export default function CurateMyLookPage() {
           )}
 
           <div style={{
-            fontSize: '17px',
-            fontWeight: '700',
-            color: 'var(--text-primary)',
-            lineHeight: '1.5',
+            fontSize: '18px',
+            fontWeight: '600',
+            lineHeight: '1.4',
             marginBottom: '16px',
+            background: 'var(--gradient-user-answer)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
             animation: 'fadeInBatch 0.4s ease-out',
           }}>
             {batches[0].blurb}
@@ -328,11 +331,14 @@ export default function CurateMyLookPage() {
           {currentBatch >= 1 && (
             <div ref={batch2Ref} style={{ marginTop: '32px' }}>
               <div style={{
-                fontSize: '17px',
-                fontWeight: '700',
-                color: 'var(--text-primary)',
-                lineHeight: '1.5',
+                fontSize: '18px',
+                fontWeight: '600',
+                lineHeight: '1.4',
                 marginBottom: '16px',
+                background: 'var(--gradient-user-answer)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
                 animation: 'fadeInBatch 0.4s ease-out',
               }}>
                 {batches[1].blurb}

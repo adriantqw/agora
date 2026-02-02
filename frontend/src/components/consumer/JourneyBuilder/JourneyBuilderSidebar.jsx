@@ -20,14 +20,14 @@ function SectionHeader({ label, icon: Icon }) {
       display: 'flex',
       alignItems: 'center',
       gap: '6px',
-      fontSize: '13px',
+      fontSize: '10px',
       fontWeight: '700',
       textTransform: 'uppercase',
       letterSpacing: '0.08em',
-      color: 'var(--text-secondary)',
-      marginBottom: '10px',
+      color: 'var(--text-muted)',
+      marginBottom: '8px',
     }}>
-      {Icon && <Icon size={14} color='var(--text-secondary)' />}
+      {Icon && <Icon size={11} color='var(--text-muted)' />}
       {label}
     </div>
   );
@@ -44,80 +44,102 @@ function FoundationRow({ label, values }) {
   const IconComponent = getIconByName(iconName);
 
   return (
+    // CARD CONTAINER - Individual card for each foundation row
     <div style={{
+      background: 'rgba(255, 255, 255, 0.5)',
+      border: '1px solid var(--border-color)',
+      borderRadius: '10px',
+      padding: '12px 14px',
+      marginBottom: '8px',
       display: 'flex',
       alignItems: 'center',
-      gap: '8px',
-      padding: '8px 0',
-      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      gap: '12px',
     }}>
-      {/* Icon */}
+      {/* LEFT SIDE: Icon + Label */}
       <div style={{
-        width: '24px',
-        height: '24px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-        color: 'var(--text-secondary)',
-      }}>
-        <IconComponent size={16} />
-      </div>
-
-      {/* Label - smaller, more subtle */}
-      <span style={{
-        fontSize: '11px',
-        color: 'var(--text-muted)',
-        fontWeight: '500',
-        minWidth: '70px',
+        gap: '10px',
         flexShrink: 0,
       }}>
-        {label}
-      </span>
+        {/* Icon */}
+        <div style={{
+          width: '20px',
+          height: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--text-muted)',
+        }}>
+          <IconComponent size={16} />
+        </div>
 
-      {/* Pills */}
-      {!hasValues ? (
+        {/* Label */}
         <span style={{
           fontSize: '11px',
-          color: 'var(--text-muted)',
-          fontStyle: 'italic',
+          color: 'var(--text-secondary)',
+          fontWeight: '500',
         }}>
-          Not set
+          {label}
         </span>
-      ) : (
-        <>
-          {displayValues.map((val, i) => (
-            <div key={i} style={{
-              fontSize: '12px',
-              fontWeight: '600',
-              color: 'var(--text-primary)',
-              background: 'var(--consumer-purple-light)',
-              padding: '4px 12px',
-              borderRadius: '12px',
-              whiteSpace: 'nowrap',
-            }}>
-              {val}
-            </div>
-          ))}
-          {overflow > 0 && (
-            <div
-              title={overflowValues.join(', ')}
-              style={{
+      </div>
+
+      {/* RIGHT SIDE: Pills */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        flexWrap: 'wrap',
+        justifyContent: 'flex-end',
+      }}>
+        {!hasValues ? (
+          <span style={{
+            fontSize: '10px',
+            color: 'var(--text-muted)',
+            fontStyle: 'italic',
+          }}>
+            Not set
+          </span>
+        ) : (
+          <>
+            {displayValues.map((val, i) => (
+              <div key={i} style={{
                 fontSize: '11px',
-                fontWeight: '700',
+                fontWeight: '600',
                 color: 'var(--consumer-purple)',
-                background: 'var(--consumer-purple-light)',
-                padding: '4px 8px',
+                background: 'rgba(139, 92, 246, 0.12)',
+                padding: '4px 11px',
                 borderRadius: '12px',
-                cursor: 'help',
-                position: 'relative',
-              }}
-            >
-              +{overflow}
-            </div>
-          )}
-        </>
-      )}
+                whiteSpace: 'nowrap',
+              }}>
+                {val}
+              </div>
+            ))}
+            {overflow > 0 && (
+              <div
+                title={overflowValues.join(', ')}
+                style={{
+                  fontSize: '10px',
+                  fontWeight: '700',
+                  color: 'var(--consumer-purple)',
+                  background: 'rgba(139, 92, 246, 0.12)',
+                  padding: '4px 8px',
+                  borderRadius: '50%',
+                  cursor: 'help',
+                  minWidth: '24px',
+                  minHeight: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                +{overflow}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -161,7 +183,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
             autoFocus
             style={{
-              fontSize: '22px',
+              fontSize: '24px',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -176,7 +198,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
           <div
             onClick={() => setIsEditingTitle(true)}
             style={{
-              fontSize: '22px',
+              fontSize: '24px',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -193,16 +215,16 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
 
         {/* Description */}
         <p style={{
-          fontSize: '12px',
+          fontSize: '11px',
           color: 'var(--text-secondary)',
-          margin: '0 0 16px',
+          margin: '0 0 20px',
           lineHeight: '1.5',
         }}>
           View the summary of your journey. This information will help Eggora curate the perfect styles just for you.
         </p>
 
         {/* Foundations section */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '20px' }}>
           <SectionHeader label="Journey Foundations" icon={Layers} />
           {foundations.map((item, i) => (
             <FoundationRow key={i} label={item.label} values={item.values} />
