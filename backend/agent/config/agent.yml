@@ -12,6 +12,7 @@ catalogue_ingestor: &base_agent_recipe
       include_thoughts: true
   recursion_limit: 100
   enable_google_search_tool: false
+  max_context_msgs: 25
 
 ## Consumer agents
 ### Personal stylist config

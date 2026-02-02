@@ -266,9 +266,12 @@ celebrity_img_search: |
     Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
 
 style_dna_prompt: |
-    ## OPTIONAL
-    You are also given additional information on the user's long-term preferences (Style DNA). 
-    If applicable, use it to provide a tailored experience to the user:
+    ## STYLE DNA (Long-Term Context)
+    The following <style_dna> reflects the user's historical preferences. 
+
+    1. **Hierarchy of Truth:** The current user prompt is the absolute priority. If the user's request contradicts the Style DNA, ignore the DNA for that specific attribute.
+    2. **The "Gap-Fill" Rule:** Use the Style DNA to inform unspecified details. (e.g., If the user asks for a "jacket" without specifying a fit, default to their preferred "Oversized" silhouette from the DNA).
+    3. **Implicit Personalization:** Do not explicitly list these preferences unless relevant. Use them as a latent filter to ensure suggestions "feel" like the user.
 
     <style_dna>
     {user_style_dna}

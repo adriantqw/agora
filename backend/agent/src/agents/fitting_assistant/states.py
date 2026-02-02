@@ -5,7 +5,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 from .schemas import FittingSetObject
-from ..schemas import JourneySchema
+from ..schemas import JourneySchema, StyleDna
 
 
 class FittingAssistantState(TypedDict):
@@ -24,3 +24,6 @@ class FittingAssistantState(TypedDict):
 
     # Agent personality mode
     personality: Optional[str]
+
+    # User's style DNA from memory
+    style_dna: Optional[StyleDna]

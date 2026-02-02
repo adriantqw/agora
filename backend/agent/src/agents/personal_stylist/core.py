@@ -3,7 +3,8 @@ import mlflow
 import uuid
 
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.messages import SystemMessage, \
+    HumanMessage, AIMessage, RemoveMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
@@ -202,14 +203,15 @@ class PersonalStylistAgent:
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
         )
-        messages.append(SystemMessage(prompt))
+        messages.extend(SystemMessage(prompt))
 
         # Format style dna prompt if applicable
         if state.get("style_dna"):
             style_dna_prompt = self.style_dna_prompt.format(user_style_dna=state.get("style_dna"))
-            messages.append(SystemMessage(style_dna_prompt))
+            messages.extend(SystemMessage(style_dna_prompt))
 
-        messages.append(state["messages"])
+        # Invoke model and return result
+        messages.extend(state["messages"])
         response = self.model.bind_tools(self.tools).invoke(messages)
         return {"messages": [response]}
 
@@ -249,6 +251,21 @@ class PersonalStylistAgent:
         
         else:
             return {}
+        
+    def _trim_messages(self, state: PersonalStylistState):
+        """Trim message history"""
+        messages = state.get("messages", [])
+    
+        if len(messages) <= self.max_context_msgs:
+            return {} 
+        
+        # Identify the oldest messages to drop
+        number_to_delete = len(messages) - self.max_context_msgs
+
+        # Create RemoveMessage objects for those IDs
+        to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
+
+        return {"messages": to_remove}
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
@@ -262,6 +279,7 @@ class PersonalStylistAgent:
         # Define nodes
         workflow.add_node("update_journey", self._update_journey)
         workflow.add_node("retrieve_memory", self._retrieve_memory)
+        workflow.add_node("trim_messages", self._trim_messages)
         workflow.add_node("agent", self._invoke_model)
         workflow.add_node("tools", tool_node)
         workflow.add_node("parse_ui", self._parse_ui_from_response)
@@ -276,7 +294,9 @@ class PersonalStylistAgent:
         )
 
         # After journey update, go to agent
-        workflow.add_edge("update_journey", "agent")
+        workflow.add_edge("update_journey", "retrieve_memory")
+        workflow.add_edge("retrieve_memory", "trim_messages")
+        workflow.add_edge("trim_messages", "agent")
 
         # Agent routing - either call tools or parse UI output
         workflow.add_conditional_edges(
