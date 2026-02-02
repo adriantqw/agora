@@ -183,7 +183,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
             autoFocus
             style={{
-              fontSize: '24px',
+              fontSize: '2cqw',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -198,9 +198,12 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
           <div
             onClick={() => setIsEditingTitle(true)}
             style={{
-              fontSize: '24px',
+              fontSize: '3cqw',
               fontWeight: '700',
-              color: 'var(--consumer-purple)',
+              background: 'var(--gradient-user-answer)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
               marginBottom: '8px',
               cursor: 'pointer',
               display: 'flex',
@@ -209,7 +212,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             }}
           >
             {localTitle || 'Your Journey'}
-            <Pencil size={16} style={{ opacity: 0.5 }} />
+            <Pencil size={16} style={{ opacity: 0.5, WebkitTextFillColor: 'var(--text-muted)', color: 'var(--text-muted)' }} />
           </div>
         )}
 

@@ -230,9 +230,11 @@ export default function ShoppingConciergePage() {
       } else if (question.id === 'additional-context') {
         const additionalContext = conciergeService.processContextAnswer(answer);
         setJourneyContext(prev => ({ ...prev, additionalContext }));
-      } else if (question.id === 'budget-scale') {
-        const budget = answer.value ? parseFloat(answer.value) : null;
-        setJourneyContext(prev => ({ ...prev, budget }));
+      } else if (question.id === 'budget-dual-range') {
+        const budgetMin = answer.minValue !== undefined ? answer.minValue : null;
+        const budgetMax = answer.maxValue !== undefined ? answer.maxValue : null;
+        const budget = budgetMin !== null && budgetMax !== null ? `$${budgetMin} - $${budgetMax}` : null;
+        setJourneyContext(prev => ({ ...prev, budget, budgetMin, budgetMax }));
       } else if (question.id === 'style-leaning') {
         const styleLeaning = answer.selectedOptions?.[0] || answer.value;
         setJourneyContext(prev => ({ ...prev, styleLeaning }));

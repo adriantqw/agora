@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Sun, Moon, Leaf, Snowflake, Sunset,
   Home, TreePine, Waves, Briefcase,
@@ -25,6 +26,8 @@ function isQuestionAnswered(question, answer) {
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
       return !!answer.value;
+    case 'dual-range':
+      return answer.minValue !== undefined && answer.maxValue !== undefined;
     default:
       return !!answer.value;
   }
@@ -62,6 +65,334 @@ function Chip({ iconName, label, selected, onClick, readOnly }) {
       {Icon && <Icon size={13} />}
       {label}
     </button>
+  );
+}
+
+/* ── Dual Range Slider component ── */
+function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
+  const minValue = question.min ?? 0;
+  const maxValue = question.max ?? 100;
+  const step = question.step ?? 1;
+  const minGap = question.minGap ?? step;
+
+  const currentMin = answer?.minValue ?? minValue;
+  const currentMax = answer?.maxValue ?? maxValue;
+
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [draggingHandle, setDraggingHandle] = React.useState(null);
+  const [showTooltip, setShowTooltip] = React.useState({ min: false, max: false });
+
+  const trackRef = React.useRef(null);
+
+  const updateValues = (newMin, newMax) => {
+    onAnswer({
+      questionId: question.id,
+      minValue: newMin,
+      maxValue: newMax,
+      timestamp: Date.now(),
+    });
+  };
+
+  const getPercentFromValue = (value) => {
+    return ((value - minValue) / (maxValue - minValue)) * 100;
+  };
+
+  const getValueFromPercent = (percent) => {
+    const rawValue = percent * (maxValue - minValue) + minValue;
+    return Math.round(rawValue / step) * step;
+  };
+
+  const handleMouseDown = (e, handle) => {
+    if (readOnly) return;
+    e.preventDefault();
+    setIsDragging(true);
+    setDraggingHandle(handle);
+    setShowTooltip({ ...showTooltip, [handle]: true });
+  };
+
+  const handleMouseMove = React.useCallback((e) => {
+    if (!isDragging || !draggingHandle || !trackRef.current) return;
+
+    const rect = trackRef.current.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    let percent = (clientX - rect.left) / rect.width;
+    percent = Math.max(0, Math.min(1, percent));
+
+    const value = getValueFromPercent(percent);
+
+    if (draggingHandle === 'min') {
+      if (value <= currentMax - minGap) {
+        updateValues(value, currentMax);
+      }
+    } else {
+      if (value >= currentMin + minGap) {
+        updateValues(currentMin, value);
+      }
+    }
+  }, [isDragging, draggingHandle, currentMin, currentMax, minGap, minValue, maxValue, step]);
+
+  const handleMouseUp = React.useCallback(() => {
+    setIsDragging(false);
+    setDraggingHandle(null);
+    setShowTooltip({ min: false, max: false });
+  }, []);
+
+  React.useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleMouseMove);
+      document.addEventListener('touchend', handleMouseUp);
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleMouseMove);
+        document.removeEventListener('touchend', handleMouseUp);
+      };
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  const handleTrackClick = (e) => {
+    if (readOnly || e.target.closest('.slider-handle')) return;
+
+    const rect = trackRef.current.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const value = getValueFromPercent(percent);
+
+    const distToMin = Math.abs(value - currentMin);
+    const distToMax = Math.abs(value - currentMax);
+
+    if (distToMin < distToMax) {
+      if (value <= currentMax - minGap) {
+        updateValues(value, currentMax);
+      }
+    } else {
+      if (value >= currentMin + minGap) {
+        updateValues(currentMin, value);
+      }
+    }
+  };
+
+  const handleInputChange = (handle, inputValue) => {
+    let val = parseInt(inputValue.replace(/[^0-9-]/g, ''), 10);
+    if (isNaN(val)) val = handle === 'min' ? minValue : maxValue;
+
+    if (handle === 'min') {
+      val = Math.max(minValue, Math.min(val, currentMax - minGap));
+      updateValues(val, currentMax);
+    } else {
+      val = Math.max(currentMin + minGap, Math.min(val, maxValue));
+      updateValues(currentMin, val);
+    }
+  };
+
+  const minPercent = getPercentFromValue(currentMin);
+  const maxPercent = getPercentFromValue(currentMax);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
+      {/* Min Input */}
+      <input
+        type="text"
+        value={currentMin}
+        readOnly={readOnly}
+        onChange={(e) => handleInputChange('min', e.target.value)}
+        style={{
+          width: '80px',
+          height: '44px',
+          border: `2px solid ${showTooltip.min ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
+          borderRadius: '22px',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: showTooltip.min ? 'var(--consumer-purple)' : 'var(--text-secondary)',
+          fontWeight: '500',
+          outline: 'none',
+          transition: 'all 0.2s',
+          background: 'var(--card-background)',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      />
+
+      {/* Slider Track */}
+      <div
+        ref={trackRef}
+        onClick={handleTrackClick}
+        style={{
+          flex: 1,
+          position: 'relative',
+          height: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            height: '6px',
+            background: 'var(--border-color)',
+            borderRadius: '3px',
+            position: 'relative',
+          }}
+        >
+          {/* Fill */}
+          <div
+            style={{
+              position: 'absolute',
+              height: '100%',
+              background: 'var(--consumer-purple)',
+              borderRadius: '3px',
+              left: `${minPercent}%`,
+              width: `${maxPercent - minPercent}%`,
+              transition: isDragging ? 'none' : 'all 0.1s',
+            }}
+          />
+
+          {/* Min Handle */}
+          <div
+            className="slider-handle"
+            onMouseDown={(e) => handleMouseDown(e, 'min')}
+            onTouchStart={(e) => handleMouseDown(e, 'min')}
+            onMouseEnter={() => !readOnly && setShowTooltip({ ...showTooltip, min: true })}
+            onMouseLeave={() => !isDragging && setShowTooltip({ ...showTooltip, min: false })}
+            style={{
+              position: 'absolute',
+              width: '20px',
+              height: '20px',
+              background: 'var(--consumer-purple)',
+              border: '3px solid white',
+              borderRadius: '50%',
+              top: '50%',
+              left: `${minPercent}%`,
+              transform: `translate(-50%, -50%) scale(${showTooltip.min ? 1.1 : 1})`,
+              cursor: readOnly ? 'default' : 'grab',
+              boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
+              transition: 'transform 0.1s, box-shadow 0.1s',
+              zIndex: 2,
+            }}
+          >
+            {/* Tooltip */}
+            <div
+              style={{
+                position: 'absolute',
+                background: '#1f2937',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '600',
+                top: '-45px',
+                left: '50%',
+                transform: `translateX(-50%) scale(${showTooltip.min ? 1 : 0})`,
+                opacity: showTooltip.min ? 1 : 0,
+                transition: 'all 0.2s',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              }}
+            >
+              {currentMin}
+              <div
+                style={{
+                  content: '',
+                  position: 'absolute',
+                  bottom: '-4px',
+                  left: '50%',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  width: '8px',
+                  height: '8px',
+                  background: '#1f2937',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Max Handle */}
+          <div
+            className="slider-handle"
+            onMouseDown={(e) => handleMouseDown(e, 'max')}
+            onTouchStart={(e) => handleMouseDown(e, 'max')}
+            onMouseEnter={() => !readOnly && setShowTooltip({ ...showTooltip, max: true })}
+            onMouseLeave={() => !isDragging && setShowTooltip({ ...showTooltip, max: false })}
+            style={{
+              position: 'absolute',
+              width: '20px',
+              height: '20px',
+              background: 'var(--consumer-purple)',
+              border: '3px solid white',
+              borderRadius: '50%',
+              top: '50%',
+              left: `${maxPercent}%`,
+              transform: `translate(-50%, -50%) scale(${showTooltip.max ? 1.1 : 1})`,
+              cursor: readOnly ? 'default' : 'grab',
+              boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
+              transition: 'transform 0.1s, box-shadow 0.1s',
+              zIndex: 2,
+            }}
+          >
+            {/* Tooltip */}
+            <div
+              style={{
+                position: 'absolute',
+                background: '#1f2937',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '600',
+                top: '-45px',
+                left: '50%',
+                transform: `translateX(-50%) scale(${showTooltip.max ? 1 : 0})`,
+                opacity: showTooltip.max ? 1 : 0,
+                transition: 'all 0.2s',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              }}
+            >
+              {currentMax}
+              <div
+                style={{
+                  content: '',
+                  position: 'absolute',
+                  bottom: '-4px',
+                  left: '50%',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  width: '8px',
+                  height: '8px',
+                  background: '#1f2937',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Max Input */}
+      <input
+        type="text"
+        value={currentMax}
+        readOnly={readOnly}
+        onChange={(e) => handleInputChange('max', e.target.value)}
+        style={{
+          width: '80px',
+          height: '44px',
+          border: `2px solid ${showTooltip.max ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
+          borderRadius: '22px',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: showTooltip.max ? 'var(--consumer-purple)' : 'var(--text-secondary)',
+          fontWeight: '500',
+          outline: 'none',
+          transition: 'all 0.2s',
+          background: 'var(--card-background)',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      />
+    </div>
   );
 }
 
@@ -155,6 +486,38 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
           }}>
             {selectedLevel != null ? '$'.repeat(selectedLevel) : '—'}
           </span>
+        </div>
+      </div>
+    );
+  }
+
+  /* --- dual-range: dual handle range slider --- */
+  if (question.type === 'dual-range') {
+    return (
+      <div style={{
+        padding: '10px 0',
+        borderBottom: '1px solid var(--color-border-subtle)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', minWidth: '120px' }}>
+            {label}
+          </span>
+          <div style={{ flex: 1 }}>
+            <DualRangeSlider
+              question={question}
+              answer={answer}
+              onAnswer={onAnswer}
+              readOnly={readOnly}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', padding: '0 100px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {question.min ?? 0}
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
+                {question.max ?? 100}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     );
