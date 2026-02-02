@@ -1,0 +1,175 @@
+// Raw mock backend response for /api/curate-my-fit
+// Swap this file's export for a real fetch when the endpoint is ready.
+export const MOCK_CURATE_MY_LOOK_RESPONSE = {
+  batches: [
+    {
+      id: 'batch-foundations',
+      label: 'Foundations',
+      blurb: 'Tell me about the context so I can start building your look.',
+      hasConfirmButton: true,
+      questions: [
+        {
+          id: 'season',
+          type: 'multi-select',
+          question: 'What is the weather like?',
+          rowLabel: 'Weather',
+          required: true,
+          options: [
+            { id: 'spring',  label: 'Spring (Mild)',  icon: 'Leaf',      metadata: { tags: ['spring', 'mild'] } },
+            { id: 'summer',  label: 'Summer (Hot)',   icon: 'Sun',       metadata: { tags: ['summer', 'hot'] } },
+            { id: 'autumn',  label: 'Autumn (Crisp)', icon: 'Leaf',      metadata: { tags: ['autumn', 'cool'] } },
+            { id: 'winter',  label: 'Winter (Cold)',  icon: 'Snowflake', metadata: { tags: ['winter', 'cold'] } },
+          ],
+        },
+        {
+          id: 'time-of-day',
+          type: 'multi-select',
+          question: 'What time of day is this for?',
+          rowLabel: 'Time of Day',
+          required: true,
+          options: [
+            { id: 'daytime',      label: 'Daytime',     icon: 'Sun' },
+            { id: 'golden-hour',  label: 'Golden Hour', icon: 'Sunset' },
+            { id: 'evening',      label: 'Evening',     icon: 'Moon' },
+            { id: 'late-night',   label: 'Late Night',  icon: 'Moon' },
+          ],
+        },
+        {
+          id: 'location-hybrid',
+          type: 'hybrid-select',
+          question: 'Where will you be?',
+          rowLabel: 'Location',
+          required: true,
+          multiSelect: false,
+          placeholder: 'Specific location (e.g. Garden wedding in London)',
+          options: [
+            { id: 'indoors',  label: 'Indoors',  icon: 'Home' },
+            { id: 'outdoors', label: 'Outdoors', icon: 'TreePine' },
+            { id: 'beach',    label: 'Beach',    icon: 'Waves' },
+            { id: 'office',   label: 'Office',   icon: 'Briefcase' },
+          ],
+        },
+        {
+          id: 'budget-scale',
+          type: 'scale-rating',
+          question: 'What is your budget comfort level?',
+          rowLabel: 'Budget',
+          required: true,
+          min: 1,
+          max: 5,
+          step: 1,
+        },
+        {
+          id: 'style-leaning',
+          type: 'hybrid-select',
+          question: 'Which style lane should we look in?',
+          rowLabel: 'Department',
+          required: true,
+          multiSelect: false,
+          placeholder: 'Or describe your style preference…',
+          options: [
+            { id: 'feminine',  label: 'Feminine',  icon: 'User' },
+            { id: 'masculine', label: 'Masculine', icon: 'User' },
+            { id: 'unisex',    label: 'Unisex',    icon: 'Users' },
+          ],
+        },
+        {
+          id: 'age-range',
+          type: 'hybrid-select',
+          question: 'Who are we shopping for?',
+          rowLabel: 'Age Range',
+          required: true,
+          multiSelect: false,
+          placeholder: 'Or enter a specific age/group…',
+          options: [
+            { id: 'teen',        label: 'Teen (13–19)',        icon: 'User' },
+            { id: 'young-adult', label: 'Young Adult (20–29)', icon: 'User' },
+            { id: 'adult',       label: 'Adult (30–49)',       icon: 'Users' },
+            { id: 'mature',      label: 'Mature (50+)',        icon: 'Users' },
+          ],
+        },
+      ],
+    },
+    {
+      id: 'batch-personal-style',
+      label: 'Personal Style',
+      blurb: 'Help me understand your aesthetic and how adventurous you\'re feeling.',
+      hasConfirmButton: true,
+      questions: [
+        {
+          id: 'aesthetic-visual-mood',
+          type: 'single-choice',
+          question: 'Which style resonates with you?',
+          rowLabel: 'Vibe',
+          required: true,
+          options: [
+            { id: 'romantic', label: 'Romantic' },
+            { id: 'chic',     label: 'Chic' },
+            { id: 'edgy',     label: 'Edgy' },
+            { id: 'boho',     label: 'Boho' },
+          ],
+        },
+        {
+          id: 'risk-tolerance-scale',
+          type: 'scale-rating',
+          question: 'How far should I push the boundaries?',
+          rowLabel: 'Risk Level',
+          required: true,
+          min: 1,
+          max: 10,
+          step: 0.5,
+          chips: [
+            { label: 'Safe',         value: 2 },
+            { label: 'Moderate',     value: 5 },
+            { label: 'Bold',         value: 7 },
+            { label: 'Experimental', value: 10 },
+          ],
+        },
+        {
+          id: 'additional-context',
+          type: 'free-text',
+          question: 'Tell me more about the event or goals',
+          rowLabel: 'Details',
+          required: false,
+          placeholder: 'I\'m looking for…',
+        },
+      ],
+    },
+  ],
+  summary: {
+    title: {
+      template: '{value} Journey',
+      source: { questionId: 'style-leaning', extract: 'firstLabel' },
+      fallback: 'Your Journey',
+    },
+    rows: [
+      {
+        label: 'Location / Time',
+        sources: [
+          { questionId: 'location-hybrid', extract: 'selectedLabels' },
+          { questionId: 'time-of-day',     extract: 'selectedLabels' },
+          { questionId: 'season',          extract: 'selectedLabels' },
+          { questionId: 'location-hybrid', extract: 'freeText' },
+        ],
+      },
+      {
+        label: 'Department',
+        sources: [{ questionId: 'style-leaning', extract: 'firstLabel' }],
+      },
+      {
+        label: 'Age Range',
+        sources: [{ questionId: 'age-range', extract: 'firstLabel' }],
+      },
+      {
+        label: 'Sizing & Fit',
+        sources: [],
+      },
+    ],
+    narrative: [
+      { template: 'You\'re going for a {value} vibe', source: { questionId: 'aesthetic-visual-mood', extract: 'value' },  group: 'body' },
+      { template: 'with a budget around level {value}', source: { questionId: 'budget-scale',          extract: 'value' },  group: 'body' },
+      { template: '{value}',                            source: { questionId: 'additional-context',    extract: 'value' },  group: 'detail' },
+    ],
+    narrativeFallback: 'Answer the questions above to build your style profile.',
+  },
+};

@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getChipStyle, getHelperTextStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -17,8 +17,7 @@ import { getChipStyle, getHelperTextStyle } from '../../utils/styleHelpers.js';
  */
 
 export default function MultiSelect({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, constraints } = theme;
+  const { colors, spacing, typography, constraints } = STYLE_GUIDE;
 
   const [selectedOptions, setSelectedOptions] = useState(currentAnswer?.selectedOptions || []);
 
@@ -77,7 +76,7 @@ export default function MultiSelect({ question, onAnswer, currentAnswer, disable
               key={option.id}
               onClick={() => handleToggleOption(option.id)}
               disabled={isDisabled}
-              style={getChipStyle(isSelected, isDisabled, theme)}
+              style={getChipStyle(isSelected, isDisabled)}
               role="checkbox"
               aria-checked={isSelected}
               aria-label={option.label}

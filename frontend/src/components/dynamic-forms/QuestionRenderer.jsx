@@ -6,7 +6,7 @@
  */
 
 import { getComponentByType, isComponentSupported } from './registry/ComponentRegistry.jsx';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getQuestionContainerStyle, getQuestionTextStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -25,8 +25,7 @@ export default function QuestionRenderer({
   disabled = false,
   showQuestionText = true
 }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, radius } = theme;
+  const { colors, spacing, typography } = STYLE_GUIDE;
   // Validate question object
   if (!question || !question.id || !question.type || !question.question) {
     return (
@@ -61,10 +60,10 @@ export default function QuestionRenderer({
   }
 
   return (
-    <div style={getQuestionContainerStyle(theme)}>
+    <div style={getQuestionContainerStyle()}>
       {/* Question Text */}
       {showQuestionText && (
-        <div style={getQuestionTextStyle(theme)}>
+        <div style={getQuestionTextStyle()}>
           {question.question}
           {question.required && (
             <span style={{
@@ -107,6 +106,7 @@ export default function QuestionRenderer({
  * Displays error messages when question cannot be rendered
  */
 function ErrorState({ title, message, details }) {
+  const { colors, spacing, radius, typography } = STYLE_GUIDE;
   return (
     <div style={{
       ...getQuestionContainerStyle(),

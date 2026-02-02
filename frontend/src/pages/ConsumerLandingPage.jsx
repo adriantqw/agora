@@ -168,7 +168,7 @@ const ConsumerLandingPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim() || uploadedImages.length > 0) {
-      navigate('/journey', {
+      navigate('/curate-my-fit', {
         state: {
           searchQuery: searchQuery.trim(),
           images: uploadedImages.map(img => img.preview) // Pass array of base64 images

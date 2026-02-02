@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getInputStyle, getHelperTextStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -17,8 +17,7 @@ import { getInputStyle, getHelperTextStyle } from '../../utils/styleHelpers.js';
  */
 
 export default function FreeText({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, spacing, typography, constraints } = theme;
+  const { colors, spacing, typography, constraints } = STYLE_GUIDE;
   const [value, setValue] = useState(currentAnswer?.value || '');
   const [isFocused, setIsFocused] = useState(false);
   const debounceTimerRef = useRef(null);
@@ -88,7 +87,7 @@ export default function FreeText({ question, onAnswer, currentAnswer, disabled =
   const isAtLimit = charCount >= charLimit;
 
   const inputStyle = {
-    ...getInputStyle(isFocused, false, theme),
+    ...getInputStyle(isFocused, false),
     resize: multiline ? 'vertical' : 'none',
     minHeight: multiline ? '120px' : 'auto'
   };

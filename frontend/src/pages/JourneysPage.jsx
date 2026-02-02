@@ -45,7 +45,7 @@ const JourneysPage = () => {
   };
 
   const handleStartNewJourney = () => {
-    navigate('/journey');
+    navigate('/curate-my-fit');
   };
 
   const handlePageChange = (newPage) => {

@@ -69,7 +69,7 @@ const FittingRoomPage = () => {
   };
 
   const handleUpdateSearch = () => {
-    navigate('/journey');
+    navigate('/curate-my-fit');
   };
 
   const pageStyle = {

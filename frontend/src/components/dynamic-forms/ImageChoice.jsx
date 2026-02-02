@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import STYLE_GUIDE from '../../config/styleGuide.js';
 import { getCardStyle, getGridStyle, getStackStyle, getImagePlaceholderStyle } from '../../utils/styleHelpers.js';
 
 /**
@@ -18,8 +18,7 @@ import { getCardStyle, getGridStyle, getStackStyle, getImagePlaceholderStyle } f
  */
 
 export default function ImageChoice({ question, onAnswer, currentAnswer, disabled = false }) {
-  const theme = useTheme();
-  const { colors, radius, spacing, typography, transitions } = theme;
+  const { colors, radius, spacing, typography, transitions } = STYLE_GUIDE;
 
   const [hoveredOption, setHoveredOption] = useState(null);
   const [selectedOption, setSelectedOption] = useState(currentAnswer?.value || null);
@@ -39,8 +38,8 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
   };
 
   const containerStyle = layout === 'grid'
-    ? getGridStyle(columns, theme)
-    : getStackStyle(theme);
+    ? getGridStyle(columns)
+    : getStackStyle();
 
   return (
     <div style={{ fontFamily: typography.fontFamily }}>
@@ -56,7 +55,7 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
               onMouseEnter={() => !disabled && setHoveredOption(option.id)}
               onMouseLeave={() => setHoveredOption(null)}
               style={{
-                ...getCardStyle(isSelected, disabled, theme),
+                ...getCardStyle(isSelected, disabled),
                 transform: isHovered && !disabled ? 'translateY(-4px)' : 'translateY(0)',
                 boxShadow: isSelected
                   ? theme.shadows.pink || theme.shadows.blue
@@ -77,7 +76,7 @@ export default function ImageChoice({ question, onAnswer, currentAnswer, disable
             >
               {/* Image Section */}
               <div style={{
-                ...getImagePlaceholderStyle(theme),
+                ...getImagePlaceholderStyle(),
                 marginBottom: spacing.md,
                 position: 'relative',
                 overflow: 'hidden'
