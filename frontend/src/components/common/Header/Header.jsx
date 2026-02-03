@@ -176,8 +176,14 @@ export default function Header({
               transition: 'all 0.2s',
               borderRadius: '8px',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.gradient.consumer;
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = textColor;
+            }}
           >
             <JourneyIcon />
             <span>Journeys</span>
@@ -200,8 +206,14 @@ export default function Header({
                             transition: 'all 0.2s',
                             borderRadius: '8px',
                           }}
-onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+onMouseEnter={(e) => {
+                            e.currentTarget.style.background = colors.gradient.consumer;
+                            e.currentTarget.style.color = 'white';
+                          }}
+            onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = textColor;
+                          }}
                         >
                           <InventoryIcon />
                           <span>Inventory</span>
@@ -223,8 +235,14 @@ onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer
               transition: 'all 0.2s',
               borderRadius: '8px',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.gradient.consumer;
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = textColor;
+            }}
           >
             <ProfileIcon />
             <span>{getDisplayName()}</span>
