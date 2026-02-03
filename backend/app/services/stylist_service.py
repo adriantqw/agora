@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import Optional
+from fastapi import UploadFile
 
 from agent.src.agents.personal_stylist.core import PersonalStylistAgent
 from agent.src.agents.personal_stylist.schemas import UserResponse
@@ -47,6 +49,18 @@ def _format_response(thread_id: str, state: dict) -> dict:
         "journey": journey.model_dump() if journey else None,
         "uiInputs": [ui.model_dump() for ui in ui_inputs] if ui_inputs else []
     }
+
+
+def chat_with_images(thread_id: str, message: str, images: list[UploadFile]) -> dict:
+    """Chat with images - returns final state."""
+    result = stylist_agent.chat(message, thread_id)
+    return _format_response(thread_id, result)
+
+
+async def chat_with_images_stream(thread_id: str, message: str, images: list[UploadFile]):
+    """Async streaming chat with images - yields events."""
+    async for event in await stylist_agent.chat_stream(message, thread_id):
+        yield _format_stream_event(event)
 
 
 def _format_stream_event(event: dict) -> dict:

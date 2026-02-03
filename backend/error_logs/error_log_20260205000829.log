@@ -1,0 +1,345 @@
+(venv) justynlgh@justynlghsde-MacBook-Air backend % source venv/bin/activate && uvicorn app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/Users/justynlgh/Documents/agora/backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [49410] using WatchFiles
+INFO:     Started server process [49412]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:52523 - "OPTIONS /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52524 - "OPTIONS /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52523 - "GET /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52524 - "GET /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52524 - "OPTIONS /api/stylist/consumer/chat-form HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52523 - "OPTIONS /api/stylist/consumer/chat-form HTTP/1.1" 200 OK
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.schemas
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.tables
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.types
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.constraints
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.defaults
+2026/02/04 00:07:06 INFO alembic.runtime.plugins: setup plugin alembic.autogenerate.comments
+2026/02/04 00:07:06 INFO alembic.runtime.migration: Context impl SQLiteImpl.
+2026/02/04 00:07:06 INFO alembic.runtime.migration: Will assume non-transactional DDL.
+2026-02-04 00:07:07,096 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-04 00:07:07,113 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-04 00:07:14,307 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-02-04 00:07:14,823 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-02-04 00:07:21,867 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026-02-04 00:07:22,128 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/04 00:07:22 WARNING mlflow.langchain.langchain_tracer: Failed to parse tool definition for tracing: {'retrieval': None, 'computer_use': None, 'file_search': None, 'code_execution': None, 'enterprise_web_search': None, 'function_declarations': None, 'google_maps': None, 'google_search': {'exclude_domains': None, 'blocking_confidence': None, 'time_range_filter': None}, 'google_search_retrieval': None, 'url_context': None}.
+2026-02-04 00:07:22,253 - INFO - AFC is enabled with max remote calls: 10.
+2026/02/04 00:07:22 WARNING mlflow.langchain.langchain_tracer: Failed to parse tool definition for tracing: {'retrieval': None, 'computer_use': None, 'file_search': None, 'code_execution': None, 'enterprise_web_search': None, 'function_declarations': None, 'google_maps': None, 'google_search': {'exclude_domains': None, 'blocking_confidence': None, 'time_range_filter': None}, 'google_search_retrieval': None, 'url_context': None}.
+2026-02-04 00:07:22,282 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-04 00:07:31,454 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:52524 - "POST /api/stylist/consumer/chat-form HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/concurrency.py", line 39, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/justynlgh/Documents/agora/backend/app/routes/stylist.py", line 45, in consumer_chat_form
+    result = stylist_service.chat_with_images(threadId or "", message, images)
+  File "/Users/justynlgh/Documents/agora/backend/app/services/stylist_service.py", line 56, in chat_with_images
+    result = stylist_agent.chat(message, thread_id)
+  File "/Users/justynlgh/Documents/agora/backend/agent/src/agents/personal_stylist/core.py", line 77, in chat
+    return self.agent.invoke({"messages": [("user", message)], "personality": personality}, config=config)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/main.py", line 3068, in invoke
+    for chunk in self.stream(
+                 ~~~~~~~~~~~^
+        input,
+        ^^^^^^
+    ...<10 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    ):
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/main.py", line 2643, in stream
+    for _ in runner.tick(
+             ~~~~~~~~~~~^
+        [t for t in loop.tasks.values() if not t.writes],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        schedule_task=loop.accept_push,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ):
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/_runner.py", line 167, in tick
+    run_with_retry(
+    ~~~~~~~~~~~~~~^
+        t,
+        ^^
+    ...<10 lines>...
+        },
+        ^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 812, in _func
+    outputs = list(
+        executor.map(self._run_one, tool_calls, input_types, tool_runtimes)
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 553, in _wrapped_fn
+    return contexts.pop().run(fn, *args)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 1023, in _run_one
+    return self._execute_tool_sync(tool_request, input_type, config)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 972, in _execute_tool_sync
+    content = _handle_tool_error(e, flag=self._handle_tool_errors)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 429, in _handle_tool_error
+    content = flag(e)  # type: ignore [assignment, call-arg]
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 386, in _default_handle_tool_errors
+    raise e
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 929, in _execute_tool_sync
+    response = tool.invoke(call_args, config)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 632, in invoke
+    return self.run(tool_input, **kwargs)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 987, in run
+    raise error_to_raise
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 953, in run
+    response = context.run(self._run, *tool_args, **tool_kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/structured.py", line 96, in _run
+    raise NotImplementedError(msg)
+NotImplementedError: StructuredTool does not support sync invocation.
+During task with name 'tools' and id 'b196d86e-5dda-10ba-9057-f114f8efb6c7'
+2026-02-04 00:07:33,028 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:52523 - "POST /api/stylist/consumer/chat-form HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/fastapi/routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/starlette/concurrency.py", line 39, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/anyio/_backends/_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "/Users/justynlgh/Documents/agora/backend/app/routes/stylist.py", line 45, in consumer_chat_form
+    result = stylist_service.chat_with_images(threadId or "", message, images)
+  File "/Users/justynlgh/Documents/agora/backend/app/services/stylist_service.py", line 56, in chat_with_images
+    result = stylist_agent.chat(message, thread_id)
+  File "/Users/justynlgh/Documents/agora/backend/agent/src/agents/personal_stylist/core.py", line 77, in chat
+    return self.agent.invoke({"messages": [("user", message)], "personality": personality}, config=config)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/main.py", line 3068, in invoke
+    for chunk in self.stream(
+                 ~~~~~~~~~~~^
+        input,
+        ^^^^^^
+    ...<10 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    ):
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/main.py", line 2643, in stream
+    for _ in runner.tick(
+             ~~~~~~~~~~~^
+        [t for t in loop.tasks.values() if not t.writes],
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        schedule_task=loop.accept_push,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ):
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/_runner.py", line 167, in tick
+    run_with_retry(
+    ~~~~~~~~~~~~~~^
+        t,
+        ^^
+    ...<10 lines>...
+        },
+        ^^
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/pregel/_retry.py", line 42, in run_with_retry
+    return task.proc.invoke(task.input, config)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 656, in invoke
+    input = context.run(step.invoke, input, config, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 400, in invoke
+    ret = self.func(*args, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 812, in _func
+    outputs = list(
+        executor.map(self._run_one, tool_calls, input_types, tool_runtimes)
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 619, in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 317, in _result_or_cancel
+    return fut.result(timeout)
+           ~~~~~~~~~~^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 553, in _wrapped_fn
+    return contexts.pop().run(fn, *args)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 1023, in _run_one
+    return self._execute_tool_sync(tool_request, input_type, config)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 972, in _execute_tool_sync
+    content = _handle_tool_error(e, flag=self._handle_tool_errors)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 429, in _handle_tool_error
+    content = flag(e)  # type: ignore [assignment, call-arg]
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 386, in _default_handle_tool_errors
+    raise e
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langgraph/prebuilt/tool_node.py", line 929, in _execute_tool_sync
+    response = tool.invoke(call_args, config)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 632, in invoke
+    return self.run(tool_input, **kwargs)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 987, in run
+    raise error_to_raise
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/base.py", line 953, in run
+    response = context.run(self._run, *tool_args, **tool_kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/venv/lib/python3.13/site-packages/langchain_core/tools/structured.py", line 96, in _run
+    raise NotImplementedError(msg)
+NotImplementedError: StructuredTool does not support sync invocation.
+During task with name 'tools' and id '1356d9de-bcb7-04eb-7596-17a54422e584'
