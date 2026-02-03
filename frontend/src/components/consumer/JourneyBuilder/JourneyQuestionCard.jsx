@@ -642,10 +642,12 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
 }
 
 /* ── Main export — single unified card for any batch ── */
-export default function JourneyQuestionCard({ batch, answers, onAnswer, onContinue, readOnly }) {
+export default function JourneyQuestionCard({ batch, answers, onAnswer, onContinue, readOnly, submitting }) {
   const allAnswered = batch.questions
     .filter(q => q.required)
     .every(q => isQuestionAnswered(q, answers[q.id]));
+
+  const isDisabled = !allAnswered || submitting;
 
   return (
     <>
@@ -689,20 +691,21 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
           <button
             type="button"
             onClick={onContinue}
-            disabled={!allAnswered}
+            disabled={isDisabled}
             style={{
               padding: '8px 24px',
               borderRadius: '9999px',
-              border: `1px solid ${allAnswered ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
+              border: `1px solid ${!isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
               background: 'transparent',
-              color: allAnswered ? 'var(--consumer-purple)' : 'var(--text-muted)',
+              color: !isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: allAnswered ? 'pointer' : 'not-allowed',
+              cursor: !isDisabled ? 'pointer' : 'not-allowed',
               transition: 'border-color 0.2s, color 0.2s',
+              opacity: isDisabled ? 0.6 : 1,
             }}
           >
-            Confirm
+            {submitting ? 'Submitting...' : 'Confirm'}
           </button>
         </div>
       )}

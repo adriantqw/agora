@@ -116,7 +116,10 @@ function transformQuestion(backendQuestion) {
       value: opt.value,
       label: opt.label,
       icon: opt.iconName,
-      imageUrl: opt.imageUrl,
+      // Filter out temp file paths that frontend can't access
+      imageUrl: opt.imageUrl && !opt.imageUrl.startsWith('/var/') && !opt.imageUrl.startsWith('/tmp/')
+        ? opt.imageUrl
+        : null, // Fallback to no image if temp path
       description: opt.description,
     })) || [],
     placeholder: backendQuestion.placeholder,
@@ -226,7 +229,23 @@ export default function CurateMyLookPage() {
         setLoading(false);
       } catch (err) {
         console.error('Failed to start batch:', err);
-        setError(err.message || 'Failed to load questions. Please try again.');
+
+        // Provide specific error messages based on error type
+        let errorMessage = 'Failed to load questions. Please try again.';
+
+        if (err.message.includes('Authentication required')) {
+          errorMessage = 'Your session has expired. Please log in again.';
+          // Auto-redirect to login after 2 seconds
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        } else if (err.message.includes('Network') || err.message.includes('Failed to fetch')) {
+          errorMessage = 'Network error. Please check your internet connection.';
+        } else if (err.message) {
+          errorMessage = err.message; // Use backend's error message
+        }
+
+        setError(errorMessage);
         setLoading(false);
       }
     };
@@ -305,16 +324,29 @@ export default function CurateMyLookPage() {
           batch2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
       } else {
-        // Journey complete - navigate to matchmaker
+        // Journey complete - navigate to recommendations
         const journeyId = response.journeyId;
-        const nextStepUrl = response.nextStep?.url || `/matchmaker?journeyId=${journeyId}`;
+        // Use backend's nextStep.url if provided, otherwise default to /recommendations
+        const nextStepUrl = response.nextStep?.url || `/recommendations?journeyId=${journeyId}`;
         navigate(nextStepUrl);
       }
 
       setSubmitting(false);
     } catch (err) {
-      console.error('Failed to submit answers:', err);
-      setError(err.message || 'Failed to submit answers. Please try again.');
+      console.error('Error confirming batch:', err);
+
+      let errorMessage = 'Failed to submit answers. Please try again.';
+
+      if (err.message.includes('Authentication required')) {
+        errorMessage = 'Your session has expired. Redirecting to login...';
+        setTimeout(() => window.location.href = '/login', 2000);
+      } else if (err.message.includes('Network') || err.message.includes('Failed to fetch')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
       setSubmitting(false);
     }
   };
@@ -488,6 +520,7 @@ export default function CurateMyLookPage() {
                     onAnswer={handleAnswer}
                     onContinue={() => handleConfirm(batchIndex)}
                     readOnly={confirmedBatches.has(batchIndex)}
+                    submitting={submitting}
                   />
                   {confirmedBatches.has(batchIndex) && (
                     <div style={{ marginTop: '16px' }}>

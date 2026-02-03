@@ -1,4 +1,6 @@
 """API routes for curate-my-fit integration."""
+import logging
+import traceback
 from fastapi import APIRouter, Depends, Form, File, UploadFile, HTTPException
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,9 @@ from app.schemas.curate_my_fit import (
     StateResponse,
 )
 from app.services import curate_my_fit_service
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/curate-my-fit", tags=["Curate My Fit"])
 
@@ -37,6 +42,7 @@ async def start_batch(
         StartBatchResponse with threadId, blurb, questions, summaryUpdates, imageUrls
     """
     try:
+        logger.info(f"Starting batch for consumer {current_consumer.id} with query: {searchQuery}")
         result = await curate_my_fit_service.start_batch(
             db=db,
             consumer_id=current_consumer.id,
@@ -44,16 +50,20 @@ async def start_batch(
             images=images
         )
 
+        logger.info(f"Batch started successfully with thread_id: {result.get('threadId')}")
         return {"success": True, "data": result}
 
     except ValueError as e:
+        logger.error(f"Validation error in start_batch: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Unexpected error in start_batch: {e}", exc_info=True)
+        logger.error(f"Full traceback:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to start batch: {str(e)}")
 
 
 @router.post("/submit", response_model=SubmitBatchAnswersResponse)
-def submit_batch_answers(
+async def submit_batch_answers(
     request: SubmitBatchAnswersRequest,
     current_consumer: Consumer = Depends(get_current_consumer),
     db: Session = Depends(get_db)
@@ -74,18 +84,23 @@ def submit_batch_answers(
         - Final journey (journeyId, journey, nextStep) if hasMore=false
     """
     try:
-        result = curate_my_fit_service.submit_batch_answers(
+        logger.info(f"Submitting answers for thread {request.threadId}")
+        result = await curate_my_fit_service.submit_batch_answers(
             db=db,
             consumer_id=current_consumer.id,
             thread_id=request.threadId,
             answers=request.answers
         )
 
+        logger.info(f"Answers submitted successfully, hasMore: {result.get('hasMore')}")
         return {"success": True, "data": result}
 
     except ValueError as e:
+        logger.error(f"Validation error in submit_batch_answers: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        logger.error(f"Unexpected error in submit_batch_answers: {e}", exc_info=True)
+        logger.error(f"Full traceback:\n{traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to submit answers: {str(e)}")
 
 

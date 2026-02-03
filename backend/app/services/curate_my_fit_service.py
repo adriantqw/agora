@@ -1,6 +1,7 @@
 """Service layer for curate-my-fit integration with PersonalStylist agent."""
 import uuid
 import json
+import logging
 from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
@@ -15,6 +16,9 @@ from app.schemas.curate_my_fit import (
 from app.services.storage_service import storage_service
 from app.models.journey import Journey
 from app.models.consumer import Consumer
+
+# Configure logger
+logger = logging.getLogger(__name__)
 
 
 # Initialize agent (singleton)
@@ -52,10 +56,16 @@ async def start_batch(
 
     # Call PersonalStylist agent with search query + images
     message = _format_initial_message(search_query, image_urls)
-    result = stylist_agent.chat(message, thread_id)
+    logger.info(f"Calling PersonalStylist agent with message: {message[:100]}...")
+
+    # Use async invocation to support async tools (Txt2ImgGenerator)
+    result = await _chat_async(stylist_agent, message, thread_id)
+    logger.info(f"Agent result keys: {result.keys()}")
+    logger.debug(f"Agent result: {result}")
 
     # Parse BatchResponse from agent output
     batch_response = _parse_batch_response(result, search_query, image_urls)
+    logger.info(f"Parsed batch response with {len(batch_response['questions'])} questions")
 
     return {
         "threadId": thread_id,
@@ -66,7 +76,7 @@ async def start_batch(
     }
 
 
-def submit_batch_answers(
+async def submit_batch_answers(
     db: Session,
     consumer_id: str,
     thread_id: str,
@@ -87,8 +97,8 @@ def submit_batch_answers(
     # Convert answers to UserResponse format expected by agent
     user_responses = _convert_answers_to_user_response(answers)
 
-    # Submit answers to PersonalStylist agent
-    result = stylist_agent.submit_answers(thread_id, user_responses)
+    # Submit answers to PersonalStylist agent (async to support async tools)
+    result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
 
     # Check if journey is complete
     journey = result.get("journey")
@@ -143,6 +153,26 @@ def get_state(thread_id: str) -> dict:
 
 # Helper functions
 
+async def _chat_async(agent, message: str, thread_id: str, personality: str = 'friendly') -> dict:
+    """
+    Async wrapper for PersonalStylist agent chat.
+
+    Uses ainvoke() to support async tools like Txt2ImgGenerator.
+    """
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": agent.recursion_limit}
+    return await agent.agent.ainvoke({"messages": [("user", message)], "personality": personality}, config=config)
+
+
+async def _submit_answers_async(agent, thread_id: str, answers: list, personality: str = 'friendly') -> dict:
+    """
+    Async wrapper for PersonalStylist agent answer submission.
+
+    Uses ainvoke() to support async tools.
+    """
+    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": agent.recursion_limit}
+    return await agent.agent.ainvoke({"ui_answers": answers, "personality": personality}, config=config)
+
+
 def _format_initial_message(search_query: str, image_urls: list[str]) -> str:
     """Format initial message for agent with search query and images."""
     message = f"User search query: {search_query}"
@@ -163,19 +193,25 @@ def _parse_batch_response(result: dict, search_query: Optional[str], image_urls:
     Returns:
         dict with blurb, questions, summaryUpdates
     """
-    # Extract UI inputs from agent result
-    ui_inputs = result.get("uiInputs", [])
+    # Extract UI inputs from agent result (correct key is 'ui_inputs' not 'uiInputs')
+    ui_inputs = result.get("ui_inputs", [])
     journey = result.get("journey")
+
+    logger.debug(f"Extracted {len(ui_inputs)} UI inputs from agent result")
+    logger.debug(f"Journey data: {journey}")
 
     # Generate blurb from agent message or create generic one
     messages = result.get("messages", [])
     blurb = _extract_blurb_from_messages(messages, search_query)
+    logger.debug(f"Extracted blurb: {blurb[:100]}...")
 
     # Convert UI inputs to questions
     questions = _convert_ui_inputs_to_questions(ui_inputs)
+    logger.debug(f"Converted {len(questions)} questions")
 
     # Extract summary updates from journey
     summary_updates = _extract_summary_updates(journey, search_query)
+    logger.debug(f"Summary updates: {summary_updates}")
 
     return {
         "blurb": blurb,
@@ -188,10 +224,19 @@ def _extract_blurb_from_messages(messages: list, search_query: Optional[str]) ->
     """Extract blurb from agent messages or generate default."""
     # Find last AI message
     for msg in reversed(messages):
+        # Check if it's a Pydantic BaseMessage object
         if hasattr(msg, "type") and msg.type == "ai":
             # Extract text content
             if hasattr(msg, "content") and isinstance(msg.content, str):
                 return msg.content
+        # Check if it's a dict representation
+        elif isinstance(msg, dict):
+            msg_type = msg.get("type")
+            # LangChain also uses "AIMessage" as class name in serialization
+            if msg_type == "ai" or msg.get("__class__") == "AIMessage":
+                content = msg.get("content", "")
+                if isinstance(content, str) and content:
+                    return content
 
     # Default blurb if no AI message found
     if search_query:
@@ -200,69 +245,163 @@ def _extract_blurb_from_messages(messages: list, search_query: Optional[str]) ->
 
 
 def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
-    """Convert agent UI inputs to QuestionSchema format."""
+    """
+    Convert agent UI inputs to QuestionSchema format.
+
+    Args:
+        ui_inputs: List of UIInput Pydantic models from agent
+
+    Returns:
+        List of question dicts compatible with frontend QuestionSchema
+    """
     questions = []
+
     for ui_input in ui_inputs:
+        # Access Pydantic model attributes directly (not .get())
         question = {
-            "id": ui_input.get("question_id", str(uuid.uuid4())),
-            "type": ui_input.get("type", "free-text"),
-            "question": ui_input.get("question", ""),
-            "rowLabel": ui_input.get("label", ""),
-            "required": ui_input.get("required", True),
+            "id": ui_input.id if ui_input.id else str(uuid.uuid4()),
+            "type": _map_ui_type_to_frontend(ui_input.type),
+            "question": ui_input.question,
+            "rowLabel": ui_input.question,  # Use question as row label
+            "required": True,  # All questions required by default
             "options": [],
         }
 
-        # Convert options if present
-        if "options" in ui_input:
+        # Map image_options (ImageOption Pydantic models)
+        if ui_input.image_options:
             question["options"] = [
                 {
-                    "label": opt.get("label", ""),
-                    "value": opt.get("value", ""),
-                    "imageUrl": opt.get("image_url"),
-                    "iconName": opt.get("icon_name"),
-                    "description": opt.get("description"),
+                    "label": opt.label,
+                    "value": opt.id if opt.id else opt.label.lower().replace(" ", "-"),
+                    "imageUrl": str(opt.image_path) if opt.image_path else None,
                 }
-                for opt in ui_input["options"]
+                for opt in ui_input.image_options
             ]
 
-        # Add type-specific fields
-        if ui_input.get("type") == "free-text":
-            question["placeholder"] = ui_input.get("placeholder")
-        elif ui_input.get("type") == "dual-range":
-            question["minValue"] = ui_input.get("min_value")
-            question["maxValue"] = ui_input.get("max_value")
-            question["unit"] = ui_input.get("unit")
-        elif ui_input.get("type") == "multi-select":
-            question["multiSelect"] = True
+        # Map text_options (list of strings)
+        elif ui_input.text_options:
+            question["options"] = [
+                {
+                    "label": text,
+                    "value": text.lower().replace(" ", "-"),
+                }
+                for text in ui_input.text_options
+            ]
+
+        # Map colour_hex_options (list of hex strings)
+        elif ui_input.colour_hex_options:
+            question["options"] = [
+                {
+                    "label": hex_color,
+                    "value": hex_color,
+                }
+                for hex_color in ui_input.colour_hex_options
+            ]
+
+        # Add type-specific fields for scale-rating
+        if ui_input.type.value == "scale_rating":
+            question["minLabel"] = ui_input.min_label
+            question["maxLabel"] = ui_input.max_label
 
         questions.append(question)
 
     return questions
 
 
-def _extract_summary_updates(journey: Optional[dict], search_query: Optional[str]) -> dict:
-    """Extract summary updates from journey state."""
+def _map_ui_type_to_frontend(ui_type) -> str:
+    """
+    Map agent UIInputType enum to frontend question type string.
+
+    Args:
+        ui_type: UIInputType enum value
+
+    Returns:
+        Frontend-compatible type string
+    """
+    # Handle enum - get the value
+    if hasattr(ui_type, 'value'):
+        type_value = ui_type.value
+    else:
+        type_value = str(ui_type)
+
+    # Map agent types to frontend types
+    type_mapping = {
+        "image_choice": "image-select",
+        "colour_palette": "color-picker",
+        "multi_select": "multi-select",
+        "single_select": "single-choice",
+        "scale_rating": "scale-rating",
+        "free_text": "free-text",
+    }
+
+    return type_mapping.get(type_value, "free-text")
+
+
+def _extract_summary_updates(journey, search_query: Optional[str]) -> dict:
+    """
+    Extract summary updates from journey state.
+
+    Args:
+        journey: JourneySchema Pydantic model or None
+        search_query: Original search query for fallback title
+
+    Returns:
+        dict with title, foundations (SummaryFoundations schema), narrative
+    """
     if not journey:
         return {
             "title": "Your Journey",
-            "foundations": {},
+            "foundations": {
+                "location": None,
+                "style": None,
+                "age": None,
+                "sizing": None,
+                "occasion": None,
+            },
             "narrative": "Let's create something amazing together!",
         }
 
-    foundations = {}
-    if journey.get("location"):
-        foundations["location"] = journey["location"]
-    if journey.get("occasion"):
-        foundations["occasion"] = journey["occasion"]
-    if journey.get("season"):
-        foundations["season"] = journey["season"]
-    if journey.get("style_preferences"):
-        foundations["style"] = ", ".join(journey["style_preferences"][:2])  # First 2 styles
+    # Handle both Pydantic model and dict
+    if hasattr(journey, 'model_dump'):
+        journey_dict = journey.model_dump()
+    elif isinstance(journey, dict):
+        journey_dict = journey
+    else:
+        journey_dict = {}
+
+    # Initialize foundations with all fields (matching SummaryFoundations schema)
+    foundations = {
+        "location": None,
+        "style": None,
+        "age": None,
+        "sizing": None,
+        "occasion": None,
+    }
+
+    # Extract foundation data (convert enums to strings)
+    if journey_dict.get("location"):
+        location = journey_dict["location"]
+        foundations["location"] = location.value if hasattr(location, 'value') else str(location)
+
+    if journey_dict.get("occasion"):
+        occasion = journey_dict["occasion"]
+        foundations["occasion"] = occasion.value if hasattr(occasion, 'value') else str(occasion)
+
+    if journey_dict.get("season"):
+        season = journey_dict["season"]
+        # Season doesn't map to foundations schema, so skip it
+        pass
+
+    if journey_dict.get("style_preferences"):
+        styles = journey_dict["style_preferences"]
+        # Convert enum list to strings and take first 2
+        style_strs = [s.value if hasattr(s, 'value') else str(s) for s in styles[:2]]
+        foundations["style"] = ", ".join(style_strs) if style_strs else None
 
     return {
-        "title": journey.get("title", "Your Journey"),
+        "title": journey_dict.get("title", "Your Journey"),
         "foundations": foundations,
-        "narrative": journey.get("summary", "Building your perfect look..."),
+        "narrative": journey_dict.get("summary", "Building your perfect look..."),
     }
 
 
@@ -303,23 +442,58 @@ def _create_journey_from_agent(
     journey_data: dict,
     thread_id: str
 ) -> Journey:
-    """Create Journey record from agent output."""
+    """
+    Create Journey record from agent output.
+
+    Args:
+        db: Database session
+        consumer_id: Consumer ID from auth token
+        journey_data: Journey data from agent (Pydantic model or dict)
+        thread_id: Thread ID for extracting search query/images
+
+    Returns:
+        Journey: Created journey record
+    """
+    # Convert Pydantic model to dict if needed
+    if hasattr(journey_data, 'model_dump'):
+        journey_dict = journey_data.model_dump()
+    elif isinstance(journey_data, dict):
+        journey_dict = journey_data
+    else:
+        journey_dict = {}
+
     # Extract search query and image URLs from thread state if available
     state = stylist_agent.get_state(thread_id)
-    messages = state.values.get("messages", []) if state else []
+    messages = []
+
+    # Handle both StateSnapshot and dict
+    if state:
+        if hasattr(state, 'values'):
+            # StateSnapshot object
+            messages = state.values.get("messages", [])
+        elif isinstance(state, dict):
+            # Dict representation
+            messages = state.get("messages", [])
 
     # Try to extract search query from first message
     search_query = None
     image_urls = []
     if messages:
         first_msg = messages[0]
+        content = None
+
+        # Extract content from message
         if hasattr(first_msg, "content"):
             content = first_msg.content
+        elif isinstance(first_msg, dict):
+            content = first_msg.get("content", "")
+
+        # Parse content for search query and images
+        if content and isinstance(content, str):
             if "User search query:" in content:
                 lines = content.split("\n")
                 search_query = lines[0].replace("User search query:", "").strip()
             if "User uploaded" in content and "images:" in content:
-                import json
                 try:
                     image_urls = json.loads(content.split("images:")[1].strip())
                 except:
@@ -328,11 +502,11 @@ def _create_journey_from_agent(
     journey = Journey(
         id=str(uuid.uuid4()),
         consumer_id=consumer_id,
-        title=journey_data.get("title", "Untitled Journey"),
+        title=journey_dict.get("title", "Untitled Journey"),
         status="active",
         status_color="#10B981",  # Green
         status_label="Active",
-        summary=journey_data.get("summary"),
+        summary=journey_dict.get("summary"),
         search_query=search_query,
         image_urls=image_urls,
     )
