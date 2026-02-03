@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # Google AI Configuration
     GOOGLE_API_KEY: str = ""
 
+    # Serp API Configuration (for Google Search integration)
+    SERP_API_KEY: str = ""
+
     # Catalogue Processing
     CATALOGUE_UPLOAD_DIR: str = "data/uploads/catalogues"
     TESSERACT_PATH: str = "/usr/bin/tesseract"

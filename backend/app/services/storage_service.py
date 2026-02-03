@@ -148,6 +148,57 @@ class StorageService:
         except ClientError as e:
             return {"error": f"Upload failed: {str(e)}"}
 
+    async def upload_search_images(self, images: list[UploadFile]) -> dict:
+        """
+        Upload up to 5 search images to R2 bucket.
+
+        Args:
+            images: List of uploaded image files (max 5)
+
+        Returns:
+            dict with 'urls' list on success, or 'error' on failure
+        """
+        if len(images) > 5:
+            return {"error": "Maximum 5 images allowed"}
+
+        if len(images) == 0:
+            return {"urls": []}
+
+        uploaded_urls = []
+        for image in images:
+            # Validate file type
+            validation_error = self._validate_file(image)
+            if validation_error:
+                return {"error": f"{image.filename}: {validation_error}"}
+
+            # Read file content
+            content = await image.read()
+
+            if len(content) > MAX_FILE_SIZE:
+                return {"error": f"{image.filename}: File too large. Maximum size is {MAX_FILE_SIZE // 1024 // 1024}MB"}
+
+            # Generate unique filename
+            ext = self._get_file_extension(image.filename or "unknown.jpg")
+            unique_filename = f"{uuid.uuid4()}.{ext}"
+            key = f"search-images/{unique_filename}"
+
+            try:
+                self.client.put_object(
+                    Bucket=settings.R2_BUCKET_NAME,
+                    Key=key,
+                    Body=content,
+                    ContentType=image.content_type or "image/jpeg",
+                )
+
+                # Construct public URL
+                public_url = f"{settings.R2_PUBLIC_URL.rstrip('/')}/{key}"
+                uploaded_urls.append(public_url)
+
+            except ClientError as e:
+                return {"error": f"Upload failed for {image.filename}: {str(e)}"}
+
+        return {"urls": uploaded_urls}
+
 
 # Global service instance
 storage_service = StorageService()

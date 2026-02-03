@@ -1,10 +1,10 @@
-import { useState, useMemo, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header/Header';
 import Mascot from '../components/common/Mascot/Mascot';
 import JourneyQuestionCard from '../components/consumer/JourneyBuilder/JourneyQuestionCard';
 import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
-import { CURATE_MY_LOOK_PAYLOAD } from '../components/consumer/JourneyBuilder/journeyBuilderMock';
+import curateMyFitService from '../services/curateMyFitService';
 
 function isQuestionAnswered(question, answer) {
   if (!answer) return false;
@@ -13,109 +13,18 @@ function isQuestionAnswered(question, answer) {
       return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0;
     case 'hybrid-select':
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
-        (typeof answer.value === 'string' && answer.value.trim() !== '');
+        (typeof answer.freeText === 'string' && answer.freeText.trim() !== '');
     case 'scale-rating':
       return answer.value !== undefined && answer.value !== null;
     case 'free-text':
-      return typeof answer.value === 'string' && answer.value.length > 0;
+      return typeof answer.freeText === 'string' && answer.freeText.length > 0;
     case 'single-choice':
-      return !!answer.value;
+      return !!answer.selectedOptions && answer.selectedOptions.length > 0;
+    case 'dual-range':
+      return answer.minValue !== undefined && answer.maxValue !== undefined;
     default:
-      return !!answer.value;
+      return !!answer.value || !!answer.selectedOptions?.length || !!answer.freeText;
   }
-}
-
-// ── Extract a single source value from the current answers ──
-// Returns: string | string[] | null depending on strategy
-function resolveSource(source, answers, batches) {
-  const { questionId, extract } = source;
-  const answer = answers[questionId];
-
-  // Find the question definition across all batches
-  let question = null;
-  for (const batch of batches) {
-    const found = batch.questions.find(q => q.id === questionId);
-    if (found) { question = found; break; }
-  }
-
-  switch (extract) {
-    case 'selectedLabels': {
-      if (!answer?.selectedOptions?.length || !question?.options) return [];
-      return answer.selectedOptions
-        .map(id => question.options.find(o => o.id === id)?.label)
-        .filter(Boolean);
-    }
-    case 'firstLabel': {
-      // First selected chip label, falling back to freeText
-      if (answer?.selectedOptions?.length && question?.options) {
-        const label = question.options.find(o => o.id === answer.selectedOptions[0])?.label;
-        if (label) return label;
-      }
-      const free = typeof answer?.value === 'string' ? answer.value.trim() : '';
-      return free || null;
-    }
-    case 'freeText': {
-      const val = typeof answer?.value === 'string' ? answer.value.trim() : '';
-      return val || null;
-    }
-    case 'value': {
-      if (answer?.value === undefined || answer?.value === null) return null;
-      return String(answer.value);
-    }
-    default:
-      return null;
-  }
-}
-
-// ── Compute the full summary from the payload config + live answers ──
-function computeSummary(summaryConfig, answers, batches) {
-  // --- title ---
-  const titleRaw = resolveSource(summaryConfig.title.source, answers, batches);
-  const titleValue = Array.isArray(titleRaw) ? titleRaw[0] || null : titleRaw;
-  const title = titleValue
-    ? summaryConfig.title.template.replace('{value}', titleValue)
-    : summaryConfig.title.fallback;
-
-  // --- rows ---
-  const rows = summaryConfig.rows.map(row => {
-    const values = [];
-    for (const src of row.sources) {
-      const result = resolveSource(src, answers, batches);
-      if (Array.isArray(result)) {
-        values.push(...result);
-      } else if (result != null) {
-        values.push(result);
-      }
-    }
-    return { label: row.label, values };
-  });
-
-  // --- narrative ---
-  const bodySegments = [];
-  const detailSegments = [];
-
-  for (const seg of summaryConfig.narrative) {
-    const raw = resolveSource(seg.source, answers, batches);
-    const val = Array.isArray(raw) ? raw[0] || null : raw;
-    if (val == null || val === '') continue;
-    const text = seg.template.replace('{value}', val);
-    if (seg.group === 'body') bodySegments.push(text);
-    else detailSegments.push(text);
-  }
-
-  let narrativeText = '';
-  if (bodySegments.length > 0) {
-    const bodyJoined = bodySegments.join(', ');
-    narrativeText = bodyJoined.charAt(0).toUpperCase() + bodyJoined.slice(1) + '.';
-  }
-  if (detailSegments.length > 0) {
-    narrativeText += (narrativeText ? ' ' : '') + detailSegments.join(' ');
-  }
-  if (!narrativeText) {
-    narrativeText = summaryConfig.narrativeFallback;
-  }
-
-  return { title, rows, narrativeText };
 }
 
 // ── Resolve a single answer to a human-readable string ──
@@ -125,34 +34,34 @@ function resolveAnswerLabel(question, answer) {
     case 'multi-select': {
       if (!answer.selectedOptions?.length || !question.options) return null;
       const labels = answer.selectedOptions
-        .map(id => question.options.find(o => o.id === id)?.label)
+        .map(value => question.options.find(o => o.value === value)?.label)
         .filter(Boolean);
       return labels.length ? labels.join(', ') : null;
     }
     case 'single-choice': {
-      if (!answer.value || !question.options) return null;
-      const opt = question.options.find(o => o.id === answer.value);
+      if (!answer.selectedOptions?.length || !question.options) return null;
+      const opt = question.options.find(o => o.value === answer.selectedOptions[0]);
       return opt?.label || null;
     }
     case 'hybrid-select': {
       if (answer.selectedOptions?.length && question.options) {
-        const opt = question.options.find(o => o.id === answer.selectedOptions[0]);
+        const opt = question.options.find(o => o.value === answer.selectedOptions[0]);
         if (opt) return opt.label;
       }
-      const free = typeof answer.value === 'string' ? answer.value.trim() : '';
+      const free = typeof answer.freeText === 'string' ? answer.freeText.trim() : '';
       return free || null;
     }
     case 'scale-rating': {
       if (answer.value === undefined || answer.value === null) return null;
-      if (question.chips) {
-        const chip = question.chips.find(c => c.value === Number(answer.value));
-        return chip?.label || String(answer.value);
-      }
       return '$'.repeat(Number(answer.value));
     }
     case 'free-text': {
-      const val = typeof answer.value === 'string' ? answer.value.trim() : '';
+      const val = typeof answer.freeText === 'string' ? answer.freeText.trim() : '';
       return val || null;
+    }
+    case 'dual-range': {
+      if (answer.minValue === undefined || answer.maxValue === undefined) return null;
+      return `$${answer.minValue} - $${answer.maxValue}`;
     }
     default:
       return answer.value != null ? String(answer.value) : null;
@@ -195,21 +104,135 @@ function ConfirmBubble({ lines }) {
   );
 }
 
+// Transform backend question format to frontend format
+function transformQuestion(backendQuestion) {
+  return {
+    id: backendQuestion.id,
+    type: backendQuestion.type,
+    question: backendQuestion.question,
+    rowLabel: backendQuestion.rowLabel,
+    required: backendQuestion.required,
+    options: backendQuestion.options?.map(opt => ({
+      value: opt.value,
+      label: opt.label,
+      icon: opt.iconName,
+      imageUrl: opt.imageUrl,
+      description: opt.description,
+    })) || [],
+    placeholder: backendQuestion.placeholder,
+    min: backendQuestion.minValue,
+    max: backendQuestion.maxValue,
+    step: 1,
+    minGap: backendQuestion.minValue !== undefined ? Math.max(1, (backendQuestion.maxValue - backendQuestion.minValue) / 20) : 50,
+    multiSelect: backendQuestion.multiSelect,
+  };
+}
+
+// Extract foundations from summaryUpdates
+function extractFoundations(summaryUpdates) {
+  const foundations = summaryUpdates?.foundations || {};
+  const rows = [];
+
+  if (foundations.location) {
+    rows.push({ label: 'Location', values: [foundations.location] });
+  }
+  if (foundations.style) {
+    rows.push({ label: 'Style', values: [foundations.style] });
+  }
+  if (foundations.occasion) {
+    rows.push({ label: 'Occasion', values: [foundations.occasion] });
+  }
+  if (foundations.age) {
+    rows.push({ label: 'Age', values: [foundations.age] });
+  }
+  if (foundations.sizing) {
+    rows.push({ label: 'Sizing', values: [foundations.sizing] });
+  }
+
+  return rows;
+}
+
 export default function CurateMyLookPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const initialQuery = location.state?.searchQuery || '';
   const initialImages = location.state?.images || [];
 
-  const batches = CURATE_MY_LOOK_PAYLOAD.batches;
+  // API state
+  const [threadId, setThreadId] = useState(null);
+  const [batches, setBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // UI state
   const [answers, setAnswers] = useState({});
   const [currentBatch, setCurrentBatch] = useState(0);
   const [confirmedBatches, setConfirmedBatches] = useState(new Set());
   const batch2Ref = useRef(null);
 
-  const { title: journeyTitle, rows: foundations, narrativeText } = useMemo(
-    () => computeSummary(CURATE_MY_LOOK_PAYLOAD.summary, answers, batches),
-    [answers, batches]
-  );
+  // Summary state from API
+  const [journeyTitle, setJourneyTitle] = useState('My Journey');
+  const [foundations, setFoundations] = useState([]);
+  const [narrativeText, setNarrativeText] = useState('');
+
+  // Initialize: Call startBatch on mount
+  useEffect(() => {
+    const initializeBatch = async () => {
+      if (!initialQuery && initialImages.length === 0) {
+        setError('No search query or images provided');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Convert base64 images back to File objects if needed
+        const imageFiles = [];
+        for (let i = 0; i < initialImages.length; i++) {
+          const base64 = initialImages[i];
+          if (base64.startsWith('data:image')) {
+            // Convert base64 to File
+            const response = await fetch(base64);
+            const blob = await response.blob();
+            const file = new File([blob], `image-${i}.jpg`, { type: 'image/jpeg' });
+            imageFiles.push(file);
+          }
+        }
+
+        const response = await curateMyFitService.startBatch(initialQuery, imageFiles);
+
+        // Transform backend response to frontend format
+        const firstBatch = {
+          id: 'batch-1',
+          label: 'Batch 1',
+          blurb: response.blurb,
+          hasConfirmButton: true,
+          questions: response.questions.map(transformQuestion),
+        };
+
+        setThreadId(response.threadId);
+        setBatches([firstBatch]);
+
+        // Update summary from API
+        if (response.summaryUpdates) {
+          setJourneyTitle(response.summaryUpdates.title || 'My Journey');
+          setFoundations(extractFoundations(response.summaryUpdates));
+          setNarrativeText(response.summaryUpdates.narrative || '');
+        }
+
+        setLoading(false);
+      } catch (err) {
+        console.error('Failed to start batch:', err);
+        setError(err.message || 'Failed to load questions. Please try again.');
+        setLoading(false);
+      }
+    };
+
+    initializeBatch();
+  }, []); // Only run once on mount
 
   const isReady = useMemo(() => {
     return batches.every(batch =>
@@ -224,13 +247,75 @@ export default function CurateMyLookPage() {
     setAnswers(prev => ({ ...prev, [answer.questionId]: answer }));
   };
 
-  const handleConfirm = (batchIndex) => {
+  const handleConfirm = async (batchIndex) => {
+    // Mark batch as confirmed
     setConfirmedBatches(prev => new Set([...prev, batchIndex]));
-    if (batchIndex === 0) {
-      setCurrentBatch(1);
+
+    // If not the last batch, just scroll to next
+    if (batchIndex < batches.length - 1) {
+      setCurrentBatch(batchIndex + 1);
       setTimeout(() => {
         batch2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+      return;
+    }
+
+    // If this is the last batch, submit answers to backend
+    try {
+      setSubmitting(true);
+      setError(null);
+
+      // Prepare answers in backend format
+      const backendAnswers = {};
+      Object.keys(answers).forEach(questionId => {
+        const answer = answers[questionId];
+        backendAnswers[questionId] = {
+          selectedOptions: answer.selectedOptions || undefined,
+          freeText: answer.freeText || undefined,
+          minValue: answer.minValue || undefined,
+          maxValue: answer.maxValue || undefined,
+          timestamp: answer.timestamp || Date.now(),
+        };
+      });
+
+      const response = await curateMyFitService.submitBatchAnswers(threadId, backendAnswers);
+
+      if (response.hasMore) {
+        // Add next batch
+        const nextBatch = {
+          id: `batch-${batches.length + 1}`,
+          label: `Batch ${batches.length + 1}`,
+          blurb: response.blurb,
+          hasConfirmButton: true,
+          questions: response.questions.map(transformQuestion),
+        };
+
+        setBatches(prev => [...prev, nextBatch]);
+        setCurrentBatch(batches.length);
+
+        // Update summary
+        if (response.summaryUpdates) {
+          setJourneyTitle(response.summaryUpdates.title || journeyTitle);
+          setFoundations(extractFoundations(response.summaryUpdates));
+          setNarrativeText(response.summaryUpdates.narrative || '');
+        }
+
+        // Scroll to new batch
+        setTimeout(() => {
+          batch2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      } else {
+        // Journey complete - navigate to matchmaker
+        const journeyId = response.journeyId;
+        const nextStepUrl = response.nextStep?.url || `/matchmaker?journeyId=${journeyId}`;
+        navigate(nextStepUrl);
+      }
+
+      setSubmitting(false);
+    } catch (err) {
+      console.error('Failed to submit answers:', err);
+      setError(err.message || 'Failed to submit answers. Please try again.');
+      setSubmitting(false);
     }
   };
 
@@ -238,9 +323,85 @@ export default function CurateMyLookPage() {
     console.log('Quick Match clicked', { foundations, narrativeText });
   };
 
-  const handleLetsGo = () => {
-    console.log('Let\'s Goooo! clicked', { foundations, narrativeText, answers });
+  const handleLetsGo = async () => {
+    // Submit final batch
+    await handleConfirm(batches.length - 1);
   };
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff9f5',
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #f3f3f3',
+            borderTop: '4px solid #793DB0',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px',
+          }} />
+          <div style={{ fontSize: '16px', color: '#666' }}>Loading your journey...</div>
+        </div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff9f5',
+      }}>
+        <div style={{
+          maxWidth: '500px',
+          padding: '32px',
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>😔</div>
+          <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#333' }}>
+            Oops! Something went wrong
+          </div>
+          <div style={{ fontSize: '14px', color: '#666', marginBottom: '24px' }}>
+            {error}
+          </div>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#793DB0',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -267,6 +428,8 @@ export default function CurateMyLookPage() {
         <div style={{
           overflowY: 'auto',
           padding: '32px',
+          opacity: submitting ? 0.6 : 1,
+          pointerEvents: submitting ? 'none' : 'auto',
         }}>
           {(initialQuery || initialImages.length > 0) && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
@@ -301,61 +464,59 @@ export default function CurateMyLookPage() {
             </div>
           )}
 
-          <div style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            lineHeight: '1.4',
-            marginBottom: '16px',
-            background: 'var(--gradient-user-answer)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            animation: 'fadeInBatch 0.4s ease-out',
-          }}>
-            {batches[0].blurb}
-          </div>
+          {batches.map((batch, batchIndex) => (
+            <div key={batch.id} ref={batchIndex === 1 ? batch2Ref : null} style={{ marginBottom: batchIndex < batches.length - 1 ? '32px' : 0 }}>
+              {(batchIndex === 0 || currentBatch >= batchIndex) && (
+                <>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    lineHeight: '1.4',
+                    marginBottom: '16px',
+                    background: 'var(--gradient-user-answer)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    animation: 'fadeInBatch 0.4s ease-out',
+                  }}>
+                    {batch.blurb}
+                  </div>
 
-          <JourneyQuestionCard
-            batch={batches[0]}
-            answers={answers}
-            onAnswer={handleAnswer}
-            onContinue={() => handleConfirm(0)}
-            readOnly={confirmedBatches.has(0)}
-          />
-          {confirmedBatches.has(0) && (
-            <div style={{ marginTop: '16px' }}>
-              <ConfirmBubble lines={buildConfirmSummary(batches[0], answers)} />
-            </div>
-          )}
-
-          {currentBatch >= 1 && (
-            <div ref={batch2Ref} style={{ marginTop: '32px' }}>
-              <div style={{
-                fontSize: '18px',
-                fontWeight: '600',
-                lineHeight: '1.4',
-                marginBottom: '16px',
-                background: 'var(--gradient-user-answer)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                animation: 'fadeInBatch 0.4s ease-out',
-              }}>
-                {batches[1].blurb}
-              </div>
-
-              <JourneyQuestionCard
-                batch={batches[1]}
-                answers={answers}
-                onAnswer={handleAnswer}
-                onContinue={() => handleConfirm(1)}
-                readOnly={confirmedBatches.has(1)}
-              />
-              {confirmedBatches.has(1) && (
-                <div style={{ marginTop: '16px' }}>
-                  <ConfirmBubble lines={buildConfirmSummary(batches[1], answers)} />
-                </div>
+                  <JourneyQuestionCard
+                    batch={batch}
+                    answers={answers}
+                    onAnswer={handleAnswer}
+                    onContinue={() => handleConfirm(batchIndex)}
+                    readOnly={confirmedBatches.has(batchIndex)}
+                  />
+                  {confirmedBatches.has(batchIndex) && (
+                    <div style={{ marginTop: '16px' }}>
+                      <ConfirmBubble lines={buildConfirmSummary(batch, answers)} />
+                    </div>
+                  )}
+                </>
               )}
+            </div>
+          ))}
+
+          {submitting && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px',
+              marginTop: '16px',
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                border: '3px solid #f3f3f3',
+                borderTop: '3px solid #793DB0',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginRight: '12px',
+              }} />
+              <div style={{ fontSize: '14px', color: '#666' }}>Processing your answers...</div>
             </div>
           )}
         </div>
@@ -375,15 +536,20 @@ export default function CurateMyLookPage() {
       <Mascot
         variant="default"
         position="bottom-right"
-        isSearching={!isReady}
+        isSearching={!isReady || submitting}
         message={confirmedBatches.size > 0 ? (isReady ? "Let's Goooo!" : "Quick Match →") : ''}
-        onClick={isReady ? handleLetsGo : handleQuickMatch}
+        onClick={isReady && !submitting ? handleLetsGo : handleQuickMatch}
       />
 
       <style>{`
         @keyframes fadeInBatch {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
 
         @media (max-width: 768px) {
