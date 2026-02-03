@@ -129,7 +129,7 @@ const AddBrandModal = ({ isOpen, onClose, onAdd, currentBrands = [] }) => {
                  background: colors.card.backgroundAlt
                }}
              >
-               <Check size={18} color={colors.primary.eggPink} />
+                <Check size={18} color={colors.gradient.start} />
                <span>Add custom brand "<strong>{searchTerm}</strong>"</span>
              </div>
           )}

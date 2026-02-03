@@ -159,7 +159,7 @@ const SelectVibeModal = ({ isOpen, onClose, onAdd, currentVibes = [] }) => {
                 cursor: 'pointer', 
                 borderRadius: '24px', 
                 overflow: 'hidden',
-                border: `4px solid ${hoveredVibe === vibe.name ? colors.primary.eggPink : 'transparent'}`, 
+                border: `4px solid ${hoveredVibe === vibe.name ? colors.gradient.start : 'transparent'}`, 
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 background: colors.card.backgroundAlt,
                 position: 'relative',
@@ -236,7 +236,7 @@ const SelectVibeModal = ({ isOpen, onClose, onAdd, currentVibes = [] }) => {
               disabled={!customVibe.trim()}
               style={{
                 padding: '0 32px', borderRadius: '16px', border: 'none',
-                background: colors.primary.eggPink, color: 'white',
+                background: colors.gradient.start, color: 'white',
                 fontWeight: '800', fontSize: '16px', cursor: 'pointer',
                 opacity: customVibe.trim() ? 1 : 0.5
               }}

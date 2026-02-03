@@ -126,7 +126,7 @@ const CollapsibleJourneySection = ({ journey, onOutfitAdd }) => {
                 gap: '6px',
                 background: 'transparent',
                 border: 'none',
-                color: colors.primary.eggPink,
+                color: colors.gradient.start,
                 fontSize: '15px',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -135,7 +135,7 @@ const CollapsibleJourneySection = ({ journey, onOutfitAdd }) => {
                 transition: 'all 0.2s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = `${colors.primary.eggPink}10`;
+                e.currentTarget.style.background = `${colors.gradient.start}10`;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'transparent';

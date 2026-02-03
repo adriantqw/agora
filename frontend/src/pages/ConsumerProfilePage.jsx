@@ -151,7 +151,7 @@ const ConsumerProfilePage = () => {
     }}
     onClick={onClick}
     onMouseEnter={(e) => {
-      e.currentTarget.style.borderColor = colors.primary.eggPink;
+e.currentTarget.style.borderColor = colors.gradient.start;
       e.currentTarget.style.transform = 'translateY(-2px)';
     }}
     onMouseLeave={(e) => {
@@ -208,7 +208,7 @@ const ConsumerProfilePage = () => {
                     height: '96px', 
                     borderRadius: '50%', 
                     padding: '4px', 
-                    background: colors.primary.eggPinkLight,
+                    background: colors.gradient.light,
                     marginBottom: '12px',
                     position: 'relative'
                   }}>
@@ -240,8 +240,8 @@ const ConsumerProfilePage = () => {
                         padding: '12px 16px',
                         borderRadius: '12px',
                         border: 'none',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
-                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
+                        color: item.active ? colors.gradient.start : colors.text.secondary,
+                        background: item.active ? colors.gradient.light : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -258,7 +258,12 @@ const ConsumerProfilePage = () => {
                       }}
                     >
                       <item.icon size={18} fill={item.active ? 'currentColor' : 'none'} />
-                      {item.label}
+                      <span style={item.active ? {
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      } : {}}>{item.label}</span>
                       {item.badge && (
                         <span style={{ 
                           marginLeft: 'auto', 
@@ -319,8 +324,8 @@ const ConsumerProfilePage = () => {
                   padding: '32px',
                   position: 'relative',
                   overflow: 'hidden',
-                  boxShadow: '0 10px 30px -5px rgba(139, 92, 246, 0.15)',
-                  border: `1px solid ${isDark ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.1)'}`,
+                  boxShadow: `0 10px 30px -5px ${colors.gradient.start}26`,
+                  border: `1px solid ${isDark ? `${colors.gradient.start}4D` : `${colors.gradient.start}1A`}`,
                 }}>
                   <div style={{ 
                     position: 'relative', 
@@ -332,7 +337,15 @@ const ConsumerProfilePage = () => {
                     flexWrap: 'wrap'
                   }}>
                     <div style={{ flex: 1, minWidth: '300px' }}>
-                      <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '8px', color: '#8B5CF6' }}>Hello, {userName.split(' ')[0]}! ✨</h1>
+                      <h1 style={{
+                        fontSize: '32px',
+                        fontWeight: '900',
+                        marginBottom: '8px',
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      }}>Hello, {userName.split(' ')[0]}! ✨</h1>
                       <p style={{ 
                         maxWidth: '480px', 
                         lineHeight: '1.5', 
@@ -344,7 +357,7 @@ const ConsumerProfilePage = () => {
                       </p>
                     </div>
                     <button style={{
-                      background: '#8B5CF6',
+                      background: colors.gradient.consumer,
                       color: 'white',
                       border: 'none',
                       padding: '14px 32px',
@@ -355,7 +368,7 @@ const ConsumerProfilePage = () => {
                       display: 'inline-flex',
                       alignItems: 'center',
                       gap: '8px',
-                      boxShadow: '0 4px 15px rgba(139, 92, 246, 0.4)',
+                      boxShadow: `0 4px 15px ${colors.gradient.start}66`,
                       transition: 'all 0.2s',
                       whiteSpace: 'nowrap',
                       flexShrink: 0
@@ -363,11 +376,11 @@ const ConsumerProfilePage = () => {
                     onClick={() => navigate('/recommendations')}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.background = '#7C3AED';
+                      e.currentTarget.style.boxShadow = `0 6px 20px ${colors.gradient.start}80`;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.background = '#8B5CF6';
+                      e.currentTarget.style.boxShadow = `0 4px 15px ${colors.gradient.start}66`;
                     }}
                     >
                       View Recommendations <ArrowRight size={16} strokeWidth={3} />
@@ -381,7 +394,7 @@ const ConsumerProfilePage = () => {
                     top: '-10%',
                     width: '30%',
                     height: '120%',
-                    background: 'radial-gradient(circle, rgba(139, 92, 246, 0.05) 0%, transparent 70%)',
+                    background: `radial-gradient(circle, ${colors.gradient.start}0D 0%, transparent 70%)`,
                     transform: 'skewX(-15deg)',
                     pointerEvents: 'none'
                   }} />
@@ -425,14 +438,14 @@ const ConsumerProfilePage = () => {
                       border: 'none',
                       padding: '6px 12px',
                       borderRadius: '8px',
-                      color: colors.primary.eggPink, 
+                      color: colors.gradient.start, 
                       fontWeight: '600', 
                       fontSize: '14px', 
                       cursor: 'pointer',
                       transition: 'all 0.2s ease'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = colors.primary.eggPinkLight;
+                      e.currentTarget.style.background = colors.gradient.light;
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'none';
@@ -448,13 +461,13 @@ const ConsumerProfilePage = () => {
                     <div 
                       onClick={() => navigate('/style-profile')}
                       style={{
-                        background: 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)',
-                        borderRadius: '20px',
-                        padding: '24px',
-                        color: '#FFFFFF',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        boxShadow: '0 8px 20px -4px rgba(139, 92, 246, 0.3)',
+                      background: colors.gradient.consumer,
+                      borderRadius: '20px',
+                      padding: '24px',
+                      color: '#FFFFFF',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: `0 8px 20px -4px ${colors.gradient.start}4D`,
                         cursor: 'pointer',
                         transition: 'transform 0.2s ease',
                         minHeight: '140px',
@@ -589,7 +602,7 @@ const ConsumerProfilePage = () => {
                     {!isLoadingStyleProfile && !styleProfile && (
                       <div style={{ textAlign: 'center', padding: '20px', background: colors.card.backgroundAlt, borderRadius: '16px', border: `1px dashed ${colors.border.subtle}` }}>
                         <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>
-                          No style profile data yet. <span onClick={() => navigate('/style-profile')} style={{ color: colors.primary.eggPink, fontWeight: '600', cursor: 'pointer' }}>Create yours now &rarr;</span>
+                          No style profile data yet. <span onClick={() => navigate('/style-profile')} style={{ color: colors.gradient.start, fontWeight: '600', cursor: 'pointer' }}>Create yours now &rarr;</span>
                         </p>
                       </div>
                     )}
@@ -610,17 +623,61 @@ const ConsumerProfilePage = () => {
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
                         onClick={() => navigate('/wishlist')}
-                        style={{ padding: '8px 16px', borderRadius: '99px', border: `1px solid ${colors.border.subtle}`, background: 'transparent', color: colors.text.secondary, fontSize: '12px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = colors.primary.eggPink; e.currentTarget.style.color = colors.primary.eggPink; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = colors.border.subtle; e.currentTarget.style.color = colors.text.secondary; }}
+                        style={{ 
+                          padding: '8px 16px', 
+                          borderRadius: '99px', 
+                          border: `1px solid ${colors.border.subtle}`, 
+                          background: 'transparent', 
+                          color: colors.text.secondary, 
+                          fontSize: '12px', 
+                          fontWeight: '600', 
+                          cursor: 'pointer', 
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.background = colors.gradient.consumer;
+                          e.currentTarget.style.color = 'white';
+                          e.currentTarget.style.borderColor = colors.gradient.consumer;
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.color = colors.text.secondary;
+                          e.currentTarget.style.borderColor = colors.border.subtle;
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                       >
                         View All
                       </button>
                       <button 
                         onClick={handleShare}
-                        style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: colors.card.backgroundAlt, color: colors.text.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = colors.primary.eggPink; e.currentTarget.style.color = 'white'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = colors.card.backgroundAlt; e.currentTarget.style.color = colors.text.secondary; }}
+                        style={{ 
+                          width: '32px', 
+                          height: '32px', 
+                          borderRadius: '50%', 
+                          border: 'none', 
+                          background: colors.card.backgroundAlt, 
+                          color: colors.text.secondary, 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          cursor: 'pointer', 
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.background = colors.gradient.consumer;
+                          e.currentTarget.style.color = 'white';
+                          e.currentTarget.style.transform = 'scale(1.1)';
+                          e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.background = colors.card.backgroundAlt;
+                          e.currentTarget.style.color = colors.text.secondary;
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.boxShadow = 'none';
+                        }}
                         title="Share Wishlist"
                       >
                         <Share2 size={16} />
@@ -699,7 +756,7 @@ const ConsumerProfilePage = () => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: colors.primary.eggPink,
+                            color: colors.gradient.start,
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                           }}>
                             <Heart size={14} fill="currentColor" />

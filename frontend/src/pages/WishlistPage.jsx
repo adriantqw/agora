@@ -158,7 +158,7 @@ const WishlistPage = () => {
                     height: '96px', 
                     borderRadius: '50%', 
                     padding: '4px', 
-                    background: colors.primary.eggPinkLight,
+                    background: colors.gradient.light,
                     marginBottom: '12px',
                     position: 'relative'
                   }}>
@@ -190,8 +190,8 @@ const WishlistPage = () => {
                         padding: '12px 16px',
                         borderRadius: '12px',
                         border: 'none',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
-                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
+                        color: item.active ? colors.gradient.start : colors.text.secondary,
+                        background: item.active ? colors.gradient.light : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -208,11 +208,16 @@ const WishlistPage = () => {
                       }}
                     >
                       <item.icon size={18} fill={item.active ? 'currentColor' : 'none'} />
-                      {item.label}
+                      <span style={item.active ? {
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      } : {}}>{item.label}</span>
                       {item.badge && (
                         <span style={{ 
                           marginLeft: 'auto', 
-                          background: colors.primary.eggPink, 
+                          background: colors.gradient.start, 
                           color: 'white', 
                           fontSize: '10px', 
                           fontWeight: '700', 
@@ -275,7 +280,7 @@ const WishlistPage = () => {
                     style={{
                       padding: '10px 16px',
                       borderRadius: '99px',
-                      background: colors.primary.eggPink,
+                      background: colors.gradient.consumer,
                       border: 'none',
                       color: 'white',
                       fontSize: '14px',
@@ -284,11 +289,17 @@ const WishlistPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      boxShadow: `0 4px 12px ${colors.primary.pink}66`,
-                      transition: 'transform 0.2s'
+                      boxShadow: `0 4px 12px ${colors.gradient.start}66`,
+                      transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}80`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+                    }}
                   >
                     <Share2 size={16} strokeWidth={2.5} />
                     Share
@@ -312,12 +323,22 @@ const WishlistPage = () => {
                     style={{
                       padding: '12px 24px',
                       borderRadius: '99px',
-                      background: colors.primary.eggPink,
+                      background: colors.gradient.consumer,
                       border: 'none',
                       color: 'white',
                       fontSize: '14px',
                       fontWeight: '700',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      boxShadow: `0 4px 12px ${colors.gradient.start}66`,
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}80`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
                     }}
                   >
                     Browse Products

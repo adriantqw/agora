@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Sparkles
 } from 'lucide-react';
+// Updated to use new gradient color system
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -191,7 +192,7 @@ const ConsumerSettingsPage = () => {
                     height: '96px', 
                     borderRadius: '50%', 
                     padding: '4px', 
-                    background: colors.primary.eggPinkLight,
+                    background: colors.gradient.light,
                     marginBottom: '12px',
                     position: 'relative'
                   }}>
@@ -208,15 +209,25 @@ const ConsumerSettingsPage = () => {
                       right: '4px',
                       width: '32px',
                       height: '32px',
-                      background: colors.primary.eggPink,
+                      background: colors.gradient.consumer,
                       borderRadius: '50%',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       border: `2px solid ${colors.card.background}`,
                       color: 'white',
-                      cursor: 'pointer'
-                    }}>
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.1)';
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                    >
                       <Edit2 size={16} />
                     </button>
                   </div>
@@ -242,8 +253,8 @@ const ConsumerSettingsPage = () => {
                         padding: '12px 16px',
                         borderRadius: '12px',
                         border: 'none',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
-                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
+                        color: item.active ? colors.gradient.start : colors.text.secondary,
+                        background: item.active ? colors.gradient.light : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -260,11 +271,16 @@ const ConsumerSettingsPage = () => {
                       }}
                     >
                       <item.icon size={18} fill={item.active ? 'currentColor' : 'none'} />
-                      {item.label}
+                      <span style={item.active ? {
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      } : {}}>{item.label}</span>
                       {item.badge && (
                         <span style={{ 
                           marginLeft: 'auto', 
-                          background: colors.primary.eggPink, 
+                          background: colors.gradient.start, 
                           color: 'white', 
                           fontSize: '10px', 
                           fontWeight: '700', 
@@ -341,17 +357,23 @@ const ConsumerSettingsPage = () => {
                     style={{
                     padding: '10px 20px',
                     borderRadius: '99px',
-                    background: colors.primary.eggPink,
+                    background: colors.gradient.consumer,
                     border: 'none',
                     color: 'white',
                     fontSize: '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
-                    boxShadow: `0 4px 12px ${colors.primary.pink}66`,
-                    transition: 'transform 0.2s'
+                    boxShadow: `0 4px 12px ${colors.gradient.start}66`,
+                    transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}80`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+                  }}
                   >Save Changes</button>
                 </div>
               </div>
@@ -375,8 +397,8 @@ const ConsumerSettingsPage = () => {
                       paddingRight: '16px',
                       background: 'none',
                       border: 'none',
-                      borderBottom: `2px solid ${activeTab === 'account' ? colors.primary.eggPink : 'transparent'}`,
-                      color: activeTab === 'account' ? colors.primary.eggPink : colors.text.secondary,
+                      borderBottom: `2px solid ${activeTab === 'account' ? colors.gradient.start : 'transparent'}`,
+                      color: activeTab === 'account' ? colors.gradient.start : colors.text.secondary,
                       fontWeight: activeTab === 'account' ? '600' : '500',
                       fontSize: '14px',
                       cursor: 'pointer',
@@ -393,8 +415,8 @@ const ConsumerSettingsPage = () => {
                       paddingRight: '16px',
                       background: 'none',
                       border: 'none',
-                      borderBottom: `2px solid ${activeTab === 'fitting' ? colors.primary.eggPink : 'transparent'}`,
-                      color: activeTab === 'fitting' ? colors.primary.eggPink : colors.text.secondary,
+                      borderBottom: `2px solid ${activeTab === 'fitting' ? colors.gradient.start : 'transparent'}`,
+                      color: activeTab === 'fitting' ? colors.gradient.start : colors.text.secondary,
                       fontWeight: activeTab === 'fitting' ? '600' : '500',
                       fontSize: '14px',
                       cursor: 'pointer',
@@ -411,8 +433,8 @@ const ConsumerSettingsPage = () => {
                       paddingRight: '16px',
                       background: 'none',
                       border: 'none',
-                      borderBottom: `2px solid ${activeTab === 'personality' ? colors.primary.eggPink : 'transparent'}`,
-                      color: activeTab === 'personality' ? colors.primary.eggPink : colors.text.secondary,
+                      borderBottom: `2px solid ${activeTab === 'personality' ? colors.gradient.start : 'transparent'}`,
+                      color: activeTab === 'personality' ? colors.gradient.start : colors.text.secondary,
                       fontWeight: activeTab === 'personality' ? '600' : '500',
                       fontSize: '14px',
                       cursor: 'pointer',
@@ -496,31 +518,31 @@ const ConsumerSettingsPage = () => {
                     
                     {/* Info Banner */}
                     <div style={{
-                      background: `linear-gradient(to right, ${colors.primary.eggPinkLight}, ${colors.card.backgroundAlt})`,
+                      background: colors.gradient.consumer,
                       borderRadius: '16px',
                       padding: '24px',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '16px',
-                      border: `1px solid ${colors.primary.eggPink}30`
+                      border: `1px solid ${colors.gradient.start}40`
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{
                           width: '48px',
                           height: '48px',
                           borderRadius: '50%',
-                          background: colors.card.background,
+                          background: 'rgba(255, 255, 255, 0.9)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: colors.primary.eggPink,
+                          color: colors.gradient.start,
                           boxShadow: colors.shadow.sm
                         }}>
                           <Camera size={24} />
                         </div>
                         <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Virtual Fitting Room</h3>
-                          <p style={{ fontSize: '14px', color: colors.text.secondary, marginTop: '4px' }}>Upload full-body photos to see how items fit you specifically. These photos are private.</p>
+                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>Virtual Fitting Room</h3>
+                          <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.9)', marginTop: '4px' }}>Upload full-body photos to see how items fit you specifically. These photos are private.</p>
                         </div>
                       </div>
                     </div>
@@ -543,8 +565,8 @@ const ConsumerSettingsPage = () => {
                     onClick={() => !uploadingPhoto && document.getElementById('photo-upload').click()}
                     onMouseEnter={(e) => {
                       if (!uploadingPhoto) {
-                        e.currentTarget.style.borderColor = colors.primary.eggPink;
-                        e.currentTarget.style.backgroundColor = colors.primary.eggPinkLight + '40';
+                        e.currentTarget.style.borderColor = colors.gradient.start;
+                        e.currentTarget.style.backgroundColor = colors.gradient.light + '40';
                       }
                     }}
                     onMouseLeave={(e) => {
@@ -666,31 +688,31 @@ const ConsumerSettingsPage = () => {
                     
                     {/* Info Banner */}
                     <div style={{
-                      background: `linear-gradient(to right, ${colors.primary.eggPinkLight}, ${colors.card.backgroundAlt})`,
+                      background: colors.gradient.consumer,
                       borderRadius: '16px',
                       padding: '24px',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '16px',
-                      border: `1px solid ${colors.primary.eggPink}30`
+                      border: `1px solid ${colors.gradient.start}40`
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{
                           width: '48px',
                           height: '48px',
                           borderRadius: '50%',
-                          background: colors.card.background,
+                          background: 'rgba(255, 255, 255, 0.9)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: colors.primary.eggPink,
+                          color: colors.gradient.start,
                           boxShadow: colors.shadow.sm
                         }}>
                           <Sparkles size={24} />
                         </div>
                         <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Eggora-chan's Personality</h3>
-                          <p style={{ fontSize: '14px', color: colors.text.secondary, marginTop: '4px' }}>Choose how Eggora-chan interacts with you. This affects her tone and style recommendations.</p>
+                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: 'white' }}>Eggora-chan's Personality</h3>
+                          <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.9)', marginTop: '4px' }}>Choose how Eggora-chan interacts with you. This affects her tone and style recommendations.</p>
                         </div>
                       </div>
                     </div>
@@ -702,12 +724,12 @@ const ConsumerSettingsPage = () => {
                           key={option}
                           onClick={() => setPersonality(option)}
                           style={{
-                            border: `2px solid ${personality === option ? colors.primary.eggPink : colors.border.subtle}`,
+                            border: `2px solid ${personality === option ? colors.gradient.start : colors.border.subtle}`,
                             borderRadius: '16px',
                             padding: '24px',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
-                            background: personality === option ? colors.primary.eggPinkLight + '20' : colors.card.background,
+                            background: personality === option ? colors.gradient.consumer : colors.card.background,
                             display: 'flex',
                             flexDirection: 'column',
                             gap: '12px'
@@ -717,18 +739,18 @@ const ConsumerSettingsPage = () => {
                             width: '20px',
                             height: '20px',
                             borderRadius: '50%',
-                            border: `2px solid ${personality === option ? colors.primary.eggPink : colors.border.subtle}`,
-                            background: personality === option ? colors.primary.eggPink : 'transparent',
+                            border: `2px solid ${personality === option ? 'white' : colors.border.subtle}`,
+                            background: personality === option ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             alignSelf: 'flex-end'
                           }}>
-                            {personality === option && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
+                            {personality === option && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: colors.gradient.start }} />}
                           </div>
                           
-                          <h4 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>{option}</h4>
-                          <p style={{ fontSize: '13px', color: colors.text.secondary, lineHeight: '1.5' }}>
+                          <h4 style={{ fontSize: '16px', fontWeight: '700', color: personality === option ? 'white' : colors.text.primary }}>{option}</h4>
+                          <p style={{ fontSize: '13px', color: personality === option ? 'rgba(255, 255, 255, 0.9)' : colors.text.secondary, lineHeight: '1.5' }}>
                             {option === 'Friendly' && "Warm, casual, and supportive. Like shopping with your best friend."}
                             {option === 'Professional' && "Efficient, polite, and direct. Focused on getting you the best results."}
                             {option === 'Sassy' && "Bold, honest, and fun. Won't hesitate to tell you what's hot and what's not."}

@@ -160,8 +160,8 @@ const JourneyHero = ({ onSearch }) => {
             alignItems: 'center',
             background: colors.card.background,
             borderRadius: '50px',
-            border: `2px solid ${isFocused ? colors.primary.eggPink : colors.border.subtle}`,
-            boxShadow: isFocused ? '0 8px 24px rgba(255, 183, 197, 0.2)' : '0 2px 8px rgba(0, 0, 0, 0.08)',
+            border: `2px solid ${isFocused ? colors.gradient.start : colors.border.subtle}`,
+            boxShadow: isFocused ? `0 8px 24px ${colors.gradient.start}22` : '0 2px 8px rgba(0, 0, 0, 0.08)',
             transition: 'all 0.3s ease',
             overflow: 'hidden',
           }}
@@ -176,7 +176,7 @@ const JourneyHero = ({ onSearch }) => {
           >
             <Sparkles
               size={22}
-              style={{ color: colors.primary.eggPink }}
+              style={{ color: colors.gradient.start }}
             />
           </div>
 
@@ -226,7 +226,7 @@ const JourneyHero = ({ onSearch }) => {
             disabled={!searchQuery.trim()}
             style={{
               background: searchQuery.trim()
-                ? colors.primary.eggPink
+                ? colors.gradient.start
                 : colors.border.subtle,
               border: 'none',
               borderRadius: '50%',
@@ -238,18 +238,18 @@ const JourneyHero = ({ onSearch }) => {
               cursor: searchQuery.trim() ? 'pointer' : 'not-allowed',
               margin: '6px',
               transition: 'all 0.2s ease',
-              boxShadow: searchQuery.trim() ? '0 4px 12px rgba(255, 183, 197, 0.3)' : 'none',
+              boxShadow: searchQuery.trim() ? `0 4px 12px ${colors.gradient.start}33` : 'none',
             }}
             onMouseEnter={(e) => {
               if (searchQuery.trim()) {
                 e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+                e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}44`;
               }
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = searchQuery.trim()
-                ? '0 4px 12px rgba(255, 183, 197, 0.3)'
+                e.currentTarget.style.boxShadow = searchQuery.trim()
+                ? `0 4px 12px ${colors.gradient.start}33`
                 : 'none';
             }}
           >

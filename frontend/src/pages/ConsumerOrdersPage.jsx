@@ -77,7 +77,7 @@ const ConsumerOrdersPage = () => {
                     height: '96px', 
                     borderRadius: '50%', 
                     padding: '4px', 
-                    background: colors.primary.eggPinkLight,
+                    background: colors.gradient.light,
                     marginBottom: '12px',
                     position: 'relative'
                   }}>
@@ -109,8 +109,8 @@ const ConsumerOrdersPage = () => {
                         padding: '12px 16px',
                         borderRadius: '12px',
                         border: 'none',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
-                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
+                        color: item.active ? colors.gradient.start : colors.text.secondary,
+                        background: item.active ? colors.gradient.light : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -127,11 +127,16 @@ const ConsumerOrdersPage = () => {
                       }}
                     >
                       <item.icon size={18} fill={item.active ? 'currentColor' : 'none'} />
-                      {item.label}
+                      <span style={item.active ? {
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      } : {}}>{item.label}</span>
                       {item.badge && (
                         <span style={{ 
                           marginLeft: 'auto', 
-                          background: colors.primary.eggPink, 
+                          background: colors.gradient.start, 
                           color: 'white', 
                           fontSize: '10px', 
                           fontWeight: '700', 
@@ -201,7 +206,7 @@ const ConsumerOrdersPage = () => {
                   position: 'absolute',
                   inset: 0,
                   opacity: 0.03,
-                  backgroundImage: `radial-gradient(${colors.primary.pink} 1px, transparent 1px)`,
+                  backgroundImage: `radial-gradient(${colors.gradient.start} 1px, transparent 1px)`,
                   backgroundSize: '24px 24px',
                   pointerEvents: 'none'
                 }} />
@@ -218,15 +223,16 @@ const ConsumerOrdersPage = () => {
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: colors.primary.eggPinkLight,
-                    borderRadius: '50%'
+                    background: colors.gradient.consumer,
+                    borderRadius: '50%',
+                    opacity: 0.3
                   }} />
                   <div style={{
                     position: 'absolute',
                     inset: '16px',
                     background: colors.card.background,
                     borderRadius: '50%',
-                    border: `4px dashed ${colors.primary.eggPink}40`
+                    border: `4px dashed ${colors.gradient.start}40`
                   }} />
                   
                   {/* Icon */}
@@ -236,7 +242,7 @@ const ConsumerOrdersPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: colors.primary.eggPink
+                    color: colors.gradient.start
                   }}>
                     <Scissors size={72} />
                   </div>
@@ -246,7 +252,7 @@ const ConsumerOrdersPage = () => {
                     position: 'absolute',
                     top: '-8px',
                     right: '16px',
-                    color: '#D8B4FE', // Light purple
+                    color: colors.gradient.start,
                     animation: 'pulse 2s infinite'
                   }}>
                     <Sparkles size={32} fill="currentColor" />
@@ -255,7 +261,7 @@ const ConsumerOrdersPage = () => {
                     position: 'absolute',
                     bottom: '16px',
                     left: '-8px',
-                    color: '#FDE047', // Yellow
+                    color: colors.gradient.end,
                   }}>
                     <Scissors size={32} fill="currentColor" />
                   </div>
@@ -266,13 +272,14 @@ const ConsumerOrdersPage = () => {
                   display: 'inline-block',
                   padding: '6px 16px',
                   borderRadius: '99px',
-                  background: colors.primary.eggPinkLight,
-                  color: colors.primary.eggPink,
+                  background: colors.gradient.consumer,
+                  color: 'white',
                   fontSize: '12px',
                   fontWeight: '700',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  marginBottom: '24px'
+                  marginBottom: '24px',
+                  boxShadow: `0 4px 12px ${colors.gradient.start}40`
                 }}>
                   Coming Soon
                 </div>
@@ -309,7 +316,7 @@ const ConsumerOrdersPage = () => {
                       padding: '14px 32px',
                       borderRadius: '99px',
                       border: 'none',
-                      background: colors.primary.eggPink,
+                      background: colors.gradient.consumer,
                       color: 'white',
                       fontSize: '14px',
                       fontWeight: '700',
@@ -317,11 +324,17 @@ const ConsumerOrdersPage = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      boxShadow: `0 10px 20px -5px ${colors.primary.pink}66`,
-                      transition: 'transform 0.2s'
+                      boxShadow: `0 10px 20px -5px ${colors.gradient.start}66`,
+                      transition: 'all 0.2s'
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = `0 12px 25px -5px ${colors.gradient.start}80`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 10px 20px -5px ${colors.gradient.start}66`;
+                    }}
                   >
                     <LayoutGrid size={18} strokeWidth={2.5} />
                     Back to Account Overview

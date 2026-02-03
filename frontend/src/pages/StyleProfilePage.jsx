@@ -222,7 +222,7 @@ const StyleProfilePage = () => {
         <Header variant="full" showNav={true} />
         <main style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ textAlign: 'center' }}>
-            <Loader size={48} style={{ animation: 'spin 1s linear infinite', color: colors.primary.eggPink }} />
+            <Loader size={48} style={{ animation: 'spin 1s linear infinite', color: colors.gradient.start }} />
             <p style={{ marginTop: '16px', color: colors.text.secondary }}>Loading your style profile...</p>
           </div>
         </main>
@@ -271,7 +271,7 @@ const StyleProfilePage = () => {
                     height: '96px', 
                     borderRadius: '50%', 
                     padding: '4px', 
-                    background: colors.primary.eggPinkLight,
+                    background: colors.gradient.light,
                     marginBottom: '12px',
                     position: 'relative'
                   }}>
@@ -303,8 +303,8 @@ const StyleProfilePage = () => {
                         padding: '12px 16px',
                         borderRadius: '12px',
                         border: 'none',
-                        color: item.active ? colors.primary.eggPink : colors.text.secondary,
-                        background: item.active ? colors.primary.eggPinkLight : 'transparent',
+                        color: item.active ? colors.gradient.start : colors.text.secondary,
+                        background: item.active ? colors.gradient.light : 'transparent',
                         fontWeight: item.active ? '700' : '500',
                         textDecoration: 'none',
                         transition: 'all 0.2s',
@@ -321,7 +321,12 @@ const StyleProfilePage = () => {
                       }}
                     >
                       <item.icon size={18} fill={item.active ? 'currentColor' : 'none'} />
-                      {item.label}
+                      <span style={item.active ? {
+                        background: colors.gradient.consumer,
+                        WebkitBackgroundClip: 'text',
+                        backgroundClip: 'text',
+                        color: 'transparent',
+                      } : {}}>{item.label}</span>
                       {item.badge && (
                         <span style={{ 
                           marginLeft: 'auto', 
@@ -377,7 +382,7 @@ const StyleProfilePage = () => {
                 
                 {/* DNA Summary Hero */}
                 <div style={{
-                  background: 'linear-gradient(135deg, #8B5CF6 0%, #5B21B6 100%)',
+                  background: colors.gradient.consumer,
                   borderRadius: '24px',
                   padding: '32px',
                   color: '#FFFFFF',
@@ -472,11 +477,11 @@ const StyleProfilePage = () => {
                         key={vibe.name}
                         style={{
                           borderRadius: '16px',
-                          border: `2px solid ${colors.primary.eggPink}`,
+                          border: `2px solid ${colors.gradient.start}`,
                           overflow: 'hidden',
                           position: 'relative',
                           transition: 'all 0.2s',
-                          background: colors.primary.eggPinkLight
+                          background: colors.gradient.light
                         }}
                       >
                         <div style={{ height: '120px', overflow: 'hidden' }}>
@@ -534,9 +539,9 @@ const StyleProfilePage = () => {
                           transition: 'all 0.2s'
                         }}
                         onMouseEnter={e => {
-                          e.currentTarget.style.borderColor = colors.primary.eggPink;
-                          e.currentTarget.style.color = colors.primary.eggPink;
-                          e.currentTarget.style.background = colors.primary.eggPinkLight + '20';
+                          e.currentTarget.style.borderColor = colors.gradient.start;
+                          e.currentTarget.style.color = colors.gradient.start;
+                          e.currentTarget.style.background = colors.gradient.light + '20';
                         }}
                         onMouseLeave={e => {
                           e.currentTarget.style.borderColor = colors.border.subtle;
@@ -667,8 +672,8 @@ const StyleProfilePage = () => {
                             style={{
                               padding: '8px 16px',
                               borderRadius: '99px',
-                              border: `1px solid ${selectedFit === fit ? colors.primary.eggPink : colors.border.light}`,
-                              background: selectedFit === fit ? colors.primary.eggPink : 'transparent',
+                              border: `1px solid ${selectedFit === fit ? colors.gradient.start : colors.border.light}`,
+                              background: selectedFit === fit ? colors.gradient.start : 'transparent',
                               color: selectedFit === fit ? 'white' : colors.text.secondary,
                               fontSize: '14px',
                               fontWeight: '700',
@@ -693,7 +698,7 @@ const StyleProfilePage = () => {
                           onChange={(e) => setBudget(parseInt(e.target.value))}
                           style={{ 
                             width: '100%', 
-                            accentColor: colors.primary.eggPink,
+                            accentColor: colors.gradient.start,
                             cursor: 'pointer'
                           }} 
                         />
@@ -720,7 +725,7 @@ const StyleProfilePage = () => {
                     <h3 style={{ fontSize: '18px', fontWeight: '700', color: colors.text.primary }}>Brands you love</h3>
                     <button 
                       onClick={() => setIsBrandModalOpen(true)}
-                      style={{ fontSize: '14px', fontWeight: '700', color: colors.primary.eggPink, background: 'none', border: 'none', cursor: 'pointer' }}
+                      style={{ fontSize: '14px', fontWeight: '700', color: colors.gradient.start, background: 'none', border: 'none', cursor: 'pointer' }}
                     >
                       + Add Brand
                     </button>
@@ -758,26 +763,30 @@ const StyleProfilePage = () => {
                     onClick={handleSave}
                     disabled={saving}
                     style={{
-                      background: saving ? colors.text.muted : colors.primary.eggPink,
+                      background: saving ? colors.text.muted : colors.gradient.consumer,
                       color: 'white',
                       padding: '16px 32px',
                       borderRadius: '99px',
                       fontWeight: '700',
                       fontSize: '16px',
                       border: 'none',
-                      boxShadow: '0 10px 25px -5px rgba(244, 114, 182, 0.5)',
+                      boxShadow: `0 10px 25px -5px ${colors.gradient.start}80`,
                       cursor: saving ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '8px',
-                      transition: 'transform 0.2s',
+                      transition: 'all 0.2s',
                       opacity: saving ? 0.7 : 1
                     }}
                     onMouseEnter={(e) => {
-                      if (!saving) e.currentTarget.style.transform = 'translateY(-2px)';
+                      if (!saving) {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = `0 12px 30px -5px ${colors.gradient.start}99`;
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 10px 25px -5px ${colors.gradient.start}80`;
                     }}
                   >
                     {saving ? (

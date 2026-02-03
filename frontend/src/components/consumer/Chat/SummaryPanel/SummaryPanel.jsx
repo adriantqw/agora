@@ -48,7 +48,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           border: `1px solid ${colors.border.subtle}`,
         }}
       >
-        {Icon && <Icon size={14} color={colors.primary.eggPink} />}
+        {Icon && <Icon size={14} color={colors.gradient.start} />}
         <span style={{ flex: 1, color: colors.text.primary }}>{value || 'Not set'}</span>
         {onEditClick && (
           <Edit2
@@ -100,7 +100,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             gap: '8px',
           }}
         >
-          <Map size={14} color={colors.primary.eggPink} />
+          <Map size={14} color={colors.gradient.start} />
           CURRENT JOURNEY
         </div>
         <div
@@ -135,7 +135,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.background = colors.card.backgroundAlt;
-              e.currentTarget.style.color = colors.primary.eggPink;
+              e.currentTarget.style.color = colors.gradient.start;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = 'transparent';
@@ -147,7 +147,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
         </div>
         <div
           style={{
-            color: colors.primary.eggPink,
+            color: colors.gradient.start,
             fontSize: '13px',
             fontWeight: '700',
           }}
@@ -202,15 +202,15 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 <div
                   key={index}
                   style={{
-                    background: index === 0 ? 'var(--color-primary-pink-light)' : colors.card.background,
-                    color: index === 0 ? colors.primary.eggPink : colors.text.muted,
+                    background: index === 0 ? colors.gradient.light : colors.card.background,
+                    color: index === 0 ? colors.gradient.start : colors.text.muted,
                     borderRadius: '10px',
                     aspectRatio: '1',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     border: `1px ${index === 0 ? 'solid' : 'dashed'} ${
-                      index === 0 ? colors.primary.eggPink : colors.border.subtle
+                      index === 0 ? colors.gradient.start : colors.border.subtle
                     }`,
                     fontSize: '11px',
                     fontWeight: '600',
@@ -296,7 +296,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
         <button
           onClick={onSaveJourney}
           style={{
-            background: colors.primary.eggPink,
+            background: colors.gradient.start,
             color: '#1a202c', // Dark text for contrast on pink
             border: 'none',
             borderRadius: '12px',
@@ -309,15 +309,15 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
             justifyContent: 'center',
             gap: '8px',
             transition: 'all 0.2s',
-            boxShadow: '0 4px 12px rgba(255, 183, 197, 0.3)'
+            boxShadow: `0 4px 12px ${colors.gradient.start}33`
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+                    e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}44`;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.3)';
+            e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}33`;
           }}
         >
           <Save size={16} />
@@ -344,8 +344,8 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = colors.card.backgroundAlt;
-            e.currentTarget.style.borderColor = colors.primary.eggPink;
-            e.currentTarget.style.color = colors.primary.eggPink;
+            e.currentTarget.style.borderColor = colors.gradient.start;
+            e.currentTarget.style.color = colors.gradient.start;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = 'transparent';
@@ -451,7 +451,7 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                 color: colors.text.primary,
               }}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = colors.primary.eggPink;
+                e.currentTarget.style.borderColor = colors.gradient.start;
               }}
               onBlur={(e) => {
                 e.currentTarget.style.borderColor = colors.border.subtle;
@@ -494,22 +494,22 @@ export default function SummaryPanel({ journey, onEdit, onSaveJourney, onReturnH
                   fontSize: '14px',
                   fontWeight: '700',
                   color: 'white',
-                  background: titleInput.trim() ? colors.primary.eggPink : colors.text.muted,
+                  background: titleInput.trim() ? colors.gradient.start : colors.text.muted,
                   border: 'none',
                   borderRadius: '8px',
                   cursor: titleInput.trim() ? 'pointer' : 'not-allowed',
                   transition: 'all 0.2s',
-                  boxShadow: titleInput.trim() ? '0 4px 12px rgba(255, 183, 197, 0.3)' : 'none',
+                  boxShadow: titleInput.trim() ? `0 4px 12px ${colors.gradient.start}33` : 'none',
                 }}
                 onMouseEnter={(e) => {
                   if (titleInput.trim()) {
                     e.currentTarget.style.transform = 'translateY(-1px)';
-                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.4)';
+            e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}44`;
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = titleInput.trim() ? '0 4px 12px rgba(255, 183, 197, 0.3)' : 'none';
+                  e.currentTarget.style.boxShadow = titleInput.trim() ? `0 4px 12px ${colors.gradient.start}33` : 'none';
                 }}
               >
                 Save

@@ -361,7 +361,7 @@ const ColorPickerModal = ({ isOpen, onClose, onSelect, title = "Select a Color" 
             padding: '16px',
             borderRadius: '16px',
             border: 'none',
-            background: colors.primary.eggPink,
+            background: colors.gradient.start,
             color: 'white',
             fontSize: '16px',
             fontWeight: '700',
@@ -371,7 +371,7 @@ const ColorPickerModal = ({ isOpen, onClose, onSelect, title = "Select a Color" 
             justifyContent: 'center',
             gap: '8px',
             transition: 'all 0.2s',
-            boxShadow: `0 4px 12px ${colors.primary.eggPink}66`
+            boxShadow: `0 4px 12px ${colors.gradient.start}66`
           }}
           onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}

@@ -160,11 +160,11 @@ const InventoryPage = () => {
               width: '80px',
               height: '80px',
               borderRadius: '24px',
-              background: colors.primary.eggPinkLight,
+              background: colors.gradient.light,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: colors.primary.eggPink,
+              color: colors.gradient.start,
               marginBottom: '8px'
             }}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -190,7 +190,7 @@ const InventoryPage = () => {
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
+                  boxShadow: `0 4px 14px ${colors.gradient.end}66`,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -248,7 +248,7 @@ const InventoryPage = () => {
             
             <div style={{ display: 'flex', gap: '12px' }}>
               <button style={{
-                background: colors.primary.eggPink,
+                background: colors.gradient.start,
                 color: 'white',
                 border: 'none',
                 padding: '12px 24px',
@@ -258,7 +258,7 @@ const InventoryPage = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                boxShadow: `0 4px 12px ${colors.primary.pink}66`
+                boxShadow: `0 4px 12px ${colors.gradient.end}66`
               }}>
                 <Plus size={20} />
                 Add Item
@@ -298,8 +298,8 @@ const InventoryPage = () => {
                     fontSize: '15px',
                     fontWeight: '700',
                     cursor: 'pointer',
-                    background: activeTab === tab.name ? colors.primary.eggPinkLight : 'transparent',
-                    color: activeTab === tab.name ? colors.primary.eggPink : colors.text.secondary,
+                    background: activeTab === tab.name ? colors.gradient.light : 'transparent',
+                    color: activeTab === tab.name ? colors.gradient.start : colors.text.secondary,
                     transition: 'all 0.2s',
                     display: 'flex',
                     alignItems: 'center',
@@ -442,7 +442,7 @@ const InventoryPage = () => {
                         <p style={{ fontSize: '14px', color: colors.text.secondary, margin: 0 }}>{item.subtext}</p>
                         
                         <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: '18px', fontWeight: '800', color: isDark ? colors.primary.eggPink : '#1F2937' }}>
+                          <span style={{ fontSize: '18px', fontWeight: '800', color: isDark ? colors.gradient.start : '#1F2937' }}>
                             {isOutfit ? `Outfit #${index + 1}` : `$${item.price.toFixed(2)}`}
                           </span>
                           

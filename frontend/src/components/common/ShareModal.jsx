@@ -61,13 +61,14 @@ const ShareModal = ({ isOpen, onClose, shareLink }) => {
           width: '56px',
           height: '56px',
           borderRadius: '50%',
-          background: colors.primary.eggPinkLight,
+          background: colors.gradient.consumer,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           marginBottom: '24px',
           alignSelf: 'center',
-          color: colors.primary.eggPink
+          color: 'white',
+          boxShadow: `0 4px 12px ${colors.gradient.start}40`
         }}>
           <Share2 size={28} />
         </div>
@@ -106,7 +107,7 @@ const ShareModal = ({ isOpen, onClose, shareLink }) => {
           <button 
             onClick={handleCopy}
             style={{
-              background: copied ? colors.status.success.bg : colors.primary.eggPink,
+              background: copied ? colors.status.success.bg : colors.gradient.consumer,
               color: copied ? colors.status.success.text : 'white',
               border: 'none',
               borderRadius: '12px',
@@ -117,7 +118,20 @@ const ShareModal = ({ isOpen, onClose, shareLink }) => {
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
+              boxShadow: copied ? 'none' : `0 4px 12px ${colors.gradient.start}66`,
               transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              if (!copied) {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}80`;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!copied) {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
+              }
             }}
           >
             {copied ? <Check size={16} /> : <Copy size={16} />}

@@ -6,6 +6,7 @@ import { useThemeColors } from '../hooks/useThemeColors';
 
 const ConsumerLandingPage = () => {
   const navigate = useNavigate();
+  const colors = useThemeColors();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Auto-expanding textarea
@@ -245,7 +246,7 @@ const ConsumerLandingPage = () => {
               lineHeight: '1.1',
             }}>
               Hi, I'm Eggora-chan!<br/>
-              <span style={{ color: '#793DB0' }}>Your personal shopping assistant...</span>
+              <span style={{ color: colors.gradient.start }}>Your personal shopping assistant...</span>
             </h1>
             
             <p style={{
@@ -317,7 +318,7 @@ const ConsumerLandingPage = () => {
                       height: '80px',
                       borderRadius: '8px',
                       overflow: 'hidden',
-                      border: '2px solid rgba(121, 61, 176, 0.2)',
+                      border: `2px solid ${colors.gradient.start}33`,
                     }}
                   >
                     <img
@@ -399,7 +400,7 @@ const ConsumerLandingPage = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 16px 12px 16px',
-            borderTop: '1px solid rgba(121, 61, 176, 0.1)',
+            borderTop: `1px solid ${colors.gradient.start}1A`,
           }}>
             {/* Image Upload Button (Image Icon) */}
             <button
@@ -410,9 +411,9 @@ const ConsumerLandingPage = () => {
                 width: '40px',
                 height: '40px',
                 borderRadius: '50%',
-                border: '2px dashed rgba(121, 61, 176, 0.4)',
+                border: `2px dashed ${colors.gradient.start}66`,
                 backgroundColor: 'transparent',
-                color: uploadedImages.length >= 5 ? '#a0aec0' : '#793DB0',
+                color: uploadedImages.length >= 5 ? '#a0aec0' : colors.gradient.start,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -422,7 +423,7 @@ const ConsumerLandingPage = () => {
               }}
               onMouseEnter={(e) => {
                 if (uploadedImages.length < 5) {
-                  e.currentTarget.style.backgroundColor = 'rgba(121, 61, 176, 0.1)';
+                  e.currentTarget.style.backgroundColor = colors.gradient.light;
                 }
               }}
               onMouseLeave={(e) => {
@@ -447,8 +448,8 @@ const ConsumerLandingPage = () => {
                   border: 'none',
                   backgroundColor: isListening
                     ? 'rgba(239, 68, 68, 0.2)'
-                    : 'rgba(121, 61, 176, 0.1)',
-                  color: isListening ? '#ef4444' : '#793DB0',
+                    : colors.gradient.light,
+                  color: isListening ? '#ef4444' : colors.gradient.start,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -458,12 +459,12 @@ const ConsumerLandingPage = () => {
                 }}
                 onMouseEnter={(e) => {
                   if (speechSupported && !isListening) {
-                    e.currentTarget.style.backgroundColor = 'rgba(121, 61, 176, 0.2)';
+                    e.currentTarget.style.backgroundColor = `${colors.gradient.start}33`;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!isListening) {
-                    e.currentTarget.style.backgroundColor = 'rgba(121, 61, 176, 0.1)';
+                    e.currentTarget.style.backgroundColor = colors.gradient.light;
                   }
                 }}
               >
@@ -485,22 +486,22 @@ const ConsumerLandingPage = () => {
                 height: '44px',
                 borderRadius: '50%',
                 border: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #793DB0 100%)',
+                background: colors.gradient.consumer,
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                boxShadow: '0 4px 12px rgba(118, 75, 162, 0.3)',
+                boxShadow: `0 4px 12px ${colors.gradient.start}4D`,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(118, 75, 162, 0.4)';
+                e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}66`;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(118, 75, 162, 0.3)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}4D`;
               }}
             >
               <ArrowRight size={22} strokeWidth={2.5} />

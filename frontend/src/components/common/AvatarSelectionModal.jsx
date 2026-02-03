@@ -102,7 +102,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, onSelect, currentAvatar }) => {
                   onClick={() => setSelectedAvatar(avatarUrl)}
                   style={{
                     background: 'none',
-                    border: isSelected ? `2px solid ${colors.primary.eggPink}` : '2px solid transparent',
+                    border: isSelected ? `2px solid ${colors.gradient.start}` : '2px solid transparent',
                     borderRadius: '50%',
                     padding: '2px',
                     cursor: 'pointer',
@@ -120,7 +120,7 @@ const AvatarSelectionModal = ({ isOpen, onClose, onSelect, currentAvatar }) => {
                       position: 'absolute',
                       bottom: '0',
                       right: '0',
-                      background: colors.primary.eggPink,
+                      background: colors.gradient.start,
                       color: 'white',
                       borderRadius: '50%',
                       width: '20px',
@@ -162,11 +162,11 @@ const AvatarSelectionModal = ({ isOpen, onClose, onSelect, currentAvatar }) => {
               padding: '12px',
               borderRadius: '99px',
               border: 'none',
-              background: colors.primary.eggPink,
+              background: colors.gradient.start,
               color: 'white',
               fontWeight: '600',
               cursor: 'pointer',
-              boxShadow: `0 4px 12px ${colors.primary.pink}66`
+              boxShadow: `0 4px 12px ${colors.gradient.end}66`
             }}
           >
             Save Avatar

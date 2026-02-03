@@ -81,7 +81,7 @@ const ConsumerLoginPage = () => {
           left: '5%',
           width: '300px',
           height: '300px',
-          background: isDark ? colors.primary.purple : colors.primary.eggPinkLight,
+          background: isDark ? colors.primary.purple : colors.gradient.light,
           borderRadius: '50%',
           filter: 'blur(80px)',
           opacity: isDark ? 0.2 : 0.5,
@@ -168,9 +168,9 @@ const ConsumerLoginPage = () => {
                       transition: 'all 0.2s'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = colors.primary.eggPink;
-                      e.target.style.boxShadow = `0 0 0 4px ${colors.primary.eggPink}20`;
-                      e.target.parentElement.querySelector('div').style.color = colors.primary.eggPink;
+                      e.target.style.borderColor = colors.gradient.start;
+                      e.target.style.boxShadow = `0 0 0 4px ${colors.gradient.start}20`;
+                      e.target.parentElement.querySelector('div').style.color = colors.gradient.start;
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = colors.input.border;
@@ -187,7 +187,15 @@ const ConsumerLoginPage = () => {
                   <label htmlFor="password" style={{ fontSize: '12px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: colors.text.secondary }}>
                     Password
                   </label>
-                  <a href="#" style={{ fontSize: '12px', fontWeight: '500', color: colors.primary.purple, textDecoration: 'none' }}>Forgot Password?</a>
+                  <a href="#" style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '500', 
+                    background: colors.gradient.consumer,
+                    WebkitBackgroundClip: 'text',
+                    backgroundClip: 'text',
+                    color: 'transparent',
+                    textDecoration: 'none' 
+                  }}>Forgot Password?</a>
                 </div>
                 <div style={{ position: 'relative' }}>
                   <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: colors.text.tertiary }}>
@@ -212,9 +220,9 @@ const ConsumerLoginPage = () => {
                       transition: 'all 0.2s'
                     }}
                     onFocus={(e) => {
-                      e.target.style.borderColor = colors.primary.eggPink;
-                      e.target.style.boxShadow = `0 0 0 4px ${colors.primary.eggPink}20`;
-                      e.target.parentElement.querySelector('div').style.color = colors.primary.eggPink;
+                      e.target.style.borderColor = colors.gradient.start;
+                      e.target.style.boxShadow = `0 0 0 4px ${colors.gradient.start}20`;
+                      e.target.parentElement.querySelector('div').style.color = colors.gradient.start;
                     }}
                     onBlur={(e) => {
                       e.target.style.borderColor = colors.input.border;
@@ -250,14 +258,14 @@ const ConsumerLoginPage = () => {
                 style={{
                   width: '100%',
                   padding: '16px',
-                  background: colors.gradient.pink,
+                  background: colors.gradient.consumer,
                   color: 'white',
                   border: 'none',
                   borderRadius: '9999px',
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: isLoading ? 'not-allowed' : 'pointer',
-                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
+                  boxShadow: `0 4px 14px ${colors.gradient.start}66`,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -321,10 +329,10 @@ const ConsumerLoginPage = () => {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <p style={{ fontSize: '13px', color: colors.text.primary, margin: 0 }}>
-                  Email: <span style={{ fontWeight: '700', color: colors.primary.eggPink }}>demo@consumer.com</span>
+                  Email: <span style={{ fontWeight: '700', color: colors.gradient.start }}>demo@consumer.com</span>
                 </p>
                 <p style={{ fontSize: '13px', color: colors.text.primary, margin: 0 }}>
-                  Password: <span style={{ fontWeight: '700', color: colors.primary.eggPink }}>password123</span>
+                  Password: <span style={{ fontWeight: '700', color: colors.gradient.start }}>password123</span>
                 </p>
               </div>
             </div>
@@ -332,7 +340,15 @@ const ConsumerLoginPage = () => {
             <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '14px', color: colors.text.secondary, display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
                 New to Agora? 
-                <a href="#" style={{ color: colors.primary.eggPink, fontWeight: '600', textDecoration: 'none', marginLeft: '4px' }}>
+                <a href="#" style={{ 
+                  background: colors.gradient.consumer,
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                  fontWeight: '600',
+                  textDecoration: 'none',
+                  marginLeft: '4px'
+                }}>
                   Start your Style Profile
                 </a>
               </div>
@@ -378,7 +394,7 @@ const ConsumerLoginPage = () => {
 
           {/* Right Column: Visual/Brand (Hidden on mobile) */}
           <div className="login-visual-panel" style={{ 
-            background: isDark ? colors.card.backgroundAlt : 'linear-gradient(135deg, #FFF0F3 0%, #FFFFFF 100%)',
+            background: isDark ? colors.card.backgroundAlt : '#fff9f5',
             padding: '48px',
             display: 'flex',
             flexDirection: 'column',
@@ -396,7 +412,7 @@ const ConsumerLoginPage = () => {
                 borderRadius: '9999px', 
                 fontSize: '10px', 
                 fontWeight: '700', 
-                color: isDark ? '#A78BFA' : '#7C3AED', 
+                color: colors.gradient.start, 
                 textTransform: 'uppercase', 
                 letterSpacing: '0.05em',
                 border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid white'
@@ -410,7 +426,7 @@ const ConsumerLoginPage = () => {
                 borderRadius: '9999px', 
                 fontSize: '10px', 
                 fontWeight: '700', 
-                color: colors.primary.eggPink, 
+                color: colors.gradient.start, 
                 textTransform: 'uppercase', 
                 letterSpacing: '0.05em',
                 border: isDark ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid white'
@@ -436,7 +452,7 @@ const ConsumerLoginPage = () => {
                   justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: colors.shadow.md, 
-                  color: colors.primary.eggPink,
+                  color: colors.gradient.start,
                   animation: 'float 6s ease-in-out infinite' 
                 }}>
                   <Shirt size={40} />
@@ -450,7 +466,7 @@ const ConsumerLoginPage = () => {
                   justifyContent: 'center',
                   borderRadius: '16px', 
                   boxShadow: colors.shadow.md, 
-                  color: '#A855F7', // Purple
+                  color: colors.gradient.end,
                   marginTop: '48px',
                   animation: 'float 6s ease-in-out 3s infinite'
                 }}>
@@ -493,7 +509,7 @@ const ConsumerLoginPage = () => {
             <div style={{ position: 'relative', zIndex: 10 }}>
               <h3 style={{ fontSize: '24px', fontWeight: '700', color: colors.text.primary, marginBottom: '8px' }}>Your Personal AI Shopping Assistant</h3>
               <p style={{ color: colors.text.secondary, fontSize: '14px', lineHeight: '1.6' }}>
-                Ready for your next event? We've generated <span style={{ color: colors.primary.eggPink, fontWeight: '600' }}>3 new outfits</span> based on your closet and the latest trends.
+                Ready for your next event? We've generated <span style={{ color: colors.gradient.start, fontWeight: '600' }}>3 new outfits</span> based on your closet and the latest trends.
               </p>
 
               {/* Fake "Add to Journey" Pill */}
@@ -517,9 +533,9 @@ const ConsumerLoginPage = () => {
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center', 
-                    color: colors.primary.eggPink 
+                    color: colors.gradient.start 
                   }}>
-                    <Heart size={20} fill={colors.primary.eggPink} />
+                    <Heart size={20} fill={colors.gradient.start} />
                   </div>
                   <div>
                     <div style={{ fontSize: '12px', color: colors.text.secondary, fontWeight: '500' }}>Daily Suggestion</div>
@@ -530,7 +546,7 @@ const ConsumerLoginPage = () => {
                   width: '32px', 
                   height: '32px', 
                   borderRadius: '50%', 
-                  background: colors.gradient.pink, 
+                  background: colors.gradient.consumer, 
                   color: 'white', 
                   display: 'flex', 
                   alignItems: 'center', 

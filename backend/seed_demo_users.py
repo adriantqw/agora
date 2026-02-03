@@ -2,7 +2,7 @@
 import sys
 sys.path.insert(0, '.')
 
-from app.database import SessionLocal
+from app.database import SessionLocal, init_db
 from app.models.merchant import Merchant
 from app.models.consumer import Consumer
 from app.utils.security import hash_password
@@ -11,6 +11,9 @@ import uuid
 
 
 def seed_demo_users():
+    # Initialize database tables
+    init_db()
+    
     db = SessionLocal()
     try:
         # Check if demo merchant exists

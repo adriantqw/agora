@@ -14,7 +14,7 @@ export default function UserMessage({ text, timestamp }) {
     >
       <div
         style={{
-          background: colors.primary.eggPink,
+          background: colors.gradient.start,
           color: '#1a202c', // Dark text for contrast against pink
           padding: '16px 24px',
           borderRadius: '24px 24px 4px 24px',

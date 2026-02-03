@@ -177,22 +177,22 @@ const OutfitCard = ({ outfit, onAdd }) => {
               height: '36px',
               borderRadius: '50%',
               border: 'none',
-              background: colors.primary.eggPink,
+              background: colors.gradient.start,
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(255, 183, 197, 0.3)',
+              boxShadow: `0 2px 8px ${colors.gradient.start}33`,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.1)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.4)';
+              e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}44`;
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(255, 183, 197, 0.3)';
+              e.currentTarget.style.boxShadow = `0 2px 8px ${colors.gradient.start}33`;
             }}
           >
             <Plus size={20} strokeWidth={2.5} />

@@ -65,7 +65,10 @@
   --consumer-purple: #793DB0;
   --consumer-purple-light: #F3E5F5;
   --consumer-text-primary: var(--text-primary);
-  --consumer-gradient: linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%);
+  --consumer-gradient: linear-gradient(135deg, #793DB0 0%, #BF3163 100%);
+  --consumer-gradient-start: #793DB0;
+  --consumer-gradient-end: #BF3163;
+  --consumer-gradient-light: rgba(121, 61, 176, 0.1);
   --color-primary-pink: #F5A5B8;
   --color-primary-pink-dark: #E8879C;
   --color-primary-pink-light: #FDD5DD;
@@ -160,6 +163,10 @@ html.dark-theme {
   --color-primary-pink-dark: #FF85A3;
   --color-primary-pink-light: #5e2c35;
   --color-secondary-pink: #FFB6C1;
+  --consumer-gradient: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
+  --consumer-gradient-start: #a78bfa;
+  --consumer-gradient-end: #f472b6;
+  --consumer-gradient-light: rgba(167, 139, 250, 0.15);
 
   /* Egg Pink Palette */
   --color-egg-pink: #f48fb1;

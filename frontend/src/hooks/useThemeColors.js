@@ -114,6 +114,11 @@ export const useThemeColors = () => {
         // Pink gradients for consumer pages
         pink: getConsumerColor('--gradient-pink', '--consumer-gradient'),
         fittingRoom: getColor('--gradient-fitting-room'),
+        // Consumer gradient namespace
+        consumer: getColor('--consumer-gradient'),
+        start: getColor('--consumer-gradient-start'),
+        end: getColor('--consumer-gradient-end'),
+        light: getColor('--consumer-gradient-light'),
       },
       shadow: {
         sm: getColor('--shadow-sm'),

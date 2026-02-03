@@ -69,7 +69,7 @@ const SharedWishlistPage = () => {
               style={{
                 padding: '14px 32px',
                 borderRadius: '99px',
-                background: colors.primary.eggPink,
+                background: colors.gradient.consumer,
                 border: 'none',
                 color: 'white',
                 fontSize: '14px',
@@ -77,7 +77,17 @@ const SharedWishlistPage = () => {
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '8px'
+                gap: '8px',
+                boxShadow: `0 4px 12px ${colors.gradient.start}66`,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.start}80`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.start}66`;
               }}
             >
               <Home size={18} />
@@ -113,11 +123,12 @@ const SharedWishlistPage = () => {
               gap: '8px',
               padding: '8px 16px',
               borderRadius: '99px',
-              background: colors.primary.eggPinkLight,
-              color: colors.primary.eggPink,
+              background: colors.gradient.consumer,
+              color: 'white',
               fontSize: '12px',
               fontWeight: '700',
-              marginBottom: '16px'
+              marginBottom: '16px',
+              boxShadow: `0 4px 12px ${colors.gradient.start}40`
             }}>
               <Sparkles size={14} fill="currentColor" />
               Shared Wishlist

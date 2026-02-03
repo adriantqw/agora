@@ -66,7 +66,7 @@ export default function AIMessage({ title, description, children, onSubmit, subm
             <button
               onClick={onSubmit}
               style={{
-                background: colors.primary.eggPink,
+                background: colors.gradient.end,
                 color: '#1a202c', // Dark charcoal for high contrast on pink
                 border: 'none',
                 padding: '14px 34px',
@@ -78,15 +78,15 @@ export default function AIMessage({ title, description, children, onSubmit, subm
                 gap: '10px',
                 transition: 'all 0.2s',
                 fontSize: '15px',
-                boxShadow: '0 4px 12px rgba(255, 183, 197, 0.4)',
+                boxShadow: `0 4px 12px ${colors.gradient.end}44`,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'scale(1.03)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(255, 183, 197, 0.6)';
+                e.currentTarget.style.boxShadow = `0 6px 16px ${colors.gradient.end}66`;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 183, 197, 0.4)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${colors.gradient.end}44`;
               }}
             >
               {submitLabel}

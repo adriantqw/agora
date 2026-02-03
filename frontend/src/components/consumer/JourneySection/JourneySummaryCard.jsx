@@ -32,7 +32,7 @@ const JourneySummaryCard = ({ summaryContext }) => {
         display: 'flex',
         flexDirection: 'column',
         boxShadow: colors.shadow.sm,
-        border: `2px solid ${colors.primary.eggPink}40`, // Subtle pink border
+        border: `2px solid ${colors.gradient.start}40`, // Subtle pink border
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -48,7 +48,7 @@ const JourneySummaryCard = ({ summaryContext }) => {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <Sparkles size={20} color={colors.primary.eggPink} fill={colors.primary.eggPink} />
+          <Sparkles size={20} color={colors.gradient.start} fill={colors.gradient.start} />
           Journey Profile
         </h3>
         <p style={{
@@ -125,9 +125,9 @@ const JourneySummaryCard = ({ summaryContext }) => {
           transition: 'all 0.2s'
         }}
         onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = colors.primary.eggPink;
-            e.currentTarget.style.color = colors.primary.eggPink;
-            e.currentTarget.style.background = colors.primary.eggPinkLight;
+            e.currentTarget.style.borderColor = colors.gradient.start;
+            e.currentTarget.style.color = colors.gradient.start;
+            e.currentTarget.style.background = colors.gradient.light;
         }}
         onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = colors.border.color;

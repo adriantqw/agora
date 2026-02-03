@@ -85,11 +85,11 @@ const JourneysPage = () => {
               width: '80px',
               height: '80px',
               borderRadius: '24px',
-              background: colors.primary.eggPinkLight,
+              background: colors.gradient.light,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: colors.primary.eggPink,
+              color: colors.gradient.start,
               marginBottom: '8px'
             }}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -116,7 +116,7 @@ const JourneysPage = () => {
                   fontSize: '16px',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  boxShadow: `0 4px 14px ${colors.primary.pink}66`,
+                  boxShadow: `0 4px 14px ${colors.gradient.end}66`,
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -149,8 +149,8 @@ const JourneysPage = () => {
                   transition: 'all 0.2s'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = colors.primary.eggPink;
-                  e.currentTarget.style.color = colors.primary.eggPink;
+                  e.currentTarget.style.borderColor = colors.gradient.start;
+                  e.currentTarget.style.color = colors.gradient.start;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderColor = colors.border.color;
@@ -205,7 +205,7 @@ const JourneysPage = () => {
                 onClick={handleStartNewJourney}
                 style={{
                   padding: '12px 24px',
-                  background: colors.primary.eggPink,
+                  background: colors.gradient.start,
                   color: '#FFF',
                   border: 'none',
                   borderRadius: '12px',
@@ -215,7 +215,7 @@ const JourneysPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: `0 4px 12px ${colors.primary.eggPink}60`,
+                  boxShadow: `0 4px 12px ${colors.gradient.start}60`,
                   transition: 'transform 0.2s ease',
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
@@ -241,7 +241,7 @@ const JourneysPage = () => {
                     padding: '8px 16px',
                     borderRadius: '99px',
                     border: 'none',
-                    background: activeTab === 'active' ? colors.primary.eggPinkLight : 'transparent',
+                    background: activeTab === 'active' ? colors.gradient.light : 'transparent',
                     color: activeTab === 'active' ? colors.text.primary : colors.text.secondary,
                     fontWeight: '600',
                     fontSize: '14px',
@@ -351,7 +351,7 @@ const JourneysPage = () => {
                   <button
                     onClick={handleStartNewJourney}
                     style={{
-                      color: colors.primary.eggPink,
+                      color: colors.gradient.start,
                       fontWeight: '600',
                       background: 'transparent',
                       border: 'none',

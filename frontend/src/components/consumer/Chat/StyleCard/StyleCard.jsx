@@ -16,8 +16,8 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        background: isSelected ? 'var(--color-primary-pink-light)' : colors.card.background,
-        border: `2px solid ${isSelected ? colors.primary.eggPink : colors.border.subtle}`,
+        background: isSelected ? colors.gradient.light : colors.card.background,
+        border: `2px solid ${isSelected ? colors.gradient.start : colors.border.subtle}`,
         borderRadius: '16px',
         overflow: 'hidden',
         cursor: 'pointer',
@@ -38,7 +38,7 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
           background: isSelected ? 'transparent' : colors.card.backgroundAlt,
         }}
       >
-        <IconComponent size={36} color={iconColor || colors.primary.eggPink} />
+        <IconComponent size={36} color={iconColor || colors.gradient.start} />
       </div>
 
       {/* Label */}
@@ -61,7 +61,7 @@ export default function StyleCard({ id, label, icon, iconColor, bgColor, isSelec
             position: 'absolute',
             top: '10px',
             right: '10px',
-            background: colors.primary.eggPink,
+            background: colors.gradient.start,
             color: 'white',
             borderRadius: '50%',
             width: '22px',

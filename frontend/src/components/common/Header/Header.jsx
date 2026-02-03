@@ -48,7 +48,7 @@ export default function Header({
   const isLanding = variant === 'landing';
   const textColor = isLanding ? '#4A5568' : colors.text.primary;
   const headerBg = isLanding ? 'transparent' : colors.card.background;
-  const logoColor = isLanding ? '#793DB0' : colors.primary.eggPink;
+  const logoColor = colors.gradient.start;
 
   return (
     <header style={{
@@ -100,7 +100,10 @@ export default function Header({
           <span style={{
             fontWeight: '800',
             fontSize: '24px',
-            color: logoColor,
+            background: colors.gradient.consumer,
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
             fontFamily: '"Readex Pro", -apple-system, sans-serif',
             letterSpacing: '-0.5px',
           }}>
@@ -173,7 +176,7 @@ export default function Header({
               transition: 'all 0.2s',
               borderRadius: '8px',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             <JourneyIcon />
@@ -197,8 +200,8 @@ export default function Header({
                             transition: 'all 0.2s',
                             borderRadius: '8px',
                           }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                         >
                           <InventoryIcon />
                           <span>Inventory</span>
@@ -220,7 +223,7 @@ export default function Header({
               transition: 'all 0.2s',
               borderRadius: '8px',
             }}
-            onMouseEnter={(e) => e.currentTarget.style.background = isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
+            onMouseEnter={(e) => e.currentTarget.style.background = colors.gradient.consumer}
             onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
           >
             <ProfileIcon />
