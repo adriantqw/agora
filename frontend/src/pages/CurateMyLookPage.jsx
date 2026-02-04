@@ -13,11 +13,11 @@ function isQuestionAnswered(question, answer) {
       return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0;
     case 'hybrid-select':
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
-        (typeof answer.freeText === 'string' && answer.freeText.trim() !== '');
+        (typeof answer.value === 'string' && answer.value.trim() !== '');
     case 'scale-rating':
       return answer.value !== undefined && answer.value !== null;
     case 'free-text':
-      return typeof answer.freeText === 'string' && answer.freeText.length > 0;
+      return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
       return !!answer.selectedOptions && answer.selectedOptions.length > 0;
     case 'dual-range':
@@ -48,7 +48,7 @@ function resolveAnswerLabel(question, answer) {
         const opt = question.options.find(o => o.value === answer.selectedOptions[0]);
         if (opt) return opt.label;
       }
-      const free = typeof answer.freeText === 'string' ? answer.freeText.trim() : '';
+      const free = typeof answer.value === 'string' ? answer.value.trim() : '';
       return free || null;
     }
     case 'scale-rating': {
@@ -56,7 +56,7 @@ function resolveAnswerLabel(question, answer) {
       return '$'.repeat(Number(answer.value));
     }
     case 'free-text': {
-      const val = typeof answer.freeText === 'string' ? answer.freeText.trim() : '';
+      const val = typeof answer.value === 'string' ? answer.value.trim() : '';
       return val || null;
     }
     case 'dual-range': {

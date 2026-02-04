@@ -259,10 +259,10 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
     for ui_input in ui_inputs:
         # Access Pydantic model attributes directly (not .get())
         question = {
-            "id": ui_input.id if ui_input.id else str(uuid.uuid4()),
+            "id": str(ui_input.id) if ui_input.id else str(uuid.uuid4()),
             "type": _map_ui_type_to_frontend(ui_input.type),
-            "question": ui_input.question,
-            "rowLabel": ui_input.question,  # Use question as row label
+            "question": str(ui_input.question) if ui_input.question else "",
+            "rowLabel": str(ui_input.question) if ui_input.question else "",  # Use question as row label
             "required": True,  # All questions required by default
             "options": [],
         }
@@ -271,8 +271,9 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
         if ui_input.image_options:
             question["options"] = [
                 {
-                    "label": opt.label,
-                    "value": opt.id if opt.id else opt.label.lower().replace(" ", "-"),
+                    "label": str(opt.label) if opt.label else "",
+                    "value": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
+                    "id": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
                     "imageUrl": str(opt.image_path) if opt.image_path else None,
                 }
                 for opt in ui_input.image_options
@@ -282,8 +283,9 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
         elif ui_input.text_options:
             question["options"] = [
                 {
-                    "label": text,
-                    "value": text.lower().replace(" ", "-"),
+                    "label": str(text),
+                    "value": str(text).lower().replace(" ", "-"),
+                    "id": str(text).lower().replace(" ", "-"),  # Add explicit id field
                 }
                 for text in ui_input.text_options
             ]
@@ -292,16 +294,17 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
         elif ui_input.colour_hex_options:
             question["options"] = [
                 {
-                    "label": hex_color,
-                    "value": hex_color,
+                    "label": str(hex_color),
+                    "value": str(hex_color),
+                    "id": str(hex_color),  # Add explicit id field
                 }
                 for hex_color in ui_input.colour_hex_options
             ]
 
         # Add type-specific fields for scale-rating
         if ui_input.type.value == "scale_rating":
-            question["minLabel"] = ui_input.min_label
-            question["maxLabel"] = ui_input.max_label
+            question["minLabel"] = str(ui_input.min_label) if ui_input.min_label else None
+            question["maxLabel"] = str(ui_input.max_label) if ui_input.max_label else None
 
         questions.append(question)
 

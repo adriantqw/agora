@@ -15,9 +15,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
  * @returns {Promise<object>} Response with threadId, blurb, questions, summaryUpdates, imageUrls
  */
 export const startBatch = async (searchQuery, images = []) => {
-  // Ensure token is valid before making request
-  await consumerAuthService.ensureValidToken();
-
+  // Get token if available (guest mode support)
   const token = consumerAuthService.getToken();
 
   // Create FormData for multipart upload
@@ -30,17 +28,21 @@ export const startBatch = async (searchQuery, images = []) => {
   });
 
   try {
+    const headers = {};
+    // Only add Authorization header if token exists (guest mode support)
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/curate-my-fit/start`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-        // Note: Do NOT set Content-Type for FormData - browser sets it automatically with boundary
-      },
+      headers: headers,
+      // Note: Do NOT set Content-Type for FormData - browser sets it automatically with boundary
       body: formData
     });
 
-    // Handle 401 responses
-    if (response.status === 401) {
+    // Handle 401 responses (only if token was provided)
+    if (response.status === 401 && token) {
       consumerAuthService.clearTokens();
       window.location.href = '/login';
       throw new Error('Authentication required');
@@ -70,23 +72,26 @@ export const startBatch = async (searchQuery, images = []) => {
  * @returns {Promise<object>} Response with hasMore flag and either next batch or final journey
  */
 export const submitBatchAnswers = async (threadId, answers) => {
-  // Ensure token is valid before making request
-  await consumerAuthService.ensureValidToken();
-
+  // Get token if available (guest mode support)
   const token = consumerAuthService.getToken();
 
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    // Only add Authorization header if token exists (guest mode support)
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/curate-my-fit/submit`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: headers,
       body: JSON.stringify({ threadId, answers })
     });
 
-    // Handle 401 responses
-    if (response.status === 401) {
+    // Handle 401 responses (only if token was provided)
+    if (response.status === 401 && token) {
       consumerAuthService.clearTokens();
       window.location.href = '/login';
       throw new Error('Authentication required');
