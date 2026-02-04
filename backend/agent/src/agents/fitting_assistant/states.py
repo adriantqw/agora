@@ -5,7 +5,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 from .schemas import FittingSetObject
-from ..schemas import JourneySchema
+from ..schemas import JourneySchema, StyleDna
 
 
 class FittingAssistantState(TypedDict):
@@ -16,11 +16,11 @@ class FittingAssistantState(TypedDict):
     # User preferences from stylist journey
     journey: Optional[JourneySchema]
 
-    # Pre-fetched product details (name, description, image_url, etc.)
-    product_details: Optional[dict]
-
     # Generated lookbook images (accumulator)
     fitting_sets: Annotated[list[FittingSetObject], operator.add]
 
     # Agent personality mode
     personality: Optional[str]
+
+    # User's style DNA from memory
+    style_dna: Optional[StyleDna]

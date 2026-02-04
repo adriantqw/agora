@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     MLFLOW_TRACKING_URI: str = "sqlite:///mlflow.db"
     MLFLOW_EXPERIMENT_NAME: str = "agora"
 
+    # SERP API
+    SERP_API_KEY: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
     @property

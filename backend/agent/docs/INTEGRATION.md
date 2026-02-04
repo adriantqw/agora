@@ -332,21 +332,25 @@ from agent.src.agents.schemas import JourneySchema
 agent = FittingAssistantAgent()
 
 journey = JourneySchema(
-    title="Beach Vacation",
-    season="summer",
-    location="beach"
+    title="Evening Party",
+    occasion="party",
+    location="nightclub",
+    style_preferences=["classic", "old_money"],
+    season="winter",
+    time_of_day="evening",
+    budget_rating=4
 )
 
 selections = ProductSelections(matches=[
-    ProductSelected(id="prod_001"),
     ProductSelectedSet(
-        title="Resort Ensemble",
-        description="Complete beach-to-dinner look",
+        title="The 'Uptown After Dark' Edit",
+        description="A sophisticated blend of structured tailoring and evening glamour",
         product_set=[
-            ProductSelected(id="prod_002"),
-            ProductSelected(id="prod_003")
+            ProductSelected(id="product_07133e69-..."),
+            ProductSelected(id="product_3ec097a7-...")
         ]
-    )
+    ),
+    ProductSelected(id="product_47b9121a-...")
 ])
 
 result = agent.fit(journey, selections, thread_id="fit-session-1")
@@ -616,7 +620,7 @@ from agent.src.agents.fitting_assistant.schemas import (
 )
 
 selections = ProductSelections(matches=[
-    # Single product
+    # Single product (details populated automatically by agent)
     ProductSelected(id="product_001"),
 
     # Product set (outfit combination)
@@ -630,6 +634,8 @@ selections = ProductSelections(matches=[
     )
 ])
 ```
+
+**Note:** `ProductSelected` has optional detail fields (`name`, `description`, `image_url`, `price`, `tags`) that are automatically populated by the FittingAssistantAgent when processing. You only need to provide the `id` when creating selections.
 
 ### FittingSets
 

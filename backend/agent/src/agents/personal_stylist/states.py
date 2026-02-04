@@ -5,7 +5,7 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
 from .schemas import UserResponse, UIInputType
-from ..schemas import JourneySchema
+from ..schemas import JourneySchema, StyleDna
 
 
 class PersonalStylistState(TypedDict):
@@ -14,6 +14,9 @@ class PersonalStylistState(TypedDict):
 
     # Canonical preferences
     journey: Optional[JourneySchema]
+
+    # Style Dna (long-term preferences)
+    style_dna: Optional[StyleDna]
 
     # UI
     ui_inputs: Annotated[list[UIInputType], operator.add]

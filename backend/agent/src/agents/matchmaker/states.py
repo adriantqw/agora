@@ -3,7 +3,7 @@ import operator
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from .schemas import ProductMatch
-from ..schemas import JourneySchema
+from ..schemas import JourneySchema, StyleDna
 
 
 class MatchmakerState(TypedDict):
@@ -12,3 +12,4 @@ class MatchmakerState(TypedDict):
     matches: Annotated[list[ProductMatch], operator.add]
     iteration_count: Optional[int]
     personality: Optional[str]
+    style_dna: Optional[StyleDna]

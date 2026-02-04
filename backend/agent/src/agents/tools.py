@@ -3,6 +3,8 @@ import base64
 import requests
 import os
 import tempfile
+import asyncio
+from pydantic import FilePath
 from pathlib import Path
 
 from langchain_core.tools import tool, StructuredTool
@@ -84,7 +86,7 @@ class Txt2ImgGenerator:
         model = load_model_from_config(model_config)
         return model
     
-    def _compile_model_messages(self, prompt: str, example_img_paths: list[str] | None = None):
+    def _compile_model_messages(self, prompt: str, example_img_paths: list[FilePath] | None = None):
         """Compile the model messages including prompt and example images."""
         image_examples = []
         image_content = []
@@ -165,7 +167,7 @@ class Txt2ImgGenerator:
 
         return {"status": "failed", "image_path": None, "error": last_error}
 
-    async def generate(self, prompt: str, aspect_ratio: str = None, reference_img_paths: list[str] | None = None):
+    async def generate(self, prompt: str, aspect_ratio: str = None, reference_img_paths: list[FilePath] | None = None):
         """
         Generate an image from a text prompt with retry logic. Use this to generate 1 image at a time.
         Has the benefit of being able to use reference images to generate the image.
@@ -201,16 +203,18 @@ class Txt2ImgGenerator:
 
         return result
     
-    async def batch(self, prompts: list[str], aspect_ratio: str = None):
+    async def batch(self, prompts: list[str], aspect_ratio: str = None, reference_img_paths_list: list[list[str]] = None):
         """
         Generate images from a batch of text prompts with retry logic. Use this to generate multiple images in parallel.
 
         Args:
             prompts (list[str]): List of detailed and rich text prompts to generate images from.
             aspect_ratio (str, optional): Desired aspect ratio for the images, e.g., "16:9". Defaults to None.
+            reference_img_paths_list (list[list[str]], optional): A list where each element is a 
+                list of image paths corresponding to the prompt at the same index.
 
         Returns:
-            dict: Contains 'results' list and optional 'suggestion' if all failed.
+            dict: Contains 'results' list
         """
         model = self._load_image_model(aspect_ratio)
         try:
@@ -221,27 +225,33 @@ class Txt2ImgGenerator:
 
         writer({"info": f"Starting batch generation for {len(prompts)} prompts"})
 
-        # Process each prompt with retry logic
-        results = []
-        for i, prompt in enumerate(prompts):
-            writer({"info": f"Processing prompt {i + 1}/{len(prompts)}"})
-            result = await self._generate_single_with_retry(
+        # Prepare reference images mapping
+        if reference_img_paths_list is None:
+            reference_img_paths_list = [None] * len(prompts)
+        elif len(reference_img_paths_list) != len(prompts):
+            raise ValueError("reference_img_paths_list must be the same length as prompts")
+
+        # Create tasks for all prompts to run concurrently
+        tasks = [
+            self._generate_single_with_retry(
                 model=model,
                 prompt=prompt,
                 writer=writer,
-                max_retries=1
+                max_retries=1,
+                example_img_paths=ref_paths
             )
-            results.append(result)
-            writer({"info": f"Prompt {i + 1}/{len(prompts)}: {result['status']}"})
+            for prompt, ref_paths in zip(prompts, reference_img_paths_list)
+        ]
 
-        # Check if all failed and provide fallback guidance
+        # Execute all tasks in parallel
+        results = await asyncio.gather(*tasks)
+
         failed_count = sum(1 for r in results if r["status"] == "failed")
         if failed_count == len(results):
-            writer({"warning": "All image generations failed. Suggesting text-based fallback."})
+            writer({"warning": "All image generations failed."})
             return {
                 "results": results,
                 "all_failed": True,
-                "suggestion": "Image generation is unavailable. Please use text-based UI components instead: 'multi-select' for style options, 'colour-palette' for colors, and 'scale-rating' for preferences."
             }
 
         writer({"info": f"Batch complete: {len(results) - failed_count}/{len(results)} succeeded"})
