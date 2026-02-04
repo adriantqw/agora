@@ -46,7 +46,7 @@ class AgoraMemory:
         Returns:
             StyleDna: Latest StyleDna for the user
         """
-        return self.memory.search(namespace=(user_id, "memories"))[-1].dict()
+        return self.memory.search((user_id, "memories"))[-1].dict()
         
     def update_memory(self, user_id: str, updated_style_dna: StyleDna):
         """
