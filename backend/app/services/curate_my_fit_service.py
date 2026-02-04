@@ -63,6 +63,9 @@ async def start_batch(
     logger.info(f"Agent result keys: {result.keys()}")
     logger.debug(f"Agent result: {result}")
 
+    # Sanitize result to convert PosixPath objects to strings for JSON serialization
+    result = _sanitize_for_json(result)
+
     # Parse BatchResponse from agent output
     batch_response = _parse_batch_response(result, search_query, image_urls)
     logger.info(f"Parsed batch response with {len(batch_response['questions'])} questions")
@@ -99,6 +102,9 @@ async def submit_batch_answers(
 
     # Submit answers to PersonalStylist agent (async to support async tools)
     result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
+
+    # Sanitize result to convert PosixPath objects to strings for JSON serialization
+    result = _sanitize_for_json(result)
 
     # Check if journey is complete
     journey = result.get("journey")
@@ -179,6 +185,26 @@ def _format_initial_message(search_query: str, image_urls: list[str]) -> str:
     if image_urls:
         message += f"\n\nUser uploaded {len(image_urls)} images: {json.dumps(image_urls)}"
     return message
+
+
+def _sanitize_for_json(data):
+    """
+    Recursively convert PosixPath objects to strings for JSON serialization.
+
+    Args:
+        data: Any data structure that may contain PosixPath objects
+
+    Returns:
+        Sanitized data with all PosixPath objects converted to strings
+    """
+    if isinstance(data, dict):
+        return {key: _sanitize_for_json(value) for key, value in data.items()}
+    elif isinstance(data, list):
+        return [_sanitize_for_json(item) for item in data]
+    elif hasattr(data, '__fspath__'):  # PosixPath check
+        return str(data)
+    else:
+        return data
 
 
 def _parse_batch_response(result: dict, search_query: Optional[str], image_urls: Optional[list[str]]) -> dict:
@@ -274,7 +300,7 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
                     "label": str(opt.label) if opt.label else "",
                     "value": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
                     "id": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
-                    "imageUrl": str(opt.image_path) if opt.image_path else None,
+                    "imageUrl": str(opt.image_path) if opt.image_path and hasattr(opt.image_path, '__fspath__') else str(opt.image_path) if opt.image_path else None,
                 }
                 for opt in ui_input.image_options
             ]
@@ -432,11 +458,18 @@ def _convert_answers_to_user_response(answers: dict[str, AnswerData]) -> list:
     return user_responses
 
 
-def _is_journey_complete(journey: dict) -> bool:
+def _is_journey_complete(journey) -> bool:
     """Check if journey has enough information to be complete."""
     # Journey is complete if it has core attributes filled
     required_fields = ["title", "occasion", "season"]
-    return all(journey.get(field) for field in required_fields)
+
+    # Handle both dict and Pydantic model
+    if hasattr(journey, 'model_dump'):
+        # Pydantic model - use getattr
+        return all(getattr(journey, field, None) for field in required_fields)
+    else:
+        # Dictionary - use get
+        return all(journey.get(field) for field in required_fields)
 
 
 def _create_journey_from_agent(
@@ -523,6 +556,15 @@ def _create_journey_from_agent(
 
 def _format_journey(journey: Journey) -> dict:
     """Format Journey object for API response."""
+    # Convert PosixPath objects to strings to avoid JSON serialization errors
+    image_urls = journey.image_urls
+    if isinstance(image_urls, list):
+        image_urls = [str(url) if hasattr(url, '__fspath__') else url for url in image_urls]
+
+    closet_url = journey.closet_url
+    if closet_url and hasattr(closet_url, '__fspath__'):
+        closet_url = str(closet_url)
+
     return {
         "id": journey.id,
         "consumerId": journey.consumer_id,
@@ -532,8 +574,8 @@ def _format_journey(journey: Journey) -> dict:
         "statusLabel": journey.status_label,
         "summary": journey.summary,
         "searchQuery": journey.search_query,
-        "imageUrls": journey.image_urls,
-        "closetUrl": journey.closet_url,
+        "imageUrls": image_urls,
+        "closetUrl": closet_url,
         "createdAt": journey.created_at.isoformat() if journey.created_at else None,
         "updatedAt": journey.updated_at.isoformat() if journey.updated_at else None,
     }

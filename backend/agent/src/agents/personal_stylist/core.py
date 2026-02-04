@@ -161,11 +161,27 @@ class PersonalStylistAgent:
         ui_inputs = state.get("ui_inputs")
         last_msg = state.get("messages", [])[-1]
 
+        # Helper function to serialize items that may be Pydantic models or dicts
+        def serialize_item(item):
+            if hasattr(item, 'model_dump'):
+                # Pydantic model - use mode='json' to handle Path objects
+                return item.model_dump(mode='json')
+            elif isinstance(item, dict):
+                # Recursively sanitize dict values (may contain PosixPath objects)
+                return {k: serialize_item(v) for k, v in item.items()}
+            elif isinstance(item, list):
+                # Recursively sanitize list items
+                return [serialize_item(i) for i in item]
+            elif hasattr(item, '__fspath__'):
+                # PosixPath or similar path object
+                return str(item)
+            return item
+
         # Format the journey update prompt
         prompt = self.journey_update_prompt.format(
             journey_state=journey.model_dump_json() if journey else "None",
-            ui_inputs_history=json.dumps([ui.model_dump() for ui in ui_inputs]) if ui_inputs else "None",
-            ui_answers=json.dumps([ans.model_dump() for ans in ui_answers]) if ui_answers else "None"
+            ui_inputs_history=json.dumps([serialize_item(ui) for ui in ui_inputs]) if ui_inputs else "None",
+            ui_answers=json.dumps([serialize_item(ans) for ans in ui_answers]) if ui_answers else "None"
         )
 
         # Use structured output to get updated journey

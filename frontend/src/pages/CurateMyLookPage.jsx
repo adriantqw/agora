@@ -263,6 +263,11 @@ export default function CurateMyLookPage() {
 
   // --- Handlers ---
   const handleAnswer = (answer) => {
+    console.log('[CurateMyLookPage] handleAnswer called:', {
+      questionId: answer.questionId,
+      answerObject: answer,
+      savedToState: { [answer.questionId]: answer }
+    });
     setAnswers(prev => ({ ...prev, [answer.questionId]: answer }));
   };
 

@@ -38,6 +38,18 @@ function isQuestionAnswered(question, answer) {
         });
       }
       return scaleResult;
+    case 'image-select':
+      const imageResult = Array.isArray(answer?.selectedOptions) && answer.selectedOptions.length === 1;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[isQuestionAnswered] Image-select validation:', {
+          questionId: question.id,
+          answer: answer,
+          selectedOptions: answer?.selectedOptions,
+          selectionCount: answer?.selectedOptions?.length,
+          result: imageResult
+        });
+      }
+      return imageResult;
     case 'free-text':
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
@@ -461,6 +473,12 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     // Sync local state with answer prop changes
     React.useEffect(() => {
       const newValue = (answer?.value != null && answer.value !== '') ? Number(answer.value) : (question.min ?? 0);
+      console.log('[ChipRow] Scale-rating state update:', {
+        questionId: question.id,
+        answerProp: answer,
+        localValue: localValue,
+        newValue: newValue
+      });
       setLocalValue(newValue);
     }, [answer?.value, question.min]);
 
@@ -500,11 +518,23 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
                 key={chip.value}
                 label={chip.label}
                 selected={localValue === chip.value}
-                onClick={() => onAnswer({
-                  questionId: question.id,
-                  value: chip.value,
-                  timestamp: Date.now(),
-                })}
+                onClick={() => {
+                  console.log('[ChipRow] Scale-rating chip clicked:', {
+                    questionId: question.id,
+                    chipValue: chip.value,
+                    chipLabel: chip.label,
+                    answerObject: {
+                      questionId: question.id,
+                      value: chip.value,
+                      timestamp: Date.now()
+                    }
+                  });
+                  onAnswer({
+                    questionId: question.id,
+                    value: chip.value,
+                    timestamp: Date.now(),
+                  });
+                }}
                 readOnly={readOnly}
               />
             ))}
@@ -627,6 +657,167 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     );
   }
 
+  /* --- image-select: image card grid selection --- */
+  if (question.type === 'image-select') {
+    const selected = getSelectedOptions(question, answer)[0] || null;
+
+    console.log('[ChipRow] Image-select rendering:', {
+      questionId: question.id,
+      selected,
+      answer,
+      optionsCount: question.options?.length,
+      hasImages: question.options?.some(opt => opt.imageUrl)
+    });
+
+    return (
+      <div style={{
+        padding: '10px 0',
+        borderBottom: '1px solid var(--color-border-subtle)',
+      }}>
+        {label && (
+          <div style={{
+            fontSize: '13px',
+            color: 'var(--text-secondary)',
+            fontWeight: '500',
+            marginBottom: '12px',
+          }}>
+            {label}
+          </div>
+        )}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '12px',
+        }}>
+          {question.options?.map(opt => {
+            const isSelected = selected === (opt.id || opt.value);
+            const hasImage = !!opt.imageUrl;
+
+            return (
+              <div
+                key={opt.id || opt.value}
+                onClick={() => {
+                  if (readOnly) return;
+                  console.log('[ChipRow] Image card clicked:', {
+                    questionId: question.id,
+                    optionId: opt.id || opt.value,
+                    label: opt.label
+                  });
+                  onAnswer({
+                    questionId: question.id,
+                    selectedOptions: [opt.id || opt.value],
+                    timestamp: Date.now(),
+                  });
+                }}
+                style={{
+                  position: 'relative',
+                  borderRadius: '12px',
+                  border: isSelected ? '2px solid var(--consumer-purple)' : '1px solid var(--border-color)',
+                  background: isSelected ? 'var(--consumer-purple-light)' : 'var(--card-background)',
+                  cursor: readOnly ? 'default' : 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                  overflow: 'hidden',
+                  ...(readOnly ? {} : {
+                    ':hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                    }
+                  })
+                }}
+                onMouseEnter={(e) => {
+                  if (!readOnly) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!readOnly) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                {/* Image */}
+                {hasImage ? (
+                  <img
+                    src={opt.imageUrl}
+                    alt={opt.label}
+                    style={{
+                      width: '100%',
+                      height: '160px',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '160px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--color-background-subtle)',
+                    color: 'var(--text-tertiary)',
+                    fontSize: '40px',
+                  }}>
+                    🖼️
+                  </div>
+                )}
+
+                {/* Selection Checkmark */}
+                {isSelected && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '32px',
+                    height: '32px',
+                    background: 'var(--consumer-purple)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </div>
+                )}
+
+                {/* Label */}
+                <div style={{
+                  padding: '12px',
+                  borderTop: isSelected ? 'none' : '1px solid var(--color-border-subtle)',
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: isSelected ? 'var(--consumer-purple)' : 'var(--text-primary)',
+                    textAlign: 'center',
+                  }}>
+                    {opt.label}
+                  </div>
+                  {opt.description && (
+                    <div style={{
+                      fontSize: '12px',
+                      color: 'var(--text-secondary)',
+                      textAlign: 'center',
+                      marginTop: '4px',
+                    }}>
+                      {opt.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   /* --- chip-based types: multi-select, single-choice, hybrid-select --- */
   const isMulti = question.type === 'multi-select' ||
     (question.type === 'hybrid-select' && question.multiSelect);
@@ -719,6 +910,21 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
   const allAnswered = batch.questions
     .filter(q => q.required)
     .every(q => isQuestionAnswered(q, answers[q.id]));
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[JourneyQuestionCard] Validation check:', {
+      batchLabel: batch.label,
+      requiredQuestions: batch.questions.filter(q => q.required).map(q => ({
+        id: q.id,
+        type: q.type,
+        isAnswered: isQuestionAnswered(q, answers[q.id]),
+        answer: answers[q.id]
+      })),
+      allAnswered: allAnswered,
+      submitting: submitting,
+      isDisabled: !allAnswered || submitting
+    });
+  }
 
   const isDisabled = !allAnswered || submitting;
 
