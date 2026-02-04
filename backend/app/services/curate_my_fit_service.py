@@ -189,15 +189,18 @@ def _format_initial_message(search_query: str, image_urls: list[str]) -> str:
 
 def _sanitize_for_json(data):
     """
-    Recursively convert PosixPath objects to strings for JSON serialization.
+    Recursively convert PosixPath and Pydantic objects to JSON-serializable types.
 
     Args:
-        data: Any data structure that may contain PosixPath objects
+        data: Any data structure that may contain PosixPath or Pydantic objects
 
     Returns:
-        Sanitized data with all PosixPath objects converted to strings
+        Sanitized data with all special objects converted to JSON-serializable types
     """
-    if isinstance(data, dict):
+    if hasattr(data, 'model_dump'):
+        # Pydantic model - convert to dict with mode='json' to handle Path objects
+        return _sanitize_for_json(data.model_dump(mode='json'))
+    elif isinstance(data, dict):
         return {key: _sanitize_for_json(value) for key, value in data.items()}
     elif isinstance(data, list):
         return [_sanitize_for_json(item) for item in data]
