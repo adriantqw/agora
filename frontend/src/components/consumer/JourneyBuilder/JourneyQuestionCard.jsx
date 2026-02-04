@@ -55,11 +55,11 @@ function isQuestionAnswered(question, answer) {
     case 'single-choice':
       return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length === 1;
     case 'dual-range':
-      return answer.minValue !== undefined && 
-             answer.maxValue !== undefined && 
-             answer.minValue !== null && 
-             answer.maxValue !== null &&
-             answer.minValue < answer.maxValue;
+      return answer.minValue !== undefined &&
+        answer.maxValue !== undefined &&
+        answer.minValue !== null &&
+        answer.maxValue !== null &&
+        answer.minValue < answer.maxValue;
     default:
       return answer.value !== undefined && answer.value !== null && answer.value !== '';
   }
@@ -241,209 +241,209 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
-       {/* Min Input */}
-       <input
-         type="text"
-         value={currentMin}
-         readOnly={readOnly}
-         onChange={(e) => handleInputChange('min', e.target.value)}
-         style={{
-           width: '80px',
-           height: '44px',
-           border: `2px solid ${showTooltip.min ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
-           borderRadius: '22px',
-           textAlign: 'center',
-           fontSize: '14px',
-           color: showTooltip.min ? 'var(--consumer-purple)' : 'var(--text-secondary)',
-           fontWeight: '500',
-           outline: 'none',
-           transition: 'all 0.2s',
-           background: 'var(--card-background)',
-           cursor: readOnly ? 'default' : 'pointer',
-         }}
-       />
+      {/* Min Input */}
+      <input
+        type="text"
+        value={currentMin}
+        readOnly={readOnly}
+        onChange={(e) => handleInputChange('min', e.target.value)}
+        style={{
+          width: '80px',
+          height: '44px',
+          border: `2px solid ${showTooltip.min ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
+          borderRadius: '22px',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: showTooltip.min ? 'var(--consumer-purple)' : 'var(--text-secondary)',
+          fontWeight: '500',
+          outline: 'none',
+          transition: 'all 0.2s',
+          background: 'var(--card-background)',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      />
 
-       {/* Slider Track */}
-       <div
-         ref={trackRef}
-         onClick={handleTrackClick}
-         style={{
-           flex: 1,
-           position: 'relative',
-           height: '44px',
-           display: 'flex',
-           alignItems: 'center',
-           cursor: readOnly ? 'default' : 'pointer',
-         }}
-       >
-         <div
-           style={{
-             width: '100%',
-             height: '6px',
-             background: 'var(--border-color)',
-             borderRadius: '3px',
-             position: 'relative',
-           }}
-         >
-           {/* Fill */}
-           <div
-             style={{
-               position: 'absolute',
-               height: '100%',
-               background: 'var(--consumer-purple)',
-               borderRadius: '3px',
-               left: `${minPercent}%`,
-               width: `${maxPercent - minPercent}%`,
-               transition: isDraggingRef.current ? 'none' : 'all 0.1s',
-             }}
-           />
+      {/* Slider Track */}
+      <div
+        ref={trackRef}
+        onClick={handleTrackClick}
+        style={{
+          flex: 1,
+          position: 'relative',
+          height: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      >
+        <div
+          style={{
+            width: '100%',
+            height: '6px',
+            background: 'var(--border-color)',
+            borderRadius: '3px',
+            position: 'relative',
+          }}
+        >
+          {/* Fill */}
+          <div
+            style={{
+              position: 'absolute',
+              height: '100%',
+              background: 'var(--consumer-purple)',
+              borderRadius: '3px',
+              left: `${minPercent}%`,
+              width: `${maxPercent - minPercent}%`,
+              transition: isDraggingRef.current ? 'none' : 'all 0.1s',
+            }}
+          />
 
-           {/* Min Handle */}
-           <div
-             className="slider-handle"
-             onMouseDown={(e) => handleMouseDown(e, 'min')}
-             onTouchStart={(e) => handleMouseDown(e, 'min')}
-             onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, min: true }) && forceUpdate()}
-             onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, min: false }) && forceUpdate()}
-             style={{
-               position: 'absolute',
-               width: '20px',
-               height: '20px',
-               background: 'var(--consumer-purple)',
-               border: '3px solid white',
-               borderRadius: '50%',
-               top: '50%',
-               left: `${minPercent}%`,
-               transform: `translate(-50%, -50%) scale(${showTooltip.min ? 1.1 : 1})`,
-               cursor: readOnly ? 'default' : 'grab',
-               boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
-               transition: 'transform 0.1s, box-shadow 0.1s',
-               zIndex: 2,
-             }}
-           >
-             {/* Tooltip */}
-             <div
-               style={{
-                 position: 'absolute',
-                 background: '#1f2937',
-                 color: 'white',
-                 padding: '8px 12px',
-                 borderRadius: '8px',
-                 fontSize: '13px',
-                 fontWeight: '600',
-                 top: '-45px',
-                 left: '50%',
-                 transform: `translateX(-50%) scale(${showTooltip.min ? 1 : 0})`,
-                 opacity: showTooltip.min ? 1 : 0,
-                 transition: 'all 0.2s',
-                 pointerEvents: 'none',
-                 whiteSpace: 'nowrap',
-                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-               }}
-             >
-               {currentMin}
-               <div
-                 style={{
-                   content: '',
-                   position: 'absolute',
-                   bottom: '-4px',
-                   left: '50%',
-                   transform: 'translateX(-50%) rotate(45deg)',
-                   width: '8px',
-                   height: '8px',
-                   background: '#1f2937',
-                   borderRadius: '1px',
-                 }}
-               />
-             </div>
-           </div>
+          {/* Min Handle */}
+          <div
+            className="slider-handle"
+            onMouseDown={(e) => handleMouseDown(e, 'min')}
+            onTouchStart={(e) => handleMouseDown(e, 'min')}
+            onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, min: true }) && forceUpdate()}
+            onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, min: false }) && forceUpdate()}
+            style={{
+              position: 'absolute',
+              width: '20px',
+              height: '20px',
+              background: 'var(--consumer-purple)',
+              border: '3px solid white',
+              borderRadius: '50%',
+              top: '50%',
+              left: `${minPercent}%`,
+              transform: `translate(-50%, -50%) scale(${showTooltip.min ? 1.1 : 1})`,
+              cursor: readOnly ? 'default' : 'grab',
+              boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
+              transition: 'transform 0.1s, box-shadow 0.1s',
+              zIndex: 2,
+            }}
+          >
+            {/* Tooltip */}
+            <div
+              style={{
+                position: 'absolute',
+                background: '#1f2937',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '600',
+                top: '-45px',
+                left: '50%',
+                transform: `translateX(-50%) scale(${showTooltip.min ? 1 : 0})`,
+                opacity: showTooltip.min ? 1 : 0,
+                transition: 'all 0.2s',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              }}
+            >
+              {currentMin}
+              <div
+                style={{
+                  content: '',
+                  position: 'absolute',
+                  bottom: '-4px',
+                  left: '50%',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  width: '8px',
+                  height: '8px',
+                  background: '#1f2937',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+          </div>
 
-           {/* Max Handle */}
-           <div
-             className="slider-handle"
-             onMouseDown={(e) => handleMouseDown(e, 'max')}
-             onTouchStart={(e) => handleMouseDown(e, 'max')}
-             onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, max: true }) && forceUpdate()}
-             onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, max: false }) && forceUpdate()}
-             style={{
-               position: 'absolute',
-               width: '20px',
-               height: '20px',
-               background: 'var(--consumer-purple)',
-               border: '3px solid white',
-               borderRadius: '50%',
-               top: '50%',
-               left: `${maxPercent}%`,
-               transform: `translate(-50%, -50%) scale(${showTooltip.max ? 1.1 : 1})`,
-               cursor: readOnly ? 'default' : 'grab',
-               boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
-               transition: 'transform 0.1s, box-shadow 0.1s',
-               zIndex: 2,
-             }}
-           >
-             {/* Tooltip */}
-             <div
-               style={{
-                 position: 'absolute',
-                 background: '#1f2937',
-                 color: 'white',
-                 padding: '8px 12px',
-                 borderRadius: '8px',
-                 fontSize: '13px',
-                 fontWeight: '600',
-                 top: '-45px',
-                 left: '50%',
-                 transform: `translateX(-50%) scale(${showTooltip.max ? 1 : 0})`,
-                 opacity: showTooltip.max ? 1 : 0,
-                 transition: 'all 0.2s',
-                 pointerEvents: 'none',
-                 whiteSpace: 'nowrap',
-                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-               }}
-             >
-               {currentMax}
-               <div
-                 style={{
-                   content: '',
-                   position: 'absolute',
-                   bottom: '-4px',
-                   left: '50%',
-                   transform: 'translateX(-50%) rotate(45deg)',
-                   width: '8px',
-                   height: '8px',
-                   background: '#1f2937',
-                   borderRadius: '1px',
-                 }}
-               />
-             </div>
-           </div>
-         </div>
-       </div>
+          {/* Max Handle */}
+          <div
+            className="slider-handle"
+            onMouseDown={(e) => handleMouseDown(e, 'max')}
+            onTouchStart={(e) => handleMouseDown(e, 'max')}
+            onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, max: true }) && forceUpdate()}
+            onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, max: false }) && forceUpdate()}
+            style={{
+              position: 'absolute',
+              width: '20px',
+              height: '20px',
+              background: 'var(--consumer-purple)',
+              border: '3px solid white',
+              borderRadius: '50%',
+              top: '50%',
+              left: `${maxPercent}%`,
+              transform: `translate(-50%, -50%) scale(${showTooltip.max ? 1.1 : 1})`,
+              cursor: readOnly ? 'default' : 'grab',
+              boxShadow: '0 2px 8px rgba(109, 92, 174, 0.3)',
+              transition: 'transform 0.1s, box-shadow 0.1s',
+              zIndex: 2,
+            }}
+          >
+            {/* Tooltip */}
+            <div
+              style={{
+                position: 'absolute',
+                background: '#1f2937',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: '600',
+                top: '-45px',
+                left: '50%',
+                transform: `translateX(-50%) scale(${showTooltip.max ? 1 : 0})`,
+                opacity: showTooltip.max ? 1 : 0,
+                transition: 'all 0.2s',
+                pointerEvents: 'none',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+              }}
+            >
+              {currentMax}
+              <div
+                style={{
+                  content: '',
+                  position: 'absolute',
+                  bottom: '-4px',
+                  left: '50%',
+                  transform: 'translateX(-50%) rotate(45deg)',
+                  width: '8px',
+                  height: '8px',
+                  background: '#1f2937',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
 
-       {/* Max Input */}
-       <input
-         type="text"
-         value={currentMax}
-         readOnly={readOnly}
-         onChange={(e) => handleInputChange('max', e.target.value)}
-         style={{
-           width: '80px',
-           height: '44px',
-           border: `2px solid ${showTooltip.max ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
-           borderRadius: '22px',
-           textAlign: 'center',
-           fontSize: '14px',
-           color: showTooltip.max ? 'var(--consumer-purple)' : 'var(--text-secondary)',
-           fontWeight: '500',
-           outline: 'none',
-           transition: 'all 0.2s',
-           background: 'var(--card-background)',
-           cursor: readOnly ? 'default' : 'pointer',
-         }}
-       />
-     </div>
-   );
- }
+      {/* Max Input */}
+      <input
+        type="text"
+        value={currentMax}
+        readOnly={readOnly}
+        onChange={(e) => handleInputChange('max', e.target.value)}
+        style={{
+          width: '80px',
+          height: '44px',
+          border: `2px solid ${showTooltip.max ? 'var(--consumer-purple)' : 'var(--border-color)'}`,
+          borderRadius: '22px',
+          textAlign: 'center',
+          fontSize: '14px',
+          color: showTooltip.max ? 'var(--consumer-purple)' : 'var(--text-secondary)',
+          fontWeight: '500',
+          outline: 'none',
+          transition: 'all 0.2s',
+          background: 'var(--card-background)',
+          cursor: readOnly ? 'default' : 'pointer',
+        }}
+      />
+    </div>
+  );
+}
 
 /* ── Unified chip-row for every question type ── */
 function ChipRow({ question, answer, onAnswer, readOnly }) {
@@ -543,46 +543,81 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
       );
     }
 
-    // Fallback: continuous slider with $-repeat labels
+    // Fallback: discrete slider (1-5 style)
+    const min = question.min ?? 1;
+    const max = question.max ?? 5;
+    const step = 1;
+
+    // Calculate background gradient for "filled" look
+    const sliderPct = localValue != null
+      ? ((localValue - min) / (max - min)) * 100
+      : 0;
+
+    const sliderBackground = localValue != null
+      ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${sliderPct}%, var(--border-color) ${sliderPct}%, var(--border-color) 100%)`
+      : 'var(--border-color)';
+
     return (
       <div style={{
         padding: '10px 0',
         borderBottom: '1px solid var(--color-border-subtle)',
       }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', minWidth: '120px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
               {label}
-            </span>
-            <div style={{ flex: 1 }}>
-              <input
-                type="range"
-                className="curate-budget-slider"
-                min={question.min}
-                max={question.max}
-                step={question.step}
-                value={localValue}
-                disabled={readOnly}
-                onChange={(e) => handleSliderChange(Number(e.target.value))}
-                style={{
-                  width: '100%',
-                  background: gradientBackground,
-                }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>$</span>
-                <span style={{
-                  minWidth: '48px',
-                  textAlign: 'right',
-                  fontSize: '14px',
-                  fontWeight: '700',
-                  color: localValue != null ? 'var(--consumer-purple)' : 'var(--text-muted)',
-                }}>
-                  {localValue != null ? `$${localValue}` : '—'}
-                </span>
-                </div>
+            </div>
+            {localValue != null && (
+              <div style={{
+                fontSize: '14px',
+                fontWeight: '700',
+                color: 'var(--consumer-purple)',
+                background: 'var(--consumer-purple-light)',
+                padding: '2px 8px',
+                borderRadius: '4px'
+              }}>
+                {localValue} / {max}
               </div>
+            )}
+          </div>
+
+          <div style={{ position: 'relative', padding: '0 4px' }}>
+            <input
+              type="range"
+              min={min}
+              max={max}
+              step={step}
+              value={localValue ?? min}
+              onChange={(e) => handleSliderChange(Number(e.target.value))}
+              disabled={readOnly}
+              style={{
+                width: '100%',
+                height: '6px',
+                background: sliderBackground,
+                borderRadius: '3px',
+                outline: 'none',
+                appearance: 'none',
+                cursor: readOnly ? 'default' : 'grab',
+                accentColor: 'var(--consumer-purple)',
+              }}
+            />
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '8px',
+              padding: '0 2px'
+            }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'left', maxWidth: '40%' }}>
+                {question.minLabel || question.min_label || min}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right', maxWidth: '40%' }}>
+                {question.maxLabel || question.max_label || max}
+              </span>
+            </div>
           </div>
         </div>
+      </div>
     );
   }
 
@@ -781,7 +816,7 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                   }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                      <polyline points="20 6 9 17 4 12"/>
+                      <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
                 )}
@@ -930,13 +965,13 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
 
   return (
     <>
-    <div style={{
-      background: 'var(--card-background)',
-      borderRadius: '16px',
-      boxShadow: 'var(--shadow-md)',
-      padding: '24px 28px',
-      animation: 'fadeInBatch 0.4s ease-out',
-    }}>
+      <div style={{
+        background: 'var(--card-background)',
+        borderRadius: '16px',
+        boxShadow: 'var(--shadow-md)',
+        padding: '24px 28px',
+        animation: 'fadeInBatch 0.4s ease-out',
+      }}>
         {/* Header: sparkle + label */}
         <div style={{
           display: 'flex',
@@ -953,59 +988,59 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
           {batch.label.toUpperCase()}
         </div>
 
-      {/* Rows — every question renders as a chip-row */}
-      {batch.questions.map(question => (
-        <ChipRow
-          key={question.id}
-          question={question}
-          answer={answers[question.id]}
-          onAnswer={onAnswer}
-          readOnly={readOnly}
-        />
-      ))}
+        {/* Rows — every question renders as a chip-row */}
+        {batch.questions.map(question => (
+          <ChipRow
+            key={question.id}
+            question={question}
+            answer={answers[question.id]}
+            onAnswer={onAnswer}
+            readOnly={readOnly}
+          />
+        ))}
 
-      {/* Confirm pill — shows badge when frozen, button when active */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-        {readOnly ? (
-          <div style={{
-            padding: '8px 24px',
-            borderRadius: '9999px',
-            background: 'var(--gradient-user-answer)',
-            color: '#fff',
-            fontSize: '14px',
-            fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            animation: 'fadeIn 0.3s ease-in-out',
-          }}>
-            ✓ Confirmed
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={onContinue}
-            disabled={isDisabled}
-            style={{
+        {/* Confirm pill — shows badge when frozen, button when active */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+          {readOnly ? (
+            <div style={{
               padding: '8px 24px',
               borderRadius: '9999px',
-              border: `1px solid ${!isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
-              background: 'transparent',
-              color: !isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)',
+              background: 'var(--gradient-user-answer)',
+              color: '#fff',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: !isDisabled ? 'pointer' : 'not-allowed',
-              transition: 'border-color 0.2s, color 0.2s',
-              opacity: isDisabled ? 0.6 : 1,
-            }}
-          >
-            {submitting ? 'Submitting...' : 'Confirm'}
-          </button>
-        )}
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              animation: 'fadeIn 0.3s ease-in-out',
+            }}>
+              ✓ Confirmed
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onContinue}
+              disabled={isDisabled}
+              style={{
+                padding: '8px 24px',
+                borderRadius: '9999px',
+                border: `1px solid ${!isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
+                background: 'transparent',
+                color: !isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: !isDisabled ? 'pointer' : 'not-allowed',
+                transition: 'border-color 0.2s, color 0.2s',
+                opacity: isDisabled ? 0.6 : 1,
+              }}
+            >
+              {submitting ? 'Submitting...' : 'Confirm'}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
 
-    <style>{`
+      <style>{`
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(4px); }
         to { opacity: 1; transform: translateY(0); }

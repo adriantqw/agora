@@ -107,8 +107,12 @@ async def submit_batch_answers(
     result = _sanitize_for_json(result)
 
     # Check if journey is complete
+    # Only complete if agent has NO more questions AND journey data is sufficient
+    batch_response = _parse_batch_response(result, None, None)
+    questions = batch_response["questions"]
+
     journey = result.get("journey")
-    if journey and _is_journey_complete(journey):
+    if journey and _is_journey_complete(journey) and not questions:
         # Create Journey record in database
         journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
 

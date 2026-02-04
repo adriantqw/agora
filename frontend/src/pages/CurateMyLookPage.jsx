@@ -180,8 +180,14 @@ export default function CurateMyLookPage() {
   const [narrativeText, setNarrativeText] = useState('');
 
   // Initialize: Call startBatch on mount
+  const initializedRef = useRef(false);
+
   useEffect(() => {
     const initializeBatch = async () => {
+      // Prevent double-execution in Strict Mode
+      if (initializedRef.current) return;
+      initializedRef.current = true;
+
       if (!initialQuery && initialImages.length === 0) {
         setError('No search query or images provided');
         setLoading(false);
