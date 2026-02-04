@@ -286,54 +286,69 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
     questions = []
 
     for ui_input in ui_inputs:
-        # Access Pydantic model attributes directly (not .get())
+        # Helper to get field from either Pydantic model or dict
+        def get_field(obj, field):
+            if isinstance(obj, dict):
+                return obj.get(field)
+            else:
+                return getattr(obj, field, None)
+
+        # Build question dict
+        ui_id = get_field(ui_input, 'id')
+        ui_type = get_field(ui_input, 'type')
+        ui_question = get_field(ui_input, 'question')
+
         question = {
-            "id": str(ui_input.id) if ui_input.id else str(uuid.uuid4()),
-            "type": _map_ui_type_to_frontend(ui_input.type),
-            "question": str(ui_input.question) if ui_input.question else "",
-            "rowLabel": str(ui_input.question) if ui_input.question else "",  # Use question as row label
+            "id": str(ui_id) if ui_id else str(uuid.uuid4()),
+            "type": _map_ui_type_to_frontend(ui_type),
+            "question": str(ui_question) if ui_question else "",
+            "rowLabel": str(ui_question) if ui_question else "",  # Use question as row label
             "required": True,  # All questions required by default
             "options": [],
         }
 
-        # Map image_options (ImageOption Pydantic models)
-        if ui_input.image_options:
+        # Map image_options
+        image_options = get_field(ui_input, 'image_options')
+        if image_options:
             question["options"] = [
                 {
-                    "label": str(opt.label) if opt.label else "",
-                    "value": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
-                    "id": str(opt.id) if opt.id else opt.label.lower().replace(" ", "-"),
-                    "imageUrl": str(opt.image_path) if opt.image_path and hasattr(opt.image_path, '__fspath__') else str(opt.image_path) if opt.image_path else None,
+                    "label": str(get_field(opt, 'label') or ""),
+                    "value": str(get_field(opt, 'id') or get_field(opt, 'label').lower().replace(" ", "-")),
+                    "id": str(get_field(opt, 'id') or get_field(opt, 'label').lower().replace(" ", "-")),
+                    "imageUrl": str(get_field(opt, 'image_path')) if get_field(opt, 'image_path') else None,
                 }
-                for opt in ui_input.image_options
+                for opt in image_options
             ]
 
         # Map text_options (list of strings)
-        elif ui_input.text_options:
+        text_options = get_field(ui_input, 'text_options')
+        if text_options:
             question["options"] = [
                 {
                     "label": str(text),
                     "value": str(text).lower().replace(" ", "-"),
                     "id": str(text).lower().replace(" ", "-"),  # Add explicit id field
                 }
-                for text in ui_input.text_options
+                for text in text_options
             ]
 
         # Map colour_hex_options (list of hex strings)
-        elif ui_input.colour_hex_options:
+        colour_options = get_field(ui_input, 'colour_hex_options')
+        if colour_options:
             question["options"] = [
                 {
                     "label": str(hex_color),
                     "value": str(hex_color),
                     "id": str(hex_color),  # Add explicit id field
                 }
-                for hex_color in ui_input.colour_hex_options
+                for hex_color in colour_options
             ]
 
         # Add type-specific fields for scale-rating
-        if ui_input.type.value == "scale_rating":
-            question["minLabel"] = str(ui_input.min_label) if ui_input.min_label else None
-            question["maxLabel"] = str(ui_input.max_label) if ui_input.max_label else None
+        type_value = ui_type.value if hasattr(ui_type, 'value') else ui_type
+        if type_value == "scale_rating":
+            question["minLabel"] = str(get_field(ui_input, 'min_label')) if get_field(ui_input, 'min_label') else None
+            question["maxLabel"] = str(get_field(ui_input, 'max_label')) if get_field(ui_input, 'max_label') else None
 
         questions.append(question)
 

@@ -275,3 +275,11 @@ INFO:     Finished server process [35766]
 INFO:     Started server process [36002]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36002]
+INFO:     Started server process [39660]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
