@@ -39,6 +39,7 @@ class PersonalStylistAgent:
         self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
+        self.max_context_msgs = self.agent_config["max_context_msgs"]
 
         # Load separate prompts for journey update and UI generation
         templates = load_prompt_templates()
@@ -203,12 +204,12 @@ class PersonalStylistAgent:
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
         )
-        messages.extend(SystemMessage(prompt))
+        messages.append(SystemMessage(prompt))
 
         # Format style dna prompt if applicable
         if state.get("style_dna"):
             style_dna_prompt = self.style_dna_prompt.format(user_style_dna=state.get("style_dna"))
-            messages.extend(SystemMessage(style_dna_prompt))
+            messages.append(SystemMessage(style_dna_prompt))
 
         # Invoke model and return result
         messages.extend(state["messages"])
