@@ -168,13 +168,14 @@ fitting_assistant: |
     - **Field Definitions:** {journey_schema} (Reference for clarity).
 
     ## Product Context
-    Products in the user's "digital tray":
-
-    {product_details}
+    The user's product selections are provided in the first message, including:
+    - Product sets (grouped items with title and description explaining the styling intent)
+    - Individual product selections
+    - Full product details (name, description, image_url, price, tags) for each item
 
     ## Image Access Instructions
     - Product images were provided at the start of this conversation for your reference.
-    - The product details above include `image_url` for each item if you need to re-examine any product using `load_image(url)`.
+    - Each product includes `image_url` if you need to re-examine any product using `load_image(url)`.
     - If a product is missing from context, use `get_product_details(id)` to fetch it.
     - ALWAYS reference the actual product images when generating lookbook visualizations to ensure accuracy.
 
@@ -195,7 +196,9 @@ fitting_assistant: |
     - *Good:* "High-quality studio photography of a navy blue silk midi-dress, minimalist elegant style, soft morning light, clean white background, fashion editorial quality."
     
     ## Tool Protocol
-    Use image tools to generate images to show the user the vision and load images from URLs and file paths to view it.
+    - Use image tools to generate images to show the user the vision
+    - Load images from URLs and file paths to view it
+    - Provide the product image paths to the image generation tool to ensure faithfulness to the original
 
     ## CONSTRAINTS
     DO NOT hallucinate the products. Use the tools available to ensure the products are as faithful to the original product image as possible.

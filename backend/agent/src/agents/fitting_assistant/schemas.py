@@ -1,9 +1,16 @@
+from typing import Optional
 from pydantic import BaseModel, Field, FilePath, FileUrl
 
 # User input schemas
 class ProductSelected(BaseModel):
     """A product selected for fitting by the user."""
     id: str = Field(description="Product or catalogue id of the selected product")
+    # Optional detail fields (populated after fetching)
+    name: Optional[str] = Field(default=None, description="Product name")
+    description: Optional[str] = Field(default=None, description="Product description")
+    price: Optional[float] = Field(default=None, description="Product price")
+    tags: Optional[list[str]] = Field(default=None, description="Product tags")
+    cached_image_path: Optional[FilePath] = Field(default=None, description="Local file path to cached product image")
 
 class ProductSelectedSet(BaseModel):
     """Product set combination selected by the user."""

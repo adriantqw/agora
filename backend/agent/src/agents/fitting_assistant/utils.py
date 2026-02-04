@@ -1,10 +1,15 @@
 import base64
+import asyncio
+import aiohttp
 import requests
 from pathlib import Path
 
 from app.database import SessionLocal
 from app.models.product import Product
 from app.models.catalogue import CatalogueItem
+
+# Cache directory for product images
+CACHE_DIR = Path("data/cache/product_images")
 
 
 def fetch_product_details_batch(product_ids: list[str]) -> dict[str, dict]:
@@ -75,48 +80,88 @@ def fetch_product_details_batch(product_ids: list[str]) -> dict[str, dict]:
         db.close()
 
 
-def load_and_encode_image(image_url: str) -> str | None:
-    """
-    Load an image from URL or file path and encode as base64.
+# ─────────────────────────────────────────────────────────────────
+# Async Image Loading with Caching
+# ─────────────────────────────────────────────────────────────────
 
-    Args:
-        image_url: Image URL or local file path
+def get_cached_image_path(product_id: str) -> Path:
+    """Get cache path for a product image."""
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    # Sanitize product_id for filesystem
+    safe_id = product_id.replace("/", "_").replace(":", "_")
+    return CACHE_DIR / f"{safe_id}.jpg"
 
-    Returns:
-        Base64 encoded image string, or None if failed
-    """
+
+def get_cached_image(product_id: str) -> str | None:
+    """Get base64 image from cache if exists."""
+    cache_path = get_cached_image_path(product_id)
+    if cache_path.exists():
+        with open(cache_path, "rb") as f:
+            return base64.b64encode(f.read()).decode('utf-8')
+    return None
+
+
+def save_to_cache(product_id: str, image_data: bytes) -> None:
+    """Save image data to cache."""
+    cache_path = get_cached_image_path(product_id)
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(cache_path, "wb") as f:
+        f.write(image_data)
+
+
+async def fetch_image_async(
+    session: aiohttp.ClientSession,
+    product_id: str,
+    image_url: str
+) -> tuple[str, str | None]:
+    """Fetch single image asynchronously, with cache check."""
+    # Check cache first
+    cached = get_cached_image(product_id)
+    if cached:
+        return (product_id, cached)
+
+    # Check if it's a local file
+    path = Path(image_url)
+    if path.exists():
+        with open(path, "rb") as f:
+            image_data = f.read()
+        save_to_cache(product_id, image_data)
+        return (product_id, base64.b64encode(image_data).decode('utf-8'))
+
+    # Fetch from URL
     try:
-        path = Path(image_url)
-        if path.exists():
-            with open(path, "rb") as f:
-                image_data = f.read()
-        else:
-            response = requests.get(image_url, timeout=20)
-            response.raise_for_status()
-            image_data = response.content
-
-        return base64.b64encode(image_data).decode('utf-8')
+        async with session.get(image_url, timeout=aiohttp.ClientTimeout(total=20)) as response:
+            if response.status == 200:
+                image_data = await response.read()
+                save_to_cache(product_id, image_data)
+                return (product_id, base64.b64encode(image_data).decode('utf-8'))
     except Exception:
-        return None
+        pass
+    return (product_id, None)
 
 
-def load_product_images_batch(product_details: dict[str, dict]) -> dict[str, str]:
+async def load_product_images_batch_async(product_details: dict[str, dict]) -> dict[str, str]:
     """
-    Load and encode images for multiple products.
+    Load and encode images for multiple products asynchronously with caching.
 
     Args:
-        product_details: Dict mapping product_id -> product details (from fetch_product_details_batch)
+        product_details: Dict mapping product_id -> product details
 
     Returns:
         Dict mapping product_id -> base64 encoded image (only for successful loads)
     """
-    images = {}
-    for product_id, details in product_details.items():
-        if "error" in details:
-            continue
-        image_url = details.get("image_url")
-        if image_url:
-            encoded = load_and_encode_image(image_url)
-            if encoded:
-                images[product_id] = encoded
-    return images
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for product_id, details in product_details.items():
+            if "error" in details:
+                continue
+            image_url = details.get("image_url")
+            if image_url:
+                tasks.append(fetch_image_async(session, product_id, image_url))
+
+        if not tasks:
+            return {}
+
+        results = await asyncio.gather(*tasks)
+
+    return {pid: img for pid, img in results if img is not None}
