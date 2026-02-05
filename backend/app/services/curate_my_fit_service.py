@@ -302,6 +302,84 @@ def get_state(thread_id: str) -> dict:
 
 # Helper functions
 
+def _is_local_file_path(path: str) -> bool:
+    """
+    Check if a path is a local file (not HTTP/HTTPS URL).
+
+    Args:
+        path: File path or URL
+
+    Returns:
+        True if local file path, False if URL or None
+    """
+    if not path:
+        return False
+    return not path.startswith(('http://', 'https://'))
+
+
+async def _upload_generated_images(result: dict) -> dict:
+    """
+    Upload all local image paths in agent result to R2.
+
+    Recursively searches for image_path fields and uploads local files.
+    Returns sanitized result with R2 URLs.
+
+    Args:
+        result: Agent result dict that may contain local image paths
+
+    Returns:
+        Sanitized result dict with local paths replaced by R2 URLs
+    """
+    import os
+
+    async def _process_value(value):
+        """Process a single value, uploading images if needed."""
+        if isinstance(value, str):
+            if _is_local_file_path(value):
+                logger.info(f"Found local image path: {value}")
+                upload_result = await storage_service.upload_file_from_path(
+                    value, folder="generated-images"
+                )
+
+                # Clean up temp file regardless of upload success
+                try:
+                    os.remove(value)
+                    logger.info(f"Deleted temp file: {value}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete temp file {value}: {e}")
+
+                if "error" in upload_result:
+                    logger.error(f"R2 upload failed for {value}: {upload_result['error']}")
+                    return value  # Keep local path if upload fails
+                else:
+                    r2_url = upload_result["url"]
+                    logger.info(f"Uploaded to R2: {r2_url}")
+                    return r2_url
+            return value
+        elif isinstance(value, dict):
+            return {k: await _process_value(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [await _process_value(item) for item in value]
+        else:
+            return value
+
+    # Focus on image_path fields in common structures
+    if isinstance(result, dict):
+        for key in ['image_path', 'imagePath', 'cached_image_path', 'cachedImagePath']:
+            if key in result:
+                result[key] = await _process_value(result[key])
+
+        # Recursively process nested structures
+        for key, value in result.items():
+            if key in ['ui_inputs', 'ui_inputs', 'ui_inputs', 'uiInputs']:
+                # Handle nested lists of objects
+                result[key] = await _process_value(value)
+            elif key == 'journey':
+                result[key] = await _process_value(value)
+
+    return result
+
+
 def _get_mime_type_from_path(file_path: str) -> Optional[str]:
     """
     Extract MIME type from file path.

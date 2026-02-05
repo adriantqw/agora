@@ -15,11 +15,6 @@ from langgraph.config import get_stream_writer
 from ..utils.yaml import load_config
 from ..models.langchain_utils import load_model_from_config
 
-# Import storage service for R2 uploads
-import sys
-sys.path.insert(0, '/Users/justynlgh/Documents/agora/backend')
-from app.services.storage_service import storage_service
-
 @tool
 def load_image(image_url: str) -> list[dict]:
     """
@@ -144,7 +139,7 @@ class Txt2ImgGenerator:
         example_img_paths: list[str] | None = None
     ) -> dict:
         """
-        Generate a single image with retry logic and upload to R2.
+        Generate a single image with retry logic.
 
         Args:
             model: The image generation model
@@ -154,7 +149,7 @@ class Txt2ImgGenerator:
             example_img_paths: Optional example images
 
         Returns:
-            dict with status, image_path (R2 URL), and optional error
+            dict with status, image_path (local temp file path), and optional error
         """
         last_error = None
         for attempt in range(max_retries + 1):
@@ -163,31 +158,9 @@ class Txt2ImgGenerator:
                 output = await model.ainvoke(messages)
                 temp_image_path = self._extract_image_path_from_output(output)
                 if temp_image_path:
-                    # Upload to R2 and get public URL
-                    writer({"info": f"Uploading generated image to R2..."})
-                    upload_result = await storage_service.upload_file_from_path(
-                        temp_image_path, 
-                        folder="generated-images"
-                    )
-                    
-                    # Clean up temp file regardless of upload success
-                    try:
-                        os.remove(temp_image_path)
-                    except Exception:
-                        pass
-                    
-                    if "error" in upload_result:
-                        writer({"warning": f"R2 upload failed: {upload_result['error']}"})
-                        last_error = f"Image generated but upload failed: {upload_result['error']}"
-                        # Continue to retry if we haven't exhausted retries
-                        if attempt < max_retries:
-                            continue
-                        return {"status": "failed", "image_path": None, "error": last_error}
-                    
-                    # Return R2 public URL
-                    r2_url = upload_result["url"]
-                    writer({"info": f"Image uploaded to R2: {r2_url}"})
-                    return {"status": "completed", "image_path": r2_url}
+                    # Return local temp file path
+                    writer({"info": f"Image generated: {temp_image_path}"})
+                    return {"status": "completed", "image_path": temp_image_path}
                     
                 last_error = "No image found in model response"
             except Exception as e:
