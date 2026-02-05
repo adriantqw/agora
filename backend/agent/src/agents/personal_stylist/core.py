@@ -14,7 +14,7 @@ from langgraph.graph import END
 from .states import PersonalStylistState
 from .tools import update_mood_board
 from ..tools import Txt2ImgGenerator
-from .schemas import UIInputList, UserResponse
+from .schemas import UIInput, UIInputList, UserResponse
 from ..tools import load_image, google_search
 from ..schemas import JourneySchema
 from ..memory_utils import AgoraMemory
@@ -166,14 +166,18 @@ class PersonalStylistAgent:
         """Use LLM to correlate answers and update journey."""
         ui_answers = state.get("ui_answers")
         journey = state.get("journey")
-        ui_inputs = state.get("ui_inputs")
+        ui_inputs = state.get("ui_inputs")  # Now a nested list [[batch1], [batch2], ...]
         last_msg = state.get("messages", [])[-1]
 
+        # Get the latest batch of questions for context
+        latest_batch = ui_inputs[-1] if ui_inputs else []
+
         # Format the journey update prompt
+        # Use mode='json' to properly serialize Path objects to strings
         prompt = self.journey_update_prompt.format(
             journey_state=journey.model_dump_json() if journey else "None",
-            ui_inputs_history=json.dumps([ui.model_dump() for ui in ui_inputs]) if ui_inputs else "None",
-            ui_answers=json.dumps([ans.model_dump() for ans in ui_answers]) if ui_answers else "None"
+            ui_inputs_history=json.dumps([ui.model_dump(mode='json') for ui in latest_batch]) if latest_batch else "None",
+            ui_answers=json.dumps([ans.model_dump(mode='json') for ans in ui_answers]) if ui_answers else "None"
         )
 
         # Use structured output to get updated journey
@@ -183,10 +187,51 @@ class PersonalStylistAgent:
         elif isinstance(last_msg, HumanMessage):
             updated_journey = structured_model.invoke([SystemMessage(content=prompt)] + [last_msg])
 
+        # Create a summary message of the user's answers for conversation history
+        # This gives the LLM new context so it generates different questions next time
+        answer_summary = self._format_answers_as_message(ui_answers, latest_batch)
+
         return {
             "journey": updated_journey,
-            "ui_answers": []  # Clear processed answers
+            "ui_answers": [],  # Clear processed answers
+            "messages": [HumanMessage(content=answer_summary)] if answer_summary else []
         }
+
+    def _format_answers_as_message(self, ui_answers: list[UserResponse], ui_inputs: list[UIInput]) -> str:
+        """Format user answers as a human-readable message for conversation history.
+
+        This creates a HumanMessage that represents the user's answers,
+        giving the LLM new context so it generates different questions next time.
+        """
+        if not ui_answers:
+            return ""
+
+        # Build a mapping of question_id to question text
+        question_map = {}
+        if ui_inputs:
+            for ui in ui_inputs:
+                q_id = ui.id if hasattr(ui, 'id') else ui.get('id')
+                q_text = ui.question if hasattr(ui, 'question') else ui.get('question')
+                if q_id and q_text:
+                    question_map[q_id] = q_text
+
+        # Format answers
+        lines = []
+        for answer in ui_answers:
+            q_id = answer.question_id if hasattr(answer, 'question_id') else answer.get('question_id')
+            question_text = question_map.get(q_id, f"Question {q_id}")
+
+            # Extract answer value
+            if hasattr(answer, 'selected_values') and answer.selected_values:
+                value = ", ".join(str(val) for val in answer.selected_values)
+            elif hasattr(answer, 'text_value') and answer.text_value:
+                value = answer.text_value
+            else:
+                value = str(answer)
+
+            lines.append(f"- {question_text}: {value}")
+
+        return "My answers:\n" + "\n".join(lines)
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
@@ -240,7 +285,7 @@ class PersonalStylistAgent:
 
         return {
             "messages": [AIMessage(final_response.message)],
-            "ui_inputs": final_response.ui_inputs
+            "ui_inputs": [final_response.ui_inputs]
         }
     
     def _retrieve_memory(self, state: PersonalStylistState, config: RunnableConfig):

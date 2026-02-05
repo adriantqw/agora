@@ -173,10 +173,12 @@ class AgentEventParser:
         }
 
         if state:
-            # UI input components
-            ui_inputs = state.get('ui_inputs', [])
-            if isinstance(ui_inputs, list):
-                result["ui_components"] = ui_inputs
+            # UI input components - now a nested list [[batch1], [batch2], ...]
+            # Extract the latest batch for streaming
+            ui_inputs_batches = state.get('ui_inputs', [])
+            if isinstance(ui_inputs_batches, list) and ui_inputs_batches:
+                latest_batch = ui_inputs_batches[-1] if ui_inputs_batches else []
+                result["ui_components"] = latest_batch
 
             # User responses
             ui_answers = state.get('ui_answers', [])

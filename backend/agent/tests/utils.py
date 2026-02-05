@@ -121,7 +121,14 @@ def print_final_state(state: dict, output_key: str = "matches") -> None:
     if not isinstance(items, list):
         items = [items] if items else []
 
-    print(f"\nGenerated {len(items)} item(s):")
+    # Handle nested list structure (e.g., ui_inputs is [[batch1], [batch2], ...])
+    # Extract the latest batch for display
+    if output_key == "ui_inputs" and items and isinstance(items[0], list):
+        print(f"\nTotal batches: {len(items)}")
+        items = items[-1] if items else []  # Get latest batch
+        print(f"Latest batch has {len(items)} item(s):")
+    else:
+        print(f"\nGenerated {len(items)} item(s):")
     for i, item in enumerate(items, 1):
         if hasattr(item, "title"):
             desc = getattr(item, "description", "")

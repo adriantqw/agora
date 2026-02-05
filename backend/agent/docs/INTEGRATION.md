@@ -162,8 +162,10 @@ Send a message and receive UI components for user input.
 
 **Returns:** `dict` - Agent state containing:
 - `messages`: Conversation history
-- `ui_inputs`: List of UI components to render
+- `ui_inputs`: Nested list of UI component batches `[[batch1], [batch2], ...]`
 - `journey`: Current JourneySchema state
+
+**Note:** `ui_inputs` is structured as a nested list where each sublist represents a batch of questions. To get the latest batch, use `ui_inputs[-1]`.
 
 **Example:**
 ```python
@@ -175,9 +177,12 @@ thread_id = str(uuid.uuid4())
 
 result = agent.chat("I need an outfit for a beach wedding", thread_id)
 
-for component in result["ui_inputs"]:
-    print(f"Question: {component['label']}")
-    print(f"Type: {component['type']}")  # image-choice, multi-select, etc.
+# Get the latest batch of UI components
+latest_batch = result["ui_inputs"][-1] if result["ui_inputs"] else []
+
+for component in latest_batch:
+    print(f"Question: {component.question}")
+    print(f"Type: {component.type}")  # image_choice, multi_select, etc.
 ```
 
 #### `submit_answers(thread_id: str, answers: list[UserResponse], personality: str = "friendly") -> dict`
@@ -191,20 +196,27 @@ Submit user's answers to UI components.
 
 **Returns:** `dict` - Updated agent state with new UI components or completed journey
 
+**Note:** When answers are submitted, a HumanMessage summarizing the answers is added to the conversation history. This provides context for the LLM to generate different follow-up questions. The new batch of questions is appended to `ui_inputs` as a new sublist.
+
 **Example:**
 ```python
 from agent.src.agents.personal_stylist.schemas import UserResponse
 
 answers = [
-    UserResponse(input_id="q1", response="summer"),
-    UserResponse(input_id="q2", response=["bohemian", "minimalist"])
+    UserResponse(question_id="q1", selected_options=["summer"]),
+    UserResponse(question_id="q2", selected_options=["bohemian", "minimalist"])
 ]
 
 result = agent.submit_answers(thread_id, answers)
 
-# Check if journey is complete
-if result.get("journey") and result["journey"].get("title"):
+# Get the new batch of questions
+latest_batch = result["ui_inputs"][-1] if result["ui_inputs"] else []
+
+# Check if journey is complete (no more questions)
+if not latest_batch and result.get("journey"):
     print("Journey complete!")
+else:
+    print(f"Next batch has {len(latest_batch)} questions")
 ```
 
 #### `get_state(thread_id: str) -> StateSnapshot`
