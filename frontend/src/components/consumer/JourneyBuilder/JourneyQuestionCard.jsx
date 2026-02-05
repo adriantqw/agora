@@ -54,6 +54,8 @@ function isQuestionAnswered(question, answer) {
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
       return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length === 1;
+    case 'color-palette':
+      return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length === 1;
     case 'dual-range':
       return answer.minValue !== undefined &&
         answer.maxValue !== undefined &&

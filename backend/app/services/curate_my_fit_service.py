@@ -158,6 +158,9 @@ async def start_batch(
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
 
+    # Upload any local generated images to R2
+    result = await _upload_generated_images(result)
+
     # Parse BatchResponse from agent output (no filtering needed for initial batch)
     batch_response = _parse_batch_response(result, search_query, image_urls)
     logger.info(f"Parsed initial batch with {len(batch_response['questions'])} questions")
@@ -220,6 +223,9 @@ async def submit_batch_answers(
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
+
+    # Upload any local generated images to R2
+    result = await _upload_generated_images(result)
 
     # Check if journey is complete
     # Only complete if agent has NO more questions AND journey data is sufficient
@@ -321,61 +327,71 @@ async def _upload_generated_images(result: dict) -> dict:
     """
     Upload all local image paths in agent result to R2.
 
-    Recursively searches for image_path fields and uploads local files.
+    Processes ui_inputs and uploads local image files to R2.
     Returns sanitized result with R2 URLs.
 
     Args:
-        result: Agent result dict that may contain local image paths
+        result: Agent result dict that may contain local image paths in ui_inputs
 
     Returns:
         Sanitized result dict with local paths replaced by R2 URLs
     """
     import os
 
-    async def _process_value(value):
-        """Process a single value, uploading images if needed."""
-        if isinstance(value, str):
-            if _is_local_file_path(value):
-                logger.info(f"Found local image path: {value}")
-                upload_result = await storage_service.upload_file_from_path(
-                    value, folder="generated-images"
-                )
+    async def _process_ui_input(ui_input):
+        """Process a single UI input object, uploading images if needed."""
+        if isinstance(ui_input, dict):
+            processed = ui_input.copy()
+            # Handle image_options
+            if 'image_options' in processed and isinstance(processed['image_options'], list):
+                processed_image_options = []
+                for opt in processed['image_options']:
+                    if isinstance(opt, dict):
+                        processed_opt = opt.copy()
+                        if 'image_path' in processed_opt and _is_local_file_path(processed_opt['image_path']):
+                            local_path = processed_opt['image_path']
+                            logger.info(f"Uploading generated image: {local_path}")
 
-                # Clean up temp file regardless of upload success
-                try:
-                    os.remove(value)
-                    logger.info(f"Deleted temp file: {value}")
-                except Exception as e:
-                    logger.warning(f"Failed to delete temp file {value}: {e}")
+                            upload_result = await storage_service.upload_file_from_path(
+                                local_path, folder="generated-images"
+                            )
 
-                if "error" in upload_result:
-                    logger.error(f"R2 upload failed for {value}: {upload_result['error']}")
-                    return value  # Keep local path if upload fails
-                else:
-                    r2_url = upload_result["url"]
-                    logger.info(f"Uploaded to R2: {r2_url}")
-                    return r2_url
-            return value
-        elif isinstance(value, dict):
-            return {k: await _process_value(v) for k, v in value.items()}
-        elif isinstance(value, list):
-            return [await _process_value(item) for item in value]
-        else:
-            return value
+                            # Clean up temp file regardless of upload success
+                            try:
+                                os.remove(local_path)
+                                logger.info(f"Deleted temp file: {local_path}")
+                            except Exception as e:
+                                logger.warning(f"Failed to delete temp file {local_path}: {e}")
 
-    # Focus on image_path fields in common structures
-    if isinstance(result, dict):
-        for key in ['image_path', 'imagePath', 'cached_image_path', 'cachedImagePath']:
-            if key in result:
-                result[key] = await _process_value(result[key])
+                            if "error" in upload_result:
+                                logger.error(f"R2 upload failed for {local_path}: {upload_result['error']}")
+                            else:
+                                r2_url = upload_result["url"]
+                                logger.info(f"Uploaded to R2: {r2_url}")
+                                processed_opt['image_path'] = r2_url
 
-        # Recursively process nested structures
-        for key, value in result.items():
-            if key in ['ui_inputs', 'ui_inputs', 'ui_inputs', 'uiInputs']:
-                # Handle nested lists of objects
-                result[key] = await _process_value(value)
-            elif key == 'journey':
-                result[key] = await _process_value(value)
+                        processed_image_options.append(processed_opt)
+                    else:
+                        processed_image_options.append(opt)
+                processed['image_options'] = processed_image_options
+            return processed
+        return ui_input
+
+    # Process ui_inputs list
+    if 'ui_inputs' in result and isinstance(result['ui_inputs'], list):
+        processed_ui_inputs = []
+        for ui_input in result['ui_inputs']:
+            if isinstance(ui_input, list):
+                # Handle nested lists
+                processed_list = []
+                for item in ui_input:
+                    processed_item = await _process_ui_input(item)
+                    processed_list.append(processed_item)
+                processed_ui_inputs.append(processed_list)
+            else:
+                processed_ui_input = await _process_ui_input(ui_input)
+                processed_ui_inputs.append(processed_ui_input)
+        result['ui_inputs'] = processed_ui_inputs
 
     return result
 

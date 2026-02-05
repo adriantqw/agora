@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, FilePath, FileUrl
+from pydantic import BaseModel, Field
 from typing import Optional
 from enum import Enum
 
@@ -79,7 +79,7 @@ class JourneySchema(BaseModel):
     fit_preference: Optional[FitType] = Field(default_factory=list, description="User fit preference")
     style_preferences: Optional[list[StyleType]] = Field(default_factory=list, description="List of style preferences")
     colour_palette: Optional[list[str]] = Field(default_factory=list, description="Colour palette in hex (e.g., '#FF5733')", max_length=5)
-    mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
+    mood_board_path: Optional[str] = Field(default=None, description="Path or URL to a mood board image. Can be a local file path during processing or an R2 URL after upload.")
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
     other: Optional[str] = Field(default=None, description="Use this field for any other uncaptured preferences")
 
@@ -95,6 +95,6 @@ class StyleDna(BaseModel):
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
     celebrity_style_twin: str = Field(..., description="Name of celebrity with identical aesthetic logic.")
     celebrity_twin_reasoning: str = Field(..., description="User-facing reason for celebrity style DNA choice.")
-    celebrity_twin_images: Optional[list[FilePath | FileUrl]] = Field(default_factory=list, description="Image URLs or files for celebrity twin (for post-processing purposes ONLY)")
-    mood_board_path: Optional[FilePath | FileUrl] = Field(default_factory=list, description="File path to an image of a mood board encapsulating user preferences.")
+    celebrity_twin_images: Optional[list[str]] = Field(default_factory=list, description="Image URLs or file paths for celebrity twin. Can be local paths during processing or R2 URLs after upload.")
+    mood_board_path: Optional[str] = Field(default=None, description="Path or URL to a mood board image. Can be a local file path during processing or an R2 URL after upload.")
     reasoning: str = Field(description="Internal reasoning for Style DNA attributes chosen.")

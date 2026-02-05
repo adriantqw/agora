@@ -131,8 +131,8 @@ export const CONSTRAINTS = {
   },
   'color-palette': {
     minPalettes: 2,
-    maxPalettes: 4,
-    minColorsPerPalette: 3,
+    maxPalettes: 5,
+    minColorsPerPalette: 1,
     maxColorsPerPalette: 5,
     required: false
   },

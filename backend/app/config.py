@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 90
 
     # CORS
-    CORS_ORIGINS: str = "https://agora-frontend-1053141806402.europe-west1.run.app,http://localhost:3000,http://localhost:5173"
+    CORS_ORIGINS: str = "https://agora-frontend-1053141806402.europe-west1.run.app,http://localhost:3000,http://localhost:3001"
 
     # Server
     HOST: str = "0.0.0.0"
