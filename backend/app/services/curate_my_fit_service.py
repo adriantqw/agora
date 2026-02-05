@@ -129,11 +129,13 @@ async def start_batch(
     """
     # Upload images to R2
     image_urls = []
+    image_types = []
     if images and len(images) > 0:
         upload_result = await storage_service.upload_search_images(images)
         if "error" in upload_result:
             raise ValueError(upload_result["error"])
-        image_urls = upload_result["urls"]
+        image_urls = [img["url"] for img in upload_result["urls"]]
+        image_types = [img.get("type") for img in upload_result["urls"]]
 
     # Generate unique thread ID
     thread_id = f"curate_{uuid.uuid4()}"
@@ -176,6 +178,7 @@ async def start_batch(
         "questions": batch_response["questions"],
         "summaryUpdates": batch_response["summaryUpdates"],
         "imageUrls": image_urls,
+        "imageTypes": image_types,
     }
 
 
@@ -298,6 +301,34 @@ def get_state(thread_id: str) -> dict:
 
 
 # Helper functions
+
+def _get_mime_type_from_path(file_path: str) -> Optional[str]:
+    """
+    Extract MIME type from file path.
+
+    Args:
+        file_path: File path or URL
+
+    Returns:
+        MIME type string or None
+    """
+    if not file_path:
+        return None
+
+    # Extract extension
+    ext = file_path.rsplit('.', 1)[-1].lower() if '.' in file_path else None
+
+    # Map to MIME type
+    mime_map = {
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "png": "image/png",
+        "webp": "image/webp",
+        "gif": "image/gif",
+    }
+
+    return mime_map.get(ext)
+
 
 def _get_question_signature(ui_input) -> str:
     """
@@ -479,13 +510,25 @@ def _parse_batch_response(
     logger.info(f"Messages count: {len(messages)}")
     logger.info(f"Journey data: {json.dumps(journey, indent=2, default=str)}")
 
+    # Check ui_inputs is nested list
+    ui_inputs_list = []
+    for ui_input in ui_inputs:
+        logger.info(type(ui_input))
+        if isinstance(ui_input, list):
+            ui_inputs_list.extend(ui_input)
+        elif isinstance(ui_input, dict):
+            ui_inputs_list.append(ui_input)
+        else:
+            logger.warn(f"Skipping unsupported UI input type: {type(ui_input)}")
+
+
     # Generate blurb from agent message or create generic one
     messages = result.get("messages", [])
     blurb = _extract_blurb_from_messages(messages, search_query)
     logger.info(f"Extracted blurb: {blurb[:100]}...")
 
     # Convert UI inputs to questions
-    questions = _convert_ui_inputs_to_questions(ui_inputs)
+    questions = _convert_ui_inputs_to_questions(ui_inputs_list)
     logger.info(f"Converted {len(questions)} questions from ui_inputs")
 
     # Log all questions with their signatures (for debugging)
@@ -577,6 +620,7 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
                     "value": str(get_field(opt, 'id') or get_field(opt, 'label').lower().replace(" ", "-")),
                     "id": str(get_field(opt, 'id') or get_field(opt, 'label').lower().replace(" ", "-")),
                     "imageUrl": str(get_field(opt, 'image_path')) if get_field(opt, 'image_path') else None,
+                    "imageType": _get_mime_type_from_path(str(get_field(opt, 'image_path'))) if get_field(opt, 'image_path') else None,
                 }
                 for opt in image_options
             ]
@@ -659,7 +703,7 @@ def _map_ui_type_to_frontend(ui_type) -> str:
     # Map agent types to frontend types
     type_mapping = {
         "image_choice": "image-select",
-        "colour_palette": "color-picker",
+        "colour_palette": "color-palette",
         "multi_select": "multi-select",
         "single_select": "single-choice",
         "scale_rating": "scale-rating",

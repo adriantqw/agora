@@ -8,6 +8,7 @@ class OptionSchema(BaseModel):
     label: str
     value: str
     imageUrl: Optional[str] = None
+    imageType: Optional[str] = None
     iconName: Optional[str] = None
     description: Optional[str] = None
 
