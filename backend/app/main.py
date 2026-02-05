@@ -43,8 +43,20 @@ app.include_router(curate_my_fit.router)
 
 @app.on_event("startup")
 def on_startup():
-    """Initialize database on application startup."""
+    """Initialize database and vector database on application startup."""
+    # Initialize database
     init_db()
+
+    # Sync vector database
+    try:
+        logging.info("Syncing vector database with catalogue...")
+        from scripts.bulk_sync_vector_db import main as sync_vector_db
+        sync_vector_db()
+        logging.info("Vector database sync completed successfully")
+    except Exception as e:
+        logging.error(f"Failed to sync vector database: {e}")
+        # Log error but allow app to start without vector DB
+        logging.warning("App starting without vector DB sync. Search functionality may be limited.")
 
 
 @app.get("/")
