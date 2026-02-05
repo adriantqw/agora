@@ -40,12 +40,14 @@ def get_state(thread_id: str) -> dict:
 def _format_response(thread_id: str, state: dict) -> dict:
     """Format state for API response."""
     journey = state.get("journey")
-    ui_inputs = state.get("ui_inputs", [])
+    # ui_inputs is now a nested list [[batch1], [batch2], ...] - get the latest batch
+    ui_inputs_batches = state.get("ui_inputs", [])
+    latest_batch = ui_inputs_batches[-1] if ui_inputs_batches else []
 
     return {
         "threadId": thread_id,
         "journey": journey.model_dump() if journey else None,
-        "uiInputs": [ui.model_dump() for ui in ui_inputs] if ui_inputs else []
+        "uiInputs": [ui.model_dump() for ui in latest_batch] if latest_batch else []
     }
 
 
