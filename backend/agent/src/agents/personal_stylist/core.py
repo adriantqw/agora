@@ -4,7 +4,7 @@ import uuid
 
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, \
-    HumanMessage, AIMessage, RemoveMessage
+    HumanMessage, AIMessage, RemoveMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
@@ -247,6 +247,9 @@ class PersonalStylistAgent:
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
+        import logging
+        logger = logging.getLogger(__name__)
+
         messages = []
         journey: JourneySchema = state.get("journey")
 
@@ -261,15 +264,28 @@ class PersonalStylistAgent:
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
         )
-        messages.append(SystemMessage(prompt))
 
-        # Format style dna prompt if applicable
+        # Combine all system prompts into one to avoid multiple consecutive system messages
+        combined_prompt = prompt
         if state.get("style_dna"):
             style_dna_prompt = self.style_dna_prompt.format(user_style_dna=state.get("style_dna"))
-            messages.append(SystemMessage(style_dna_prompt))
+            combined_prompt = f"{prompt}\n\n{style_dna_prompt}"
+
+        messages.append(SystemMessage(combined_prompt))
+
+        # Filter state messages to ensure valid Gemini sequencing
+        filtered_messages = self._filter_messages_for_gemini(state["messages"])
+        messages.extend(filtered_messages)
+
+        # Ensure last message is HumanMessage before invoking with tools
+        if messages and not isinstance(messages[-1], HumanMessage):
+            # If last message isn't HumanMessage, add a continuation prompt
+            messages.append(HumanMessage(content="Please continue generating UI components based on the journey so far."))
+
+        # Debug logging for message sequence
+        logger.debug(f"Final message sequence before Gemini invoke: {[type(m).__name__ for m in messages]}")
 
         # Invoke model and return result
-        messages.extend(state["messages"])
         response = self.model.bind_tools(self.tools).invoke(messages)
         return {"messages": [response]}
 
@@ -317,10 +333,10 @@ class PersonalStylistAgent:
     def _trim_messages(self, state: PersonalStylistState):
         """Trim message history"""
         messages = state.get("messages", [])
-    
+
         if len(messages) <= self.max_context_msgs:
-            return {} 
-        
+            return {}
+
         # Identify the oldest messages to drop
         number_to_delete = len(messages) - self.max_context_msgs
 
@@ -328,6 +344,56 @@ class PersonalStylistAgent:
         to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
 
         return {"messages": to_remove}
+
+    def _filter_messages_for_gemini(self, messages: list) -> list:
+        """
+        Filter messages to ensure valid Gemini API sequencing.
+
+        Rules enforced:
+        1. Remove SystemMessages from state (we already add fresh ones)
+        2. Remove AIMessage with tool_calls if not followed by ToolMessage
+        3. Ensure no consecutive AIMessages
+        4. Keep valid User → AI → Tool → User flow
+
+        Args:
+            messages: Raw messages from state
+
+        Returns:
+            Filtered messages valid for Gemini API
+        """
+        if not messages:
+            return []
+
+        filtered = []
+
+        for i, msg in enumerate(messages):
+            # Skip SystemMessages from state (we add fresh ones)
+            if isinstance(msg, SystemMessage):
+                continue
+
+            # Skip AIMessages with tool_calls that aren't followed by ToolMessage
+            if isinstance(msg, AIMessage) and msg.tool_calls:
+                # Check if next message is ToolMessage
+                if i + 1 < len(messages) and isinstance(messages[i + 1], ToolMessage):
+                    filtered.append(msg)
+                else:
+                    # Orphaned tool call - skip it
+                    continue
+
+            # Skip consecutive AIMessages (keep only the last one)
+            elif isinstance(msg, AIMessage):
+                # Check if previous filtered message is also AIMessage
+                if filtered and isinstance(filtered[-1], AIMessage):
+                    # Replace previous AIMessage with this one
+                    filtered[-1] = msg
+                else:
+                    filtered.append(msg)
+
+            # Keep HumanMessage and ToolMessage as-is
+            else:
+                filtered.append(msg)
+
+        return filtered
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
