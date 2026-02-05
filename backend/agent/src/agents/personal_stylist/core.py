@@ -3,7 +3,9 @@ import mlflow
 import uuid
 
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.messages import SystemMessage, \
+    HumanMessage, AIMessage, RemoveMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
@@ -12,9 +14,10 @@ from langgraph.graph import END
 from .states import PersonalStylistState
 from .tools import update_mood_board
 from ..tools import Txt2ImgGenerator
-from .schemas import UIInputList, UserResponse
+from .schemas import UIInput, UIInputList, UserResponse
 from ..tools import load_image, google_search
 from ..schemas import JourneySchema
+from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -36,17 +39,22 @@ class PersonalStylistAgent:
         self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
+        self.max_context_msgs = self.agent_config["max_context_msgs"]
 
         # Load separate prompts for journey update and UI generation
         templates = load_prompt_templates()
         self.journey_update_prompt: str = templates[f"{self.agent_key}_journey_update"]
         self.ui_generation_prompt: str = templates[f"{self.agent_key}_ui_generation"]
+        self.style_dna_prompt: str = templates["style_dna_prompt"]
 
         # Load personality configuration
         self.personality_config: dict = load_config("personality")
 
         # Define checkpointer
         self.checkpointer = MemorySaver()
+
+        # Define memory store
+        self.memory_store = AgoraMemory()
 
         # Define available tools
         image_generator = Txt2ImgGenerator()
@@ -158,33 +166,18 @@ class PersonalStylistAgent:
         """Use LLM to correlate answers and update journey."""
         ui_answers = state.get("ui_answers")
         journey = state.get("journey")
-        ui_inputs = state.get("ui_inputs")
+        ui_inputs = state.get("ui_inputs")  # Now a nested list [[batch1], [batch2], ...]
+        last_msg = state.get("messages", [])[-1]
 
-        # Safely get last message - handle empty messages list
-        messages = state.get("messages", [])
-        last_msg = messages[-1] if messages else None
-
-        # Helper function to serialize items that may be Pydantic models or dicts
-        def serialize_item(item):
-            if hasattr(item, 'model_dump'):
-                # Pydantic model - use mode='json' to handle Path objects
-                return item.model_dump(mode='json')
-            elif isinstance(item, dict):
-                # Recursively sanitize dict values (may contain PosixPath objects)
-                return {k: serialize_item(v) for k, v in item.items()}
-            elif isinstance(item, list):
-                # Recursively sanitize list items
-                return [serialize_item(i) for i in item]
-            elif hasattr(item, '__fspath__'):
-                # PosixPath or similar path object
-                return str(item)
-            return item
+        # Get the latest batch of questions for context
+        latest_batch = ui_inputs[-1] if ui_inputs else []
 
         # Format the journey update prompt
+        # Use mode='json' to properly serialize Path objects to strings
         prompt = self.journey_update_prompt.format(
             journey_state=journey.model_dump_json() if journey else "None",
-            ui_inputs_history=json.dumps([serialize_item(ui) for ui in ui_inputs]) if ui_inputs else "None",
-            ui_answers=json.dumps([serialize_item(ans) for ans in ui_answers]) if ui_answers else "None"
+            ui_inputs_history=json.dumps([ui.model_dump(mode='json') for ui in latest_batch]) if latest_batch else "None",
+            ui_answers=json.dumps([ans.model_dump(mode='json') for ans in ui_answers]) if ui_answers else "None"
         )
 
         # Use structured output to get updated journey
@@ -194,13 +187,55 @@ class PersonalStylistAgent:
         elif isinstance(last_msg, HumanMessage):
             updated_journey = structured_model.invoke([SystemMessage(content=prompt)] + [last_msg])
 
+        # Create a summary message of the user's answers for conversation history
+        # This gives the LLM new context so it generates different questions next time
+        answer_summary = self._format_answers_as_message(ui_answers, latest_batch)
+
         return {
             "journey": updated_journey,
-            "ui_answers": []  # Clear processed answers
+            "ui_answers": [],  # Clear processed answers
+            "messages": [HumanMessage(content=answer_summary)] if answer_summary else []
         }
+
+    def _format_answers_as_message(self, ui_answers: list[UserResponse], ui_inputs: list[UIInput]) -> str:
+        """Format user answers as a human-readable message for conversation history.
+
+        This creates a HumanMessage that represents the user's answers,
+        giving the LLM new context so it generates different questions next time.
+        """
+        if not ui_answers:
+            return ""
+
+        # Build a mapping of question_id to question text
+        question_map = {}
+        if ui_inputs:
+            for ui in ui_inputs:
+                q_id = ui.id if hasattr(ui, 'id') else ui.get('id')
+                q_text = ui.question if hasattr(ui, 'question') else ui.get('question')
+                if q_id and q_text:
+                    question_map[q_id] = q_text
+
+        # Format answers
+        lines = []
+        for answer in ui_answers:
+            q_id = answer.question_id if hasattr(answer, 'question_id') else answer.get('question_id')
+            question_text = question_map.get(q_id, f"Question {q_id}")
+
+            # Extract answer value
+            if hasattr(answer, 'selected_values') and answer.selected_values:
+                value = ", ".join(str(val) for val in answer.selected_values)
+            elif hasattr(answer, 'text_value') and answer.text_value:
+                value = answer.text_value
+            else:
+                value = str(answer)
+
+            lines.append(f"- {question_text}: {value}")
+
+        return "My answers:\n" + "\n".join(lines)
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
+        messages = []
         journey: JourneySchema = state.get("journey")
 
         # Get personality instructions from state
@@ -214,14 +249,21 @@ class PersonalStylistAgent:
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
         )
+        messages.append(SystemMessage(prompt))
 
-        messages = [SystemMessage(content=prompt)] + state["messages"]
+        # Format style dna prompt if applicable
+        if state.get("style_dna"):
+            style_dna_prompt = self.style_dna_prompt.format(user_style_dna=state.get("style_dna"))
+            messages.append(SystemMessage(style_dna_prompt))
+
+        # Invoke model and return result
+        messages.extend(state["messages"])
         response = self.model.bind_tools(self.tools).invoke(messages)
         return {"messages": [response]}
 
     def _should_agent_continue(self, state: PersonalStylistState):
         """Determine whether to continue processing."""
-        last_message = state["messages"][-1]
+        last_message: AIMessage = state["messages"][-1]
         if last_message.tool_calls:
             return "tools"
         return "parse_ui"
@@ -243,8 +285,33 @@ class PersonalStylistAgent:
 
         return {
             "messages": [AIMessage(final_response.message)],
-            "ui_inputs": final_response.ui_inputs
+            "ui_inputs": [final_response.ui_inputs]
         }
+    
+    def _retrieve_memory(self, state: PersonalStylistState, config: RunnableConfig):
+        """Retrieve memory (StyleDna) for the user"""
+        user_id = config.get("configurable", {}).get("user_id")
+        if user_id:
+            style_dna = self.memory_store.retrieve_memory(user_id)
+            return {"style_dna": style_dna}
+        
+        else:
+            return {}
+        
+    def _trim_messages(self, state: PersonalStylistState):
+        """Trim message history"""
+        messages = state.get("messages", [])
+    
+        if len(messages) <= self.max_context_msgs:
+            return {} 
+        
+        # Identify the oldest messages to drop
+        number_to_delete = len(messages) - self.max_context_msgs
+
+        # Create RemoveMessage objects for those IDs
+        to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
+
+        return {"messages": to_remove}
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
@@ -257,6 +324,8 @@ class PersonalStylistAgent:
 
         # Define nodes
         workflow.add_node("update_journey", self._update_journey)
+        workflow.add_node("retrieve_memory", self._retrieve_memory)
+        workflow.add_node("trim_messages", self._trim_messages)
         workflow.add_node("agent", self._invoke_model)
         workflow.add_node("tools", tool_node)
         workflow.add_node("parse_ui", self._parse_ui_from_response)
@@ -271,7 +340,9 @@ class PersonalStylistAgent:
         )
 
         # After journey update, go to agent
-        workflow.add_edge("update_journey", "agent")
+        workflow.add_edge("update_journey", "retrieve_memory")
+        workflow.add_edge("retrieve_memory", "trim_messages")
+        workflow.add_edge("trim_messages", "agent")
 
         # Agent routing - either call tools or parse UI output
         workflow.add_conditional_edges(

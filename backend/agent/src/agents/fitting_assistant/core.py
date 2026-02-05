@@ -1,7 +1,9 @@
+import asyncio
 import mlflow
 from dotenv import load_dotenv
 
-from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
+from langchain_core.messages import SystemMessage, AIMessage, HumanMessage, RemoveMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
@@ -10,9 +12,10 @@ from langgraph.graph import END
 from .states import FittingAssistantState
 from .schemas import ProductSelections, ProductSelectedSet, FittingSets
 from .tools import get_product_details
-from .utils import fetch_product_details_batch, load_product_images_batch
+from .utils import fetch_product_details_batch, load_product_images_batch_async, get_cached_image_path
 from ..tools import load_image, Txt2ImgGenerator, google_search
 from ..schemas import JourneySchema
+from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -33,6 +36,7 @@ class FittingAssistantAgent:
         self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
+        self.max_context_msgs = self.agent_config["max_context_msgs"]
 
         # Load prompts
         self.system_prompt: str = load_prompt_templates()[self.agent_key]
@@ -42,6 +46,9 @@ class FittingAssistantAgent:
 
         # Define checkpointer
         self.checkpointer = MemorySaver()
+
+        # Define memory store
+        self.memory_store = AgoraMemory()
 
         # Define available tools
         image_generator = Txt2ImgGenerator()
@@ -63,19 +70,31 @@ class FittingAssistantAgent:
                     ids.append(item.id)
         return ids
 
-    def _format_product_context(self, product_details: dict[str, dict]) -> str:
-        """Format product details for injection into prompt."""
-        lines = ["## Available Product Details"]
-        for pid, details in product_details.items():
-            if "error" not in details:
-                lines.append(f"- **{details.get('name', pid)}** (ID: {pid})")
-                lines.append(f"  - Description: {details.get('description', 'N/A')}")
-                lines.append(f"  - Image URL: {details.get('image_url', 'N/A')}")
-                if details.get('colours'):
-                    lines.append(f"  - Colours: {', '.join(details['colours'])}")
-                if details.get('sizes'):
-                    lines.append(f"  - Sizes: {', '.join(details['sizes'])}")
-        return "\n".join(lines)
+    def _populate_product_details(self, product_selections: ProductSelections, product_details: dict) -> ProductSelections:
+        """Populate product detail fields in ProductSelections from fetched details."""
+        for match in product_selections.matches:
+            if isinstance(match, ProductSelectedSet):
+                for product in match.product_set:
+                    details = product_details.get(product.id, {})
+                    product.name = details.get("name")
+                    product.description = details.get("description")
+                    product.price = details.get("price")
+                    product.tags = details.get("tags")
+                    # Set cached image path (images already fetched by load_product_images_batch_async)
+                    cache_path = get_cached_image_path(product.id)
+                    if cache_path.exists():
+                        product.cached_image_path = str(cache_path)
+            else:
+                details = product_details.get(match.id, {})
+                match.name = details.get("name")
+                match.description = details.get("description")
+                match.price = details.get("price")
+                match.tags = details.get("tags")
+                # Set cached image path
+                cache_path = get_cached_image_path(match.id)
+                if cache_path.exists():
+                    match.cached_image_path = str(cache_path)
+        return product_selections
 
     def _build_multimodal_message(
         self,
@@ -152,8 +171,11 @@ class FittingAssistantAgent:
         product_ids = self._extract_product_ids(product_selections)
         product_details = fetch_product_details_batch(product_ids)
 
-        # Load and encode product images
-        product_images = load_product_images_batch(product_details)
+        # Load and encode product images (async with caching)
+        product_images = asyncio.run(load_product_images_batch_async(product_details))
+
+        # Populate product details into selections
+        product_selections = self._populate_product_details(product_selections, product_details)
 
         # Build user request text
         user_request = f"Create lookbooks for these selections: {product_selections.model_dump_json()}"
@@ -179,8 +201,6 @@ class FittingAssistantAgent:
         # Invoke the agent
         return self.agent.invoke({
             "journey": journey,
-            "product_selections": product_selections,
-            "product_details": product_details,
             "messages": message_list,
             "personality": personality
         }, config=config)
@@ -213,8 +233,11 @@ class FittingAssistantAgent:
         product_ids = self._extract_product_ids(product_selections)
         product_details = fetch_product_details_batch(product_ids)
 
-        # Load and encode product images
-        product_images = load_product_images_batch(product_details)
+        # Load and encode product images (async with caching)
+        product_images = await load_product_images_batch_async(product_details)
+
+        # Populate product details into selections
+        product_selections = self._populate_product_details(product_selections, product_details)
 
         # Build user request text
         user_request = f"Create lookbooks for these selections: {product_selections.model_dump_json()}"
@@ -240,7 +263,6 @@ class FittingAssistantAgent:
         # Stream the agent events
         return self.agent.astream_events({
             "journey": journey,
-            "product_details": product_details,
             "messages": message_list,
             "personality": personality
         }, config=config, version="v2")
@@ -261,7 +283,6 @@ class FittingAssistantAgent:
     def _invoke_model(self, state: FittingAssistantState):
         """Invoke the model with product context (metadata only, images already in messages)."""
         journey = state.get("journey")
-        product_details = state.get("product_details", {})
 
         # Get personality instructions from state
         personality = state.get("personality", "friendly")
@@ -274,8 +295,7 @@ class FittingAssistantAgent:
         prompt = self.system_prompt.format(
             personality_instructions=personality_instructions,
             journey=journey.model_dump_json() if journey else "No preferences",
-            journey_schema=JourneySchema.model_json_schema(),
-            product_details=product_details
+            journey_schema=JourneySchema.model_json_schema()
         )
 
         messages = [SystemMessage(content=prompt)] + state["messages"]
@@ -301,16 +321,44 @@ class FittingAssistantAgent:
             "fitting_sets": response.fitting_sets
         }
 
+    def _retrieve_memory(self, state: FittingAssistantState, config: RunnableConfig):
+        """Retrieve memory (StyleDna) for the user"""
+        user_id = config.get("configurable", {}).get("user_id")
+        if user_id:
+            style_dna = self.memory_store.retrieve_memory(user_id)
+            return {"style_dna": style_dna}
+        else:
+            return {}
+
+    def _trim_messages(self, state: FittingAssistantState):
+        """Trim message history"""
+        messages = state.get("messages", [])
+
+        if len(messages) <= self.max_context_msgs:
+            return {}
+
+        # Identify the oldest messages to drop
+        number_to_delete = len(messages) - self.max_context_msgs
+
+        # Create RemoveMessage objects for those IDs
+        to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
+
+        return {"messages": to_remove}
+
     def _compile_graph(self):
         """Compile the agent's state graph."""
         workflow = StateGraph(FittingAssistantState)
         tool_node = ToolNode(self.tools)
 
+        workflow.add_node("retrieve_memory", self._retrieve_memory)
+        workflow.add_node("trim_messages", self._trim_messages)
         workflow.add_node("agent", self._invoke_model)
         workflow.add_node("tools", tool_node)
         workflow.add_node("parse_fit_images", self._parse_fit_images)
 
-        workflow.set_entry_point("agent")
+        workflow.set_entry_point("retrieve_memory")
+        workflow.add_edge("retrieve_memory", "trim_messages")
+        workflow.add_edge("trim_messages", "agent")
         workflow.add_conditional_edges("agent", self._should_continue, {
             "tools": "tools",
             "parse_fit_images": "parse_fit_images"
