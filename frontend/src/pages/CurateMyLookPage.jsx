@@ -172,6 +172,7 @@ export default function CurateMyLookPage() {
   const [answers, setAnswers] = useState({});
   const [currentBatch, setCurrentBatch] = useState(0);
   const [confirmedBatches, setConfirmedBatches] = useState(new Set());
+  const [hasMore, setHasMore] = useState(true);
   const batch2Ref = useRef(null);
 
   // Summary state from API
@@ -312,6 +313,7 @@ export default function CurateMyLookPage() {
 
       if (response.hasMore) {
         // Add next batch
+        setHasMore(true);
         const nextBatch = {
           id: `batch-${batches.length + 1}`,
           label: `Batch ${batches.length + 1}`,
@@ -336,6 +338,7 @@ export default function CurateMyLookPage() {
         }, 100);
       } else {
         // Journey complete - navigate to recommendations
+        setHasMore(false);
         const journeyId = response.journeyId;
         // Use backend's nextStep.url if provided, otherwise default to /recommendations
         const nextStepUrl = response.nextStep?.url || `/recommendations?journeyId=${journeyId}`;
@@ -371,36 +374,7 @@ export default function CurateMyLookPage() {
     await handleConfirm(batches.length - 1);
   };
 
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#fff9f5',
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '4px solid #f3f3f3',
-            borderTop: '4px solid #793DB0',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px',
-          }} />
-          <div style={{ fontSize: '16px', color: '#666' }}>Loading your journey...</div>
-        </div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
+
 
   if (error) {
     return (
@@ -446,6 +420,47 @@ export default function CurateMyLookPage() {
     );
   }
 
+  // Thinking indicator component for AI typing
+  function ThinkingIndicator() {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'baseline', 
+        gap: '6px',
+        animation: 'fadeIn 0.3s ease-out',
+      }}>
+        <span style={{ 
+          fontSize: '14px', 
+          color: '#666',
+          fontWeight: '500',
+        }}>Thinking</span>
+        <span style={{ display: 'flex', gap: '3px', alignItems: 'baseline' }}>
+          <span style={{
+            width: '4px',
+            height: '4px',
+            backgroundColor: '#666',
+            borderRadius: '50%',
+            animation: 'wiggle 1.4s ease-in-out infinite',
+          }} />
+          <span style={{
+            width: '4px',
+            height: '4px',
+            backgroundColor: '#666',
+            borderRadius: '50%',
+            animation: 'wiggle 1.4s ease-in-out infinite 0.2s',
+          }} />
+          <span style={{
+            width: '4px',
+            height: '4px',
+            backgroundColor: '#666',
+            borderRadius: '50%',
+            animation: 'wiggle 1.4s ease-in-out infinite 0.4s',
+          }} />
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -472,7 +487,6 @@ export default function CurateMyLookPage() {
           overflowY: 'auto',
           padding: '32px',
           opacity: submitting ? 0.6 : 1,
-          pointerEvents: submitting ? 'none' : 'auto',
         }}>
           {(initialQuery || initialImages.length > 0) && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
@@ -504,6 +518,13 @@ export default function CurateMyLookPage() {
                 )}
                 {initialQuery && <div style={{ fontSize: '14px', lineHeight: '1.5' }}>{initialQuery}</div>}
               </div>
+            </div>
+          )}
+
+          {/* Show thinking indicator while loading initial batch */}
+          {loading && (
+            <div style={{ marginBottom: '24px', animation: 'fadeIn 0.3s ease-out' }}>
+              <ThinkingIndicator />
             </div>
           )}
 
@@ -543,26 +564,13 @@ export default function CurateMyLookPage() {
             </div>
           ))}
 
+          {/* Show thinking indicator while submitting */}
           {submitting && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '24px',
-              marginTop: '16px',
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                border: '3px solid #f3f3f3',
-                borderTop: '3px solid #793DB0',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                marginRight: '12px',
-              }} />
-              <div style={{ fontSize: '14px', color: '#666' }}>Processing your answers...</div>
+            <div style={{ marginTop: '24px', animation: 'fadeIn 0.3s ease-out' }}>
+              <ThinkingIndicator />
             </div>
           )}
+
         </div>
 
         {/* Right column — full-height sidebar */}
@@ -581,7 +589,7 @@ export default function CurateMyLookPage() {
         variant="default"
         position="bottom-right"
         isSearching={!isReady || submitting}
-        message={confirmedBatches.size > 0 ? (isReady ? "Let's Goooo!" : "Quick Match →") : ''}
+        message={confirmedBatches.size > 0 ? (hasMore ? "Quick Match →" : "Let's Goooo!") : ''}
         onClick={isReady && !submitting ? handleLetsGo : handleQuickMatch}
       />
 
@@ -594,6 +602,20 @@ export default function CurateMyLookPage() {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes wiggle {
+          0%, 60%, 100% {
+            transform: translateY(0);
+          }
+          30% {
+            transform: translateY(-6px);
+          }
         }
 
         @media (max-width: 768px) {

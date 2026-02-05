@@ -199,6 +199,45 @@ class StorageService:
 
         return {"urls": uploaded_urls}
 
+    async def upload_file_from_path(self, file_path: str, folder: str = "generated-images") -> dict:
+        """
+        Upload a file from a local path to Cloudflare R2.
+
+        Args:
+            file_path: Local file path to upload
+            folder: Folder prefix in R2 (default: "generated-images")
+
+        Returns:
+            dict with 'url' and 'filename' keys on success, or 'error' key on failure
+        """
+        import os
+
+        try:
+            # Read file content
+            with open(file_path, 'rb') as f:
+                content = f.read()
+
+            # Generate unique filename
+            ext = os.path.splitext(file_path)[1] or ".jpeg"
+            unique_filename = f"{uuid.uuid4()}{ext}"
+            key = f"{folder.rstrip('/')}/{unique_filename}"
+
+            # Upload to R2
+            self.client.put_object(
+                Bucket=settings.R2_BUCKET_NAME,
+                Key=key,
+                Body=content,
+                ContentType=f"image/{ext.lstrip('.')}" if ext else "image/jpeg",
+            )
+
+            # Construct public URL
+            public_url = f"{settings.R2_PUBLIC_URL.rstrip('/')}/{key}"
+
+            return {"url": public_url, "filename": key}
+
+        except Exception as e:
+            return {"error": f"Upload failed: {str(e)}"}
+
 
 # Global service instance
 storage_service = StorageService()

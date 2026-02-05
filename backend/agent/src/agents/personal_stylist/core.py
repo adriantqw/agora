@@ -159,7 +159,10 @@ class PersonalStylistAgent:
         ui_answers = state.get("ui_answers")
         journey = state.get("journey")
         ui_inputs = state.get("ui_inputs")
-        last_msg = state.get("messages", [])[-1]
+
+        # Safely get last message - handle empty messages list
+        messages = state.get("messages", [])
+        last_msg = messages[-1] if messages else None
 
         # Helper function to serialize items that may be Pydantic models or dicts
         def serialize_item(item):

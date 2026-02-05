@@ -283,3 +283,346 @@ INFO:     Finished server process [36002]
 INFO:     Started server process [39660]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39660]
+Python(44833) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [44833]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44833]
+Python(49481) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49481]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49481]
+Python(49541) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49541]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49541]
+Python(49631) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49631]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49631]
+Python(49669) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49669]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49669]
+Python(49721) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49721]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49721]
+Python(49753) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49753]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49753]
+Python(51461) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51461]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51461]
+Python(51510) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51510]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51510]
+Python(51556) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51556]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51556]
+Python(51591) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51591]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'agent/src/agents/personal_stylist/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51591]
+Python(51926) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51926]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51926]
+Python(52990) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [52990]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [52990]
+Python(53248) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53248]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53248]
+Python(53293) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53293]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53293]
+Python(53327) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53327]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53327]
+Python(53389) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53389]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53389]
+Python(53613) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53613]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53613]
+Python(53688) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53688]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53688]
+Python(55923) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [55923]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [55923]
+Python(56094) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56094]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56094]
+Python(56230) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56230]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56230]
+Python(56275) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56275]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56275]
+Python(56311) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56311]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56311]
+Python(56377) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56377]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56377]
+Python(56526) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56526]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/models/journey.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56526]
+Python(59861) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+WARNING:  WatchFiles detected changes in 'app/models/curate_my_fit.py'. Reloading...
+INFO:     Started server process [59861]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Python(59979) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+WARNING:  WatchFiles detected changes in 'app/models/__init__.py'. Reloading...
+INFO:     Started server process [59979]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Python(60008) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60008]
+Python(60168) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60168]
+Python(60397) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60397]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60397]
+Python(60513) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60513]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60513]
+Python(60585) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60585]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60585]
+Python(60653) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60653]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60653]
+Python(60738) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60738]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60738]
+Python(60810) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60810]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60810]
+Python(60967) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60967]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60967]
+Python(61030) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [61030]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'init_db.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61030]
+Python(61431) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [61431]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

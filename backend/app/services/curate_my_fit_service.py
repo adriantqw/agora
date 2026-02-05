@@ -16,6 +16,7 @@ from app.schemas.curate_my_fit import (
 from app.services.storage_service import storage_service
 from app.models.journey import Journey
 from app.models.consumer import Consumer
+from app.models.curate_my_fit import CurateMyFitQuestion
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -23,6 +24,88 @@ logger = logging.getLogger(__name__)
 
 # Initialize agent (singleton)
 stylist_agent = PersonalStylistAgent()
+
+
+# Database helper functions for question tracking
+
+def _get_sent_question_signatures(db: Session, thread_id: str) -> set[str]:
+    """
+    Retrieve all question signatures that have been sent for this thread.
+
+    Args:
+        db: Database session
+        thread_id: Agent thread ID
+
+    Returns:
+        Set of question signatures (type:question_text format)
+    """
+    questions = db.query(CurateMyFitQuestion.question_signature).filter(
+        CurateMyFitQuestion.thread_id == thread_id
+    ).all()
+
+    signatures = {q[0] for q in questions if q[0]}
+    logger.info(f"Retrieved {len(signatures)} existing question signatures from DB for thread {thread_id}")
+    return signatures
+
+
+def _store_questions(db: Session, thread_id: str, questions: list[dict]) -> None:
+    """
+    Store questions in database to track what's been sent.
+
+    Args:
+        db: Database session
+        thread_id: Agent thread ID
+        questions: List of question dicts from frontend
+    """
+    for question in questions:
+        question_id = question.get("id")
+        question_signature = _get_question_signature(question)
+
+        if question_signature:
+            # Check if question already exists (avoid duplicates)
+            existing = db.query(CurateMyFitQuestion).filter(
+                CurateMyFitQuestion.thread_id == thread_id,
+                CurateMyFitQuestion.question_id == question_id
+            ).first()
+
+            if not existing:
+                # Create new question record
+                question_record = CurateMyFitQuestion(
+                    id=str(uuid.uuid4()),
+                    thread_id=thread_id,
+                    question_id=question_id,
+                    question_signature=question_signature,
+                    question_data=question  # Store full question for debugging
+                )
+                db.add(question_record)
+                logger.debug(f"Stored question {question_id} with signature {question_signature}")
+
+    db.commit()
+    logger.info(f"Stored {len(questions)} questions in DB for thread {thread_id}")
+
+
+def _link_thread_to_journey(db: Session, thread_id: str, journey_id: str) -> None:
+    """
+    Link agent thread to completed journey.
+
+    Args:
+        db: Database session
+        thread_id: Agent thread ID
+        journey_id: Journey ID
+    """
+    # Update Journey record with thread_id
+    journey = db.query(Journey).filter(Journey.id == journey_id).first()
+    if journey:
+        # Use setattr for Column assignment
+        setattr(journey, 'thread_id', thread_id)
+
+    # Update all question records with journey_id
+    db.query(CurateMyFitQuestion).filter(
+        CurateMyFitQuestion.thread_id == thread_id
+    ).update({"journey_id": journey_id})
+
+    db.commit()
+    logger.info(f"Linked thread {thread_id} to journey {journey_id}")
 
 
 async def start_batch(
@@ -59,6 +142,12 @@ async def start_batch(
     logger.info(f"Calling PersonalStylist agent with message: {message[:100]}...")
 
     # Use async invocation to support async tools (Txt2ImgGenerator)
+    logger.info("="*60)
+    logger.info("START_BATCH - START")
+    logger.info(f"Thread ID: {thread_id}")
+    logger.info(f"Search query: {search_query}")
+    logger.info(f"Image URLs: {image_urls}")
+    
     result = await _chat_async(stylist_agent, message, thread_id)
     logger.info(f"Agent result keys: {result.keys()}")
     logger.debug(f"Agent result: {result}")
@@ -66,9 +155,19 @@ async def start_batch(
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
 
-    # Parse BatchResponse from agent output
+    # Parse BatchResponse from agent output (no filtering needed for initial batch)
     batch_response = _parse_batch_response(result, search_query, image_urls)
-    logger.info(f"Parsed batch response with {len(batch_response['questions'])} questions")
+    logger.info(f"Parsed initial batch with {len(batch_response['questions'])} questions")
+
+    # Store questions in database for tracking
+    if batch_response["questions"]:
+        _store_questions(db, thread_id, batch_response["questions"])
+
+    logger.info(f"RETURNING TO FRONTEND:")
+    logger.info(f"  threadId: {thread_id}")
+    logger.info(f"  questions count: {len(batch_response['questions'])}")
+    logger.info("START_BATCH - END")
+    logger.info("="*60)
 
     return {
         "threadId": thread_id,
@@ -97,11 +196,22 @@ async def submit_batch_answers(
     Returns:
         dict with hasMore, and either next batch or final journey
     """
+    logger.info("="*60)
+    logger.info("SUBMIT_BATCH_ANSERS - START")
+    logger.info(f"Thread ID: {thread_id}")
+    logger.info(f"Answers submitted: {list(answers.keys())}")
+
+    # Get existing question signatures from DATABASE (not agent state)
+    existing_signatures = _get_sent_question_signatures(db, thread_id)
+
     # Convert answers to UserResponse format expected by agent
     user_responses = _convert_answers_to_user_response(answers)
+    logger.info(f"Converted to {len(user_responses)} UserResponse objects")
 
     # Submit answers to PersonalStylist agent (async to support async tools)
     result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
+    logger.info("Agent invocation completed")
+    logger.info(f"Agent result keys: {result.keys()}")
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
@@ -109,10 +219,30 @@ async def submit_batch_answers(
     # Check if journey is complete
     # Only complete if agent has NO more questions AND journey data is sufficient
     batch_response = _parse_batch_response(result, None, None)
-    questions = batch_response["questions"]
+    all_questions = batch_response["questions"]
+
+    # Filter out duplicate questions based on DB signatures
+    new_questions = [
+        q for q in all_questions
+        if _get_question_signature(q) not in existing_signatures
+    ]
+
+    filtered_count = len(all_questions) - len(new_questions)
+    if filtered_count > 0:
+        logger.info(f"Filtered out {filtered_count} duplicate questions (based on DB)")
 
     journey = result.get("journey")
-    if journey and _is_journey_complete(journey) and not questions:
+    if journey and _is_journey_complete(journey) and not new_questions:
+        logger.info("JOURNEY COMPLETE - creating Journey record")
+
+        # Create Journey record
+        journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
+
+        # Link thread to journey
+        _link_thread_to_journey(db, thread_id, journey_obj.id)
+
+        logger.info("SUBMIT_BATCH_ANSERS - END (journey complete)")
+        logger.info("="*60)
         # Create Journey record in database
         journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
 
@@ -126,13 +256,21 @@ async def submit_batch_answers(
             }
         }
     else:
+        # Store new questions in database
+        if new_questions:
+            _store_questions(db, thread_id, new_questions)
+
         # Generate next batch
-        batch_response = _parse_batch_response(result, None, None)
+        logger.info(f"RETURNING TO FRONTEND:")
+        logger.info(f"  hasMore: True")
+        logger.info(f"  questions count: {len(new_questions)}")
+        logger.info("SUBMIT_BATCH_ANSERS - END (more questions)")
+        logger.info("="*60)
 
         return {
             "hasMore": True,
             "blurb": batch_response["blurb"],
-            "questions": batch_response["questions"],
+            "questions": new_questions,
             "summaryUpdates": batch_response["summaryUpdates"],
         }
 
@@ -162,6 +300,108 @@ def get_state(thread_id: str) -> dict:
 
 
 # Helper functions
+
+def _get_question_signature(ui_input) -> str:
+    """
+    Create a content-based signature for a question to detect duplicates.
+    Uses type + question text to identify similar questions.
+
+    Args:
+        ui_input: UIInput from agent state OR question dict from _convert_ui_inputs_to_questions
+
+    Returns:
+        String signature for this question
+    """
+    # Extract type (handles both agent UIInput and frontend question dict)
+    ui_type = None
+    if hasattr(ui_input, 'type'):
+        ui_type = ui_input.type
+    elif isinstance(ui_input, dict):
+        ui_type = ui_input.get('type')
+
+    # Extract question text (agent uses 'question', frontend dict uses 'question' or 'rowLabel')
+    question_text = None
+    if hasattr(ui_input, 'question'):
+        question_text = ui_input.question
+    elif isinstance(ui_input, dict):
+        question_text = ui_input.get('question') or ui_input.get('rowLabel')
+
+    # Create signature: type:question (normalized)
+    if ui_type and question_text:
+        type_str = ui_type.value if hasattr(ui_type, 'value') else str(ui_type)
+        text_normalized = str(question_text).strip().lower()
+        return f"{type_str}:{text_normalized}"
+
+    # Fallback to empty signature if missing data
+    return ""
+
+
+def _extract_ui_inputs_from_state(state) -> list:
+    """
+    Extract ui_inputs from agent state (handles both StateSnapshot and dict).
+
+    Args:
+        state: StateSnapshot or dict from agent.get_state()
+
+    Returns:
+        List of ui_inputs (may be empty)
+    """
+    if not state:
+        return []
+
+    # Extract ui_inputs from state (handle both StateSnapshot and dict)
+    ui_inputs = []
+    if hasattr(state, 'values'):
+        # StateSnapshot object
+        ui_inputs = state.values.get("ui_inputs", [])
+    elif isinstance(state, dict):
+        # Dict representation
+        ui_inputs = state.get("ui_inputs", [])
+
+    return ui_inputs
+
+
+def _get_existing_question_ids(thread_id: str) -> set[str]:
+    """
+    Extract question IDs from agent state that were previously sent to frontend.
+
+    Args:
+        thread_id: Thread ID from start_batch
+
+    Returns:
+        Set of question IDs that have already been sent
+    """
+    existing_question_ids = set()
+    
+    try:
+        state = stylist_agent.get_state(thread_id)
+        if not state:
+            return existing_question_ids
+
+        # Extract ui_inputs from state (handle both StateSnapshot and dict)
+        ui_inputs = []
+        if hasattr(state, 'values'):
+            # StateSnapshot object
+            ui_inputs = state.values.get("ui_inputs", [])
+        elif isinstance(state, dict):
+            # Dict representation
+            ui_inputs = state.get("ui_inputs", [])
+
+        # Extract question IDs from existing ui_inputs
+        for ui_input in ui_inputs:
+            if hasattr(ui_input, 'id') and ui_input.id:
+                existing_question_ids.add(str(ui_input.id))
+            elif isinstance(ui_input, dict):
+                ui_id = ui_input.get('id')
+                if ui_id:
+                    existing_question_ids.add(str(ui_id))
+
+        logger.debug(f"Found {len(existing_question_ids)} existing question IDs to filter")
+    except Exception as e:
+        logger.warning(f"Failed to extract existing question IDs: {e}")
+
+    return existing_question_ids
+
 
 async def _chat_async(agent, message: str, thread_id: str, personality: str = 'friendly') -> dict:
     """
@@ -214,7 +454,11 @@ def _sanitize_for_json(data):
         return data
 
 
-def _parse_batch_response(result: dict, search_query: Optional[str], image_urls: Optional[list[str]]) -> dict:
+def _parse_batch_response(
+    result: dict,
+    search_query: Optional[str],
+    image_urls: Optional[list[str]]
+) -> dict:
     """
     Parse agent result into BatchResponse format.
 
@@ -226,21 +470,34 @@ def _parse_batch_response(result: dict, search_query: Optional[str], image_urls:
     Returns:
         dict with blurb, questions, summaryUpdates
     """
+    logger.info("_PARSE_BATCH_RESPONSE - START")
+
     # Extract UI inputs from agent result (correct key is 'ui_inputs' not 'uiInputs')
     ui_inputs = result.get("ui_inputs", [])
     journey = result.get("journey")
 
-    logger.debug(f"Extracted {len(ui_inputs)} UI inputs from agent result")
-    logger.debug(f"Journey data: {journey}")
+    logger.info(f"Extracted {len(ui_inputs)} UI inputs from agent result")
+    logger.info(f"Journey data: {journey}")
 
     # Generate blurb from agent message or create generic one
     messages = result.get("messages", [])
     blurb = _extract_blurb_from_messages(messages, search_query)
-    logger.debug(f"Extracted blurb: {blurb[:100]}...")
+    logger.info(f"Extracted blurb: {blurb[:100]}...")
 
     # Convert UI inputs to questions
     questions = _convert_ui_inputs_to_questions(ui_inputs)
-    logger.debug(f"Converted {len(questions)} questions")
+    logger.info(f"Converted {len(questions)} questions from ui_inputs")
+
+    # Log all questions with their signatures (for debugging)
+    for i, q in enumerate(questions):
+        q_id = q.get("id", "N/A")
+        q_type = q.get("type", "N/A")
+        q_text = q.get("question", "")[:50] + ("..." if len(q.get("question", "")) > 50 else "")
+        sig = _get_question_signature(q)
+        logger.info(f"  Question [{i}]: ID={q_id} | Type={q_type} | Sig={sig} | Text={q_text}")
+
+    logger.info("_PARSE_BATCH_RESPONSE - END")
+    logger.info("="*60)
 
     # Extract summary updates from journey
     summary_updates = _extract_summary_updates(journey, search_query)
