@@ -337,12 +337,10 @@ export default function CurateMyLookPage() {
           batch2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 100);
       } else {
-        // Journey complete - navigate to recommendations
+        // Journey complete
         setHasMore(false);
         const journeyId = response.journeyId;
-        // Use backend's nextStep.url if provided, otherwise default to /recommendations
-        const nextStepUrl = response.nextStep?.url || `/recommendations?journeyId=${journeyId}`;
-        navigate(nextStepUrl);
+        // Frontend decides what to do with journeyId
       }
 
       setSubmitting(false);

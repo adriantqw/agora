@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from fastapi import UploadFile
 
 from agent.src.agents.personal_stylist.core import PersonalStylistAgent
+from agent.src.agents.personal_stylist.schemas import UserResponse
 from app.schemas.curate_my_fit import (
     BatchResponse,
     QuestionSchema,
@@ -150,7 +151,7 @@ async def start_batch(
     
     result = await _chat_async(stylist_agent, message, thread_id)
     logger.info(f"Agent result keys: {result.keys()}")
-    logger.debug(f"Agent result: {result}")
+    logger.info(f"Agent result: {json.dumps(result, indent=2, default=str)}")
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
@@ -212,6 +213,7 @@ async def submit_batch_answers(
     result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
     logger.info("Agent invocation completed")
     logger.info(f"Agent result keys: {result.keys()}")
+    logger.info(f"Agent result: {json.dumps(result, indent=2, default=str)}")
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
@@ -250,10 +252,6 @@ async def submit_batch_answers(
             "hasMore": False,
             "journeyId": journey_obj.id,
             "journey": _format_journey(journey_obj),
-            "nextStep": {
-                "action": "matchmaker",
-                "url": f"/matchmaker?journeyId={journey_obj.id}"
-            }
         }
     else:
         # Store new questions in database
@@ -475,9 +473,11 @@ def _parse_batch_response(
     # Extract UI inputs from agent result (correct key is 'ui_inputs' not 'uiInputs')
     ui_inputs = result.get("ui_inputs", [])
     journey = result.get("journey")
+    messages = result.get("messages", [])
 
     logger.info(f"Extracted {len(ui_inputs)} UI inputs from agent result")
-    logger.info(f"Journey data: {journey}")
+    logger.info(f"Messages count: {len(messages)}")
+    logger.info(f"Journey data: {json.dumps(journey, indent=2, default=str)}")
 
     # Generate blurb from agent message or create generic one
     messages = result.get("messages", [])
@@ -611,6 +611,30 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
             question["minLabel"] = str(get_field(ui_input, 'min_label')) if get_field(ui_input, 'min_label') else None
             question["maxLabel"] = str(get_field(ui_input, 'max_label')) if get_field(ui_input, 'max_label') else None
 
+        # Log detailed question information
+        logger.info("="*80)
+        logger.info("QUESTION DETAIL:")
+        logger.info(f"  ID: {question['id']}")
+        logger.info(f"  Type (mapped): {question['type']}")
+        logger.info(f"  Type (original): {type_value}")
+        logger.info(f"  Question: {question['question']}")
+        logger.info(f"  Row Label: {question['rowLabel']}")
+        logger.info(f"  Required: {question['required']}")
+        logger.info(f"  Options count: {len(question['options'])}")
+        if question['options']:
+            for idx, opt in enumerate(question['options']):
+                logger.info(f"    Option [{idx}]:")
+                logger.info(f"      ID: {opt.get('id', 'N/A')}")
+                logger.info(f"      Label: {opt.get('label', 'N/A')}")
+                logger.info(f"      Value: {opt.get('value', 'N/A')}")
+                if opt.get('imageUrl'):
+                    logger.info(f"      Image URL: {opt['imageUrl']}")
+        if question.get('minLabel'):
+            logger.info(f"  Min Label: {question['minLabel']}")
+        if question.get('maxLabel'):
+            logger.info(f"  Max Label: {question['maxLabel']}")
+        logger.info("="*80)
+
         questions.append(question)
 
     return questions
@@ -713,26 +737,16 @@ def _extract_summary_updates(journey, search_query: Optional[str]) -> dict:
     }
 
 
-def _convert_answers_to_user_response(answers: dict[str, AnswerData]) -> list:
+def _convert_answers_to_user_response(answers: dict[str, AnswerData]) -> list[UserResponse]:
     """Convert frontend answers to UserResponse format for agent."""
     user_responses = []
     for question_id, answer_data in answers.items():
-        response = {
-            "question_id": question_id,
-            "timestamp": answer_data.timestamp or 0,
-        }
-
-        # Add answer data based on type
-        if answer_data.selectedOptions:
-            response["selected_options"] = answer_data.selectedOptions
-        if answer_data.freeText:
-            response["free_text"] = answer_data.freeText
-        if answer_data.minValue is not None:
-            response["min_value"] = answer_data.minValue
-        if answer_data.maxValue is not None:
-            response["max_value"] = answer_data.maxValue
-
-        user_responses.append(response)
+        user_response = UserResponse(
+            question_id=question_id,
+            selected_values=answer_data.selectedOptions or [],
+            text_value=answer_data.freeText
+        )
+        user_responses.append(user_response)
 
     return user_responses
 

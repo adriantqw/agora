@@ -98,7 +98,6 @@ class FinalBatchData(BaseModel):
     hasMore: bool = False
     journeyId: str
     journey: Dict[str, Any]  # Journey object
-    nextStep: Dict[str, str]  # { "action": "matchmaker", "url": "/matchmaker?journeyId=..." }
 
 
 class SubmitBatchAnswersResponse(BaseModel):

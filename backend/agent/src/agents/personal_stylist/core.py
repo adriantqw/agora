@@ -167,17 +167,29 @@ class PersonalStylistAgent:
         ui_answers = state.get("ui_answers")
         journey = state.get("journey")
         ui_inputs = state.get("ui_inputs")  # Now a nested list [[batch1], [batch2], ...]
-        last_msg = state.get("messages", [])[-1]
+        messages = state.get("messages", [])
+        last_msg = messages[-1] if messages else None
 
         # Get the latest batch of questions for context
         latest_batch = ui_inputs[-1] if ui_inputs else []
 
         # Format the journey update prompt
         # Use mode='json' to properly serialize Path objects to strings
+        # Handle both Pydantic models (UserResponse) and dicts (ui_inputs from state)
+        def serialize_ui_input(ui):
+            if hasattr(ui, 'model_dump'):
+                return ui.model_dump(mode='json')
+            return ui  # Already a dict
+
+        def serialize_answer(ans):
+            if hasattr(ans, 'model_dump'):
+                return ans.model_dump(mode='json')
+            return ans  # Already a dict
+
         prompt = self.journey_update_prompt.format(
             journey_state=journey.model_dump_json() if journey else "None",
-            ui_inputs_history=json.dumps([ui.model_dump(mode='json') for ui in latest_batch]) if latest_batch else "None",
-            ui_answers=json.dumps([ans.model_dump(mode='json') for ans in ui_answers]) if ui_answers else "None"
+            ui_inputs_history=json.dumps([serialize_ui_input(ui) for ui in latest_batch]) if latest_batch else "None",
+            ui_answers=json.dumps([serialize_answer(ans) for ans in ui_answers]) if ui_answers else "None"
         )
 
         # Use structured output to get updated journey
@@ -283,9 +295,13 @@ class PersonalStylistAgent:
                     if image_option.id is None:
                         image_option.id = str(uuid.uuid4().hex)
 
+        # Convert UIInput Pydantic models to dicts for msgpack serialization
+        # LangGraph's MemorySaver can't serialize Pydantic models directly
+        ui_inputs_dicts = [ui.model_dump(mode='json') for ui in final_response.ui_inputs]
+
         return {
             "messages": [AIMessage(final_response.message)],
-            "ui_inputs": [final_response.ui_inputs]
+            "ui_inputs": ui_inputs_dicts
         }
     
     def _retrieve_memory(self, state: PersonalStylistState, config: RunnableConfig):

@@ -98,7 +98,7 @@ async def submit_batch_answers(
     Returns:
         SubmitBatchAnswersResponse with hasMore flag and either:
         - Next batch (blurb, questions, summaryUpdates) if hasMore=true
-        - Final journey (journeyId, journey, nextStep) if hasMore=false
+        - Final journey (journeyId, journey) if hasMore=false
     """
     try:
         consumer_id = current_consumer.id if current_consumer else "guest"
