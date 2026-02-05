@@ -301,7 +301,7 @@ class PersonalStylistAgent:
 
         return {
             "messages": [AIMessage(final_response.message)],
-            "ui_inputs": ui_inputs_dicts
+            "ui_inputs": [ui_inputs_dicts]  # Wrap in list to maintain nested structure [[batch]]
         }
     
     def _retrieve_memory(self, state: PersonalStylistState, config: RunnableConfig):
