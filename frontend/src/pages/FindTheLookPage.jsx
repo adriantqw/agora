@@ -229,7 +229,6 @@ const FindTheLookPage = () => {
               <div style={{ flex: '1', overflowY: 'auto' }}>
                 <AIChatBubble
                   message={currentRecommendation.message}
-                  avatarSrc="/avatars/ai-blob.png"
                 />
               </div>
             )}
