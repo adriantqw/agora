@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
+import { MessageCircle } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import LookCarousel from '../components/find-the-look/LookCarousel';
 import ItemGrid from '../components/find-the-look/ItemGrid';
@@ -130,14 +131,14 @@ const FindTheLookPage = () => {
 
   const refineSectionStyle = {
     display: 'flex',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '12px',
   };
 
   const refineTextStyle = {
     fontSize: '14px',
-    color: '#718096',
+    color: '#4A5568',
     margin: 0,
   };
 
@@ -145,13 +146,15 @@ const FindTheLookPage = () => {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: '2px solid #793DB0',
-    backgroundColor: 'transparent',
+    border: '2px solid transparent',
+    background: 'white',
+    backgroundClip: 'padding-box',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.2s ease',
+    position: 'relative',
   };
 
   return (
@@ -234,18 +237,40 @@ const FindTheLookPage = () => {
             {/* Refine Search Bubble */}
             <div style={refineSectionStyle}>
               <p style={refineTextStyle}>Not quite right? Refine your search</p>
-              <button
-                style={refineButtonStyle}
-                aria-label="Refine search"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#F7FAFC';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                <span style={{ fontSize: '18px', fontWeight: '700', color: '#793DB0' }}>Q</span>
-              </button>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                padding: '2px',
+              }}>
+                <button
+                  style={{
+                    ...refineButtonStyle,
+                    width: '100%',
+                    height: '100%',
+                    background: 'white',
+                    border: 'none',
+                  }}
+                  aria-label="Refine search"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#F7FAFC';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                  }}
+                >
+                  <MessageCircle
+                    size={20}
+                    style={{
+                      background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  />
+                </button>
+              </div>
             </div>
           </section>
         </main>
