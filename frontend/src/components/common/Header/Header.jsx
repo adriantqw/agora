@@ -249,13 +249,15 @@ onMouseEnter={(e) => {
           </button>
 
           {!isLanding && (
-            <ThemeToggle
-              size={40}
-              borderRadius={isLanding ? '50%' : '8px'}
-              iconColor={textColor}
-              hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
-              hoverIconColor={isLanding ? '#2D3748' : colors.text.primary}
-            />
+            <div style={{ display: 'none' }}>
+              <ThemeToggle
+                size={40}
+                borderRadius={'8px'}
+                iconColor={textColor}
+                hoverBackground={colors.gradient.consumer}
+                hoverIconColor='white'
+              />
+            </div>
           )}
         </div>
       </div>

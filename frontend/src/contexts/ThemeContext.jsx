@@ -5,20 +5,7 @@ const ThemeContext = createContext();
 export const useTheme = () => useContext(ThemeContext);
 
 const getInitialTheme = () => {
-  try {
-    const savedTheme = localStorage.getItem('agora-theme');
-    if (savedTheme === 'light' || savedTheme === 'dark') {
-      return savedTheme;
-    }
-  } catch (e) {
-    // localStorage might be blocked
-  }
-
-  // Check system preference
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    return 'dark';
-  }
-
+  // Light theme is the only option - ignore saved preferences
   return 'light';
 };
 
@@ -43,15 +30,8 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prevTheme) => {
-      const newTheme = prevTheme === 'light' ? 'dark' : 'light';
-      try {
-        localStorage.setItem('agora-theme', newTheme);
-      } catch (e) {
-        // localStorage might be blocked
-      }
-      return newTheme;
-    });
+    // Theme toggle is disabled - light theme only
+    // This function is intentionally left as a no-op
   };
 
   return (
