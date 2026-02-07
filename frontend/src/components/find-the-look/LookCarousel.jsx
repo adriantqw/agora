@@ -61,7 +61,7 @@ const LookCarousel = ({ looks, onSelectLook }) => {
 
   const carouselItemStyle = {
     width: 'calc(100% / 3)',
-    height: '550px',
+    height: '35vh',
     flexShrink: 0,
     padding: '0 8px',
   };
