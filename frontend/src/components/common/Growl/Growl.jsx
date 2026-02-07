@@ -18,6 +18,7 @@ const Growl = ({ message, type = 'success', duration = 3000, onClose, show, cust
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  // Handle show/hide transitions
   useEffect(() => {
     if (show) {
       setIsVisible(true);
@@ -26,13 +27,27 @@ const Growl = ({ message, type = 'success', duration = 3000, onClose, show, cust
       // Auto-dismiss if duration is set
       if (duration > 0) {
         const timer = setTimeout(() => {
-          handleClose();
+          // Trigger exit animation
+          setIsExiting(true);
+          setTimeout(() => {
+            setIsVisible(false);
+            onClose?.();
+          }, 300);
         }, duration);
 
         return () => clearTimeout(timer);
       }
+    } else {
+      // show is false, trigger exit animation
+      if (isVisible) {
+        setIsExiting(true);
+        const timer = setTimeout(() => {
+          setIsVisible(false);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [show, duration]);
+  }, [show, duration, onClose, isVisible]);
 
   const handleClose = () => {
     setIsExiting(true);
@@ -42,7 +57,7 @@ const Growl = ({ message, type = 'success', duration = 3000, onClose, show, cust
     }, 300); // Match animation duration
   };
 
-  if (!isVisible && !show) return null;
+  if (!isVisible) return null;
 
   // Style configuration per type
   const styles = {

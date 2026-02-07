@@ -139,26 +139,26 @@ const FindTheLookPage = () => {
     flexDirection: 'column',
     gap: '12px',
     overflow: 'hidden',
-    paddingRight: '24px',
+    padding: '0 24px',
   };
 
   const chatInputContainerStyle = {
     display: 'flex',
     gap: '8px',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
     marginTop: 'auto',
-    maxWidth: '600px',
     width: '100%',
   };
 
   const chatInputStyle = {
     flex: '1',
-    padding: '12px 16px',
+    padding: '14px 20px',
     borderRadius: '24px',
     border: '1px solid #E2E8F0',
-    fontSize: '14px',
+    fontSize: '16px',
     outline: 'none',
     fontFamily: '"Readex Pro", -apple-system, sans-serif',
+    minHeight: '44px',
   };
 
   const sendButtonStyle = {
