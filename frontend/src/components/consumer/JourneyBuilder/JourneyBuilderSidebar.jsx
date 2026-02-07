@@ -188,7 +188,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
             autoFocus
             style={{
-              fontSize: '14px',
+              fontSize: '16px',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -203,7 +203,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
           <div
             onClick={() => setIsEditingTitle(true)}
             style={{
-              fontSize: '15px',
+              fontSize: '17px',
               fontWeight: '700',
               background: 'var(--gradient-user-answer)',
               WebkitBackgroundClip: 'text',

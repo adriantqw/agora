@@ -226,7 +226,7 @@ function ThinkingDropdown({ text, isActive, startTime }) {
       >
         <Sparkles size={isExpanded ? 14 : 11} />
         <span style={{ textAlign: 'left' }}>
-          {isActive ? 'Thinking...' : `Thought for ${elapsed}s`}
+          {isActive ? 'Thinking' : `Thought for ${elapsed}s`}
         </span>
         {isActive && (
           <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
