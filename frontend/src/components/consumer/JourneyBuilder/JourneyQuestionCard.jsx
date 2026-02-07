@@ -855,6 +855,61 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     );
   }
 
+  /* --- color-palette: render colour swatches instead of text chips --- */
+  if (question.type === 'color-palette') {
+    const selectedOpt = getSelectedOptions(question, answer)[0] || null;
+
+    return (
+      <div style={{
+        padding: '10px 0',
+        borderBottom: '1px solid var(--color-border-subtle)',
+      }}>
+        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', marginBottom: '10px' }}>
+          {label}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {question.options?.map(opt => {
+            const isSelected = selectedOpt === (opt.id || opt.value);
+            const hexColor = opt.value;
+            return (
+              <button
+                key={opt.id || opt.value}
+                type="button"
+                onClick={readOnly ? undefined : () => onAnswer({
+                  questionId: question.id,
+                  selectedOptions: [opt.id || opt.value],
+                  timestamp: Date.now(),
+                })}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: hexColor,
+                  border: isSelected ? '3px solid var(--consumer-purple)' : '2px solid var(--border-color)',
+                  cursor: readOnly ? 'default' : 'pointer',
+                  outline: isSelected ? '2px solid var(--consumer-purple-light)' : 'none',
+                  outlineOffset: '2px',
+                  transition: 'border 0.15s, outline 0.15s, transform 0.15s',
+                  transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                  padding: 0,
+                  position: 'relative',
+                }}
+                title={hexColor}
+              >
+                {isSelected && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"
+                    style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   /* --- chip-based types: multi-select, single-choice, hybrid-select --- */
   const isMulti = question.type === 'multi-select' ||
     (question.type === 'hybrid-select' && question.multiSelect);

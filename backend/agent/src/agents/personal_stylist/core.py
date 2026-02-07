@@ -1,6 +1,7 @@
 import json
 import mlflow
 import uuid
+import logging
 
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, \
@@ -21,6 +22,8 @@ from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 
@@ -34,7 +37,7 @@ class PersonalStylistAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "personal_stylist"
         self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
@@ -65,13 +68,14 @@ class PersonalStylistAgent:
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
-    def chat(self, message: str, thread_id: str, personality: str = 'friendly') -> dict:
+    def chat(self, message: str, thread_id: str, user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -81,16 +85,21 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+
         return self.agent.invoke({"messages": [("user", message)], "personality": personality}, config=config)
     
-    def submit_answers(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
+    def submit_answers(self, thread_id: str, answers: list[UserResponse], user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Submit UI answers to update the journey.
 
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -100,16 +109,21 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+
         return self.agent.invoke({"ui_answers": answers, "personality": personality}, config=config)
 
-    async def chat_stream(self, message: str, thread_id: str, personality: str = 'friendly'):
+    async def chat_stream(self, message: str, thread_id: str, user_id: str = None, personality: str = 'friendly'):
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Yields:
@@ -119,16 +133,22 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+        logger.info(f"[chat_stream] Starting stream for thread {thread_id} with message: {message}")
+
         return self.agent.astream_events({"messages": [("user", message)], "personality": personality}, config=config, version="v2")
     
-    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
+    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse], user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -137,8 +157,12 @@ class PersonalStylistAgent:
         # Validate personality
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.astream_events({"ui_answers": answers, "personality": personality}, config=config, version="v2")
 
     def get_state(self, thread_id: str):

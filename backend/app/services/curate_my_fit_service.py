@@ -2,7 +2,7 @@
 import uuid
 import json
 import logging
-from typing import Optional
+from typing import Optional, AsyncGenerator
 from sqlalchemy.orm import Session
 from fastapi import UploadFile
 
@@ -145,15 +145,7 @@ async def start_batch(
     logger.info(f"Calling PersonalStylist agent with message: {message[:100]}...")
 
     # Use async invocation to support async tools (Txt2ImgGenerator)
-    logger.info("="*60)
-    logger.info("START_BATCH - START")
-    logger.info(f"Thread ID: {thread_id}")
-    logger.info(f"Search query: {search_query}")
-    logger.info(f"Image URLs: {image_urls}")
-    
     result = await _chat_async(stylist_agent, message, thread_id)
-    logger.info(f"Agent result keys: {result.keys()}")
-    logger.info(f"Agent result: {json.dumps(result, indent=2, default=str)}")
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
@@ -168,12 +160,6 @@ async def start_batch(
     # Store questions in database for tracking
     if batch_response["questions"]:
         _store_questions(db, thread_id, batch_response["questions"])
-
-    logger.info(f"RETURNING TO FRONTEND:")
-    logger.info(f"  threadId: {thread_id}")
-    logger.info(f"  questions count: {len(batch_response['questions'])}")
-    logger.info("START_BATCH - END")
-    logger.info("="*60)
 
     return {
         "threadId": thread_id,
@@ -203,10 +189,7 @@ async def submit_batch_answers(
     Returns:
         dict with hasMore, and either next batch or final journey
     """
-    logger.info("="*60)
-    logger.info("SUBMIT_BATCH_ANSERS - START")
-    logger.info(f"Thread ID: {thread_id}")
-    logger.info(f"Answers submitted: {list(answers.keys())}")
+    logger.info(f"Submitting answers for thread {thread_id}")
 
     # Get existing question signatures from DATABASE (not agent state)
     existing_signatures = _get_sent_question_signatures(db, thread_id)
@@ -217,9 +200,6 @@ async def submit_batch_answers(
 
     # Submit answers to PersonalStylist agent (async to support async tools)
     result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
-    logger.info("Agent invocation completed")
-    logger.info(f"Agent result keys: {result.keys()}")
-    logger.info(f"Agent result: {json.dumps(result, indent=2, default=str)}")
 
     # Sanitize result to convert PosixPath objects to strings for JSON serialization
     result = _sanitize_for_json(result)
@@ -244,18 +224,13 @@ async def submit_batch_answers(
 
     journey = result.get("journey")
     if journey and _is_journey_complete(journey) and not new_questions:
-        logger.info("JOURNEY COMPLETE - creating Journey record")
+        logger.info("Journey complete - creating Journey record")
 
         # Create Journey record
         journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
 
         # Link thread to journey
         _link_thread_to_journey(db, thread_id, journey_obj.id)
-
-        logger.info("SUBMIT_BATCH_ANSERS - END (journey complete)")
-        logger.info("="*60)
-        # Create Journey record in database
-        journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
 
         return {
             "hasMore": False,
@@ -267,12 +242,7 @@ async def submit_batch_answers(
         if new_questions:
             _store_questions(db, thread_id, new_questions)
 
-        # Generate next batch
-        logger.info(f"RETURNING TO FRONTEND:")
-        logger.info(f"  hasMore: True")
-        logger.info(f"  questions count: {len(new_questions)}")
-        logger.info("SUBMIT_BATCH_ANSERS - END (more questions)")
-        logger.info("="*60)
+        logger.info(f"Returning {len(new_questions)} new questions")
 
         return {
             "hasMore": True,
@@ -593,21 +563,14 @@ def _parse_batch_response(
     Returns:
         dict with blurb, questions, summaryUpdates
     """
-    logger.info("_PARSE_BATCH_RESPONSE - START")
-
     # Extract UI inputs from agent result (correct key is 'ui_inputs' not 'uiInputs')
     ui_inputs = result.get("ui_inputs", [])
     journey = result.get("journey")
     messages = result.get("messages", [])
 
-    logger.info(f"Extracted {len(ui_inputs)} UI inputs from agent result")
-    logger.info(f"Messages count: {len(messages)}")
-    logger.info(f"Journey data: {json.dumps(journey, indent=2, default=str)}")
-
     # Check ui_inputs is nested list
     ui_inputs_list = []
     for ui_input in ui_inputs:
-        logger.info(type(ui_input))
         if isinstance(ui_input, list):
             ui_inputs_list.extend(ui_input)
         elif isinstance(ui_input, dict):
@@ -619,22 +582,10 @@ def _parse_batch_response(
     # Generate blurb from agent message or create generic one
     messages = result.get("messages", [])
     blurb = _extract_blurb_from_messages(messages, search_query)
-    logger.info(f"Extracted blurb: {blurb[:100]}...")
 
     # Convert UI inputs to questions
     questions = _convert_ui_inputs_to_questions(ui_inputs_list)
-    logger.info(f"Converted {len(questions)} questions from ui_inputs")
-
-    # Log all questions with their signatures (for debugging)
-    for i, q in enumerate(questions):
-        q_id = q.get("id", "N/A")
-        q_type = q.get("type", "N/A")
-        q_text = q.get("question", "")[:50] + ("..." if len(q.get("question", "")) > 50 else "")
-        sig = _get_question_signature(q)
-        logger.info(f"  Question [{i}]: ID={q_id} | Type={q_type} | Sig={sig} | Text={q_text}")
-
-    logger.info("_PARSE_BATCH_RESPONSE - END")
-    logger.info("="*60)
+    logger.info(f"Parsed {len(questions)} questions from agent result")
 
     # Extract summary updates from journey
     summary_updates = _extract_summary_updates(journey, search_query)
@@ -748,30 +699,6 @@ def _convert_ui_inputs_to_questions(ui_inputs: list) -> list[dict]:
         if type_value == "scale_rating":
             question["minLabel"] = str(get_field(ui_input, 'min_label')) if get_field(ui_input, 'min_label') else None
             question["maxLabel"] = str(get_field(ui_input, 'max_label')) if get_field(ui_input, 'max_label') else None
-
-        # Log detailed question information
-        logger.info("="*80)
-        logger.info("QUESTION DETAIL:")
-        logger.info(f"  ID: {question['id']}")
-        logger.info(f"  Type (mapped): {question['type']}")
-        logger.info(f"  Type (original): {type_value}")
-        logger.info(f"  Question: {question['question']}")
-        logger.info(f"  Row Label: {question['rowLabel']}")
-        logger.info(f"  Required: {question['required']}")
-        logger.info(f"  Options count: {len(question['options'])}")
-        if question['options']:
-            for idx, opt in enumerate(question['options']):
-                logger.info(f"    Option [{idx}]:")
-                logger.info(f"      ID: {opt.get('id', 'N/A')}")
-                logger.info(f"      Label: {opt.get('label', 'N/A')}")
-                logger.info(f"      Value: {opt.get('value', 'N/A')}")
-                if opt.get('imageUrl'):
-                    logger.info(f"      Image URL: {opt['imageUrl']}")
-        if question.get('minLabel'):
-            logger.info(f"  Min Label: {question['minLabel']}")
-        if question.get('maxLabel'):
-            logger.info(f"  Max Label: {question['maxLabel']}")
-        logger.info("="*80)
 
         questions.append(question)
 
@@ -1010,3 +937,164 @@ def _format_journey(journey: Journey) -> dict:
         "createdAt": journey.created_at.isoformat() if journey.created_at else None,
         "updatedAt": journey.updated_at.isoformat() if journey.updated_at else None,
     }
+
+
+# ── Streaming helpers ──
+
+from agent.src.utils.stream import AgentEventParser
+
+async def _agent_stream_async(agent_stream_coro):
+    """
+    Iterate an agent's astream_events coroutine, yielding SSE dicts.
+
+    Uses AgentEventParser to extract and stream:
+    - thinking: model reasoning tokens (from any node's LLM call)
+    - journey_field: incremental journey field updates (from update_journey node)
+    - message: blurb text (from parse_ui node's UIInputList.message)
+    - questions: UI components (from parse_ui node's UIInputList.ui_inputs)
+
+    The parser is instantiated per-stream (stateful — tracks partial JSON).
+    """
+    parser = AgentEventParser("personal_stylist")
+
+    async for event in await agent_stream_coro:
+        parsed = parser.parse(event)
+
+        # Stream thinking messages token-by-token
+        for thought in parsed["thinking_messages"]:
+            yield {"type": "thinking", "content": thought}
+
+        # Stream journey field updates as they complete
+        if parsed.get("journey_delta"):
+            yield {"type": "journey_field", "data": parsed["journey_delta"]}
+
+        # Stream blurb message when it completes
+        if parsed.get("message"):
+            yield {"type": "message", "content": parsed["message"]}
+
+        # Stream questions when they arrive
+        if parsed.get("questions"):
+            yield {"type": "questions", "data": parsed["questions"]}
+
+
+async def start_batch_stream(
+    db: Session,
+    consumer_id: str,
+    search_query: str,
+    image_urls: list[str],
+    image_types: list[str],
+) -> AsyncGenerator[dict, None]:
+    """
+    Streaming version of start_batch. Yields SSE events directly from astream_events.
+
+    Images must already be uploaded (via /upload-images endpoint).
+    """
+    thread_id = f"curate_{uuid.uuid4()}"
+    message = _format_initial_message(search_query, image_urls)
+
+    logger.info(f"Starting batch stream for thread {thread_id}")
+
+    yield {"type": "thinking_start"}
+
+    # Stream agent events directly
+    async for evt in _agent_stream_async(
+        stylist_agent.chat_stream(message=message, thread_id=thread_id)
+    ):
+        yield evt
+
+    yield {"type": "thinking_end"}
+    yield {"type": "processing", "message": "Preparing your questions..."}
+
+    # Post-process: get final state and build complete event
+    state = stylist_agent.get_state(thread_id)
+    result = state.values if state else {}
+
+    result = _sanitize_for_json(result)
+    result = await _upload_generated_images(result)
+    batch_response = _parse_batch_response(result, search_query, image_urls)
+
+    if batch_response["questions"]:
+        _store_questions(db, thread_id, batch_response["questions"])
+
+    complete_data = {
+        "threadId": thread_id,
+        "blurb": batch_response["blurb"],
+        "questions": batch_response["questions"],
+        "summaryUpdates": batch_response["summaryUpdates"],
+        "imageUrls": image_urls,
+        "imageTypes": image_types,
+    }
+    yield {"type": "complete", "data": complete_data}
+
+
+async def submit_batch_answers_stream(
+    db: Session,
+    consumer_id: str,
+    thread_id: str,
+    answers: dict[str, AnswerData],
+) -> AsyncGenerator[dict, None]:
+    """
+    Streaming version of submit_batch_answers. Yields SSE events directly from astream_events.
+    """
+    logger.info(f"Starting submit stream for thread {thread_id}")
+
+    # Get existing question signatures from DB
+    existing_signatures = _get_sent_question_signatures(db, thread_id)
+
+    # Convert answers to UserResponse format
+    user_responses = _convert_answers_to_user_response(answers)
+
+    yield {"type": "thinking_start"}
+
+    # Stream agent events directly
+    async for evt in _agent_stream_async(
+        stylist_agent.submit_answers_stream(thread_id=thread_id, answers=user_responses)
+    ):
+        yield evt
+
+    yield {"type": "thinking_end"}
+    yield {"type": "processing", "message": "Preparing your questions..."}
+
+    # Post-process: get final state
+    state = stylist_agent.get_state(thread_id)
+    result = state.values if state else {}
+
+    result = _sanitize_for_json(result)
+    result = await _upload_generated_images(result)
+
+    batch_response = _parse_batch_response(result, None, None)
+    all_questions = batch_response["questions"]
+
+    # Filter duplicates
+    new_questions = [
+        q for q in all_questions
+        if _get_question_signature(q) not in existing_signatures
+    ]
+
+    filtered_count = len(all_questions) - len(new_questions)
+    if filtered_count > 0:
+        logger.info(f"Filtered {filtered_count} duplicate questions")
+
+    journey = result.get("journey")
+    if journey and _is_journey_complete(journey) and not new_questions:
+        logger.info("Journey complete - creating Journey record")
+        journey_obj = _create_journey_from_agent(db, consumer_id, journey, thread_id)
+        _link_thread_to_journey(db, thread_id, journey_obj.id)
+
+        yield {"type": "complete", "data": {
+            "hasMore": False,
+            "journeyId": journey_obj.id,
+            "journey": _format_journey(journey_obj),
+        }}
+    else:
+        if new_questions:
+            _store_questions(db, thread_id, new_questions)
+
+        logger.info(f"Returning {len(new_questions)} new questions")
+
+        yield {"type": "complete", "data": {
+            "hasMore": True,
+            "blurb": batch_response["blurb"],
+            "questions": new_questions,
+            "summaryUpdates": batch_response["summaryUpdates"],
+        }}
