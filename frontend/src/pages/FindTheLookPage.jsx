@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import LookCarousel from '../components/find-the-look/LookCarousel';
 import ItemGrid from '../components/find-the-look/ItemGrid';
 import AIChatBubble from '../components/find-the-look/AIChatBubble';
 import ProductDetailModal from '../components/find-the-look/ProductDetailModal';
 import FittingRoomQueue from '../components/find-the-look/FittingRoomQueue';
+import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
 import { mockLooks, aiRecommendations } from '../data/mockLooks';
 
 const FindTheLookPage = () => {
   const [selectedLook, setSelectedLook] = useState(mockLooks[1]); // Start with middle item
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isJourneySidebarExpanded, setIsJourneySidebarExpanded] = useState(false);
 
   const { addToQueue } = useFittingRoom();
 
@@ -62,7 +64,7 @@ const FindTheLookPage = () => {
 
   const mainContentStyle = {
     display: 'grid',
-    gridTemplateRows: 'auto 2fr 1.5fr 1fr',
+    gridTemplateRows: 'auto 2.5fr 1.5fr 1fr',
     gap: '24px',
     height: '100%',
     padding: '32px 64px',
@@ -290,6 +292,98 @@ const FindTheLookPage = () => {
         onClose={() => setIsModalOpen(false)}
         onAddToQueue={handleAddToQueue}
       />
+
+      {/* Backdrop overlay - closes sidebar when clicked */}
+      {isJourneySidebarExpanded && (
+        <div
+          onClick={() => setIsJourneySidebarExpanded(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+            zIndex: 100,
+            animation: 'fadeIn 0.3s ease-out',
+          }}
+        />
+      )}
+
+      {/* Push/Pull Tab - always visible */}
+      <div
+        onClick={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+        style={{
+          position: 'fixed',
+          right: isJourneySidebarExpanded ? 'calc(30vw + 16px)' : '16px',
+          top: '100px',
+          zIndex: 102,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '12px 16px',
+          backgroundColor: 'var(--card-background, #ffffff)',
+          borderRadius: isJourneySidebarExpanded ? '0 8px 8px 0' : '8px 0 0 8px',
+          boxShadow: '-2px 2px 8px rgba(0,0,0,0.15)',
+          cursor: 'pointer',
+          transition: 'right 0.3s ease-out, border-radius 0.3s ease-out',
+          border: '1px solid var(--border-color, #e2e8f0)',
+          borderRight: isJourneySidebarExpanded ? '1px solid var(--border-color, #e2e8f0)' : 'none',
+          borderLeft: isJourneySidebarExpanded ? 'none' : '1px solid var(--border-color, #e2e8f0)',
+        }}
+      >
+        {isJourneySidebarExpanded ? (
+          <ChevronRight size={18} color="var(--consumer-purple, #793DB0)" />
+        ) : (
+          <ChevronLeft size={18} color="var(--consumer-purple, #793DB0)" />
+        )}
+        <span style={{
+          fontSize: '13px',
+          fontWeight: '600',
+          color: 'var(--consumer-purple, #793DB0)',
+          whiteSpace: 'nowrap',
+        }}>
+          Summary
+        </span>
+      </div>
+
+      {/* Slide-out Journey Sidebar - Floating Card Style */}
+      <div
+        style={{
+          position: 'fixed',
+          right: '16px',
+          top: '80px',
+          width: '30vw',
+          minWidth: '350px',
+          maxWidth: '500px',
+          height: '85vh',
+          zIndex: 101,
+          transform: isJourneySidebarExpanded ? 'translateX(0)' : 'translateX(calc(100% + 32px))',
+          transition: 'transform 0.3s ease-out',
+          backgroundColor: 'var(--card-background, #ffffff)',
+          borderRadius: '16px',
+          boxShadow: isJourneySidebarExpanded ? '0 8px 32px rgba(0,0,0,0.2)' : 'none',
+        }}
+      >
+        <div style={{ height: '100%', padding: '16px' }}>
+          <JourneyBuilderSidebar
+            foundations={[
+              { label: 'Location', values: ['New York'] },
+              { label: 'Style', values: ['Casual', 'Chic'] },
+              { label: 'Occasion', values: ['Dinner'] },
+            ]}
+            narrativeText="Shopping from New York for a casual chic dinner look. Budget: $100-$300."
+            currentBatch={1}
+            journeyTitle="Casual Dinner Journey"
+            isExpanded={isJourneySidebarExpanded}
+            onToggle={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+          />
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 };
