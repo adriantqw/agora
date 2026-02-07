@@ -1,7 +1,7 @@
 import React from 'react';
 import Mascot from '../common/Mascot/Mascot';
 
-const AIChatBubble = ({ message, avatarSrc }) => {
+const AIChatBubble = ({ message }) => {
   const containerStyle = {
     display: 'flex',
     alignItems: 'flex-start',

@@ -8,6 +8,7 @@ import AIChatBubble from '../components/find-the-look/AIChatBubble';
 import ProductDetailModal from '../components/find-the-look/ProductDetailModal';
 import FittingRoomQueue from '../components/find-the-look/FittingRoomQueue';
 import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
+import Growl from '../components/common/Growl/Growl';
 import { mockLooks, aiRecommendations } from '../data/mockLooks';
 
 const FindTheLookPage = () => {
@@ -15,6 +16,14 @@ const FindTheLookPage = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJourneySidebarExpanded, setIsJourneySidebarExpanded] = useState(false);
+  const [showFeedbackInput, setShowFeedbackInput] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+
+  const [growl, setGrowl] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
 
   const { addToQueue } = useFittingRoom();
 
@@ -45,6 +54,37 @@ const FindTheLookPage = () => {
   const handleRemoveFromQueue = (itemId) => {
     // This is a placeholder - you'd implement actual remove logic
     console.log('Removed from queue:', itemId);
+  };
+
+  const handleToggleFeedback = () => {
+    setShowFeedbackInput(prev => !prev);
+    setFeedbackText('');
+  };
+
+  const handleFeedbackSubmit = () => {
+    if (feedbackText.trim()) {
+      console.log('Feedback submitted:', feedbackText);
+
+      setGrowl({
+        show: true,
+        message: 'Feedback sent successfully!',
+        type: 'success'
+      });
+
+      setFeedbackText('');
+      setShowFeedbackInput(false);
+
+      setTimeout(() => {
+        setGrowl({ show: false, message: '', type: 'success' });
+      }, 3000);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleFeedbackSubmit();
+    }
   };
 
   const currentRecommendation = aiRecommendations[selectedLook?.id];
@@ -136,6 +176,8 @@ const FindTheLookPage = () => {
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '12px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   };
 
   const refineTextStyle = {
@@ -235,44 +277,109 @@ const FindTheLookPage = () => {
               </div>
             )}
 
-            {/* Refine Search Bubble */}
-            <div style={refineSectionStyle}>
-              <p style={refineTextStyle}>Not quite right? Refine your search</p>
-              <div style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                padding: '2px',
-              }}>
+            {/* Feedback Input (replaces Refine Search when active) */}
+            {showFeedbackInput ? (
+              <div style={chatInputContainerStyle}>
+                <input
+                  type="text"
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Tell me what you'd like..."
+                  style={chatInputStyle}
+                  autoFocus
+                />
                 <button
+                  onClick={handleFeedbackSubmit}
+                  style={sendButtonStyle}
+                  disabled={!feedbackText.trim()}
+                  aria-label="Send feedback"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2 11" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowFeedbackInput(false)}
                   style={{
-                    ...refineButtonStyle,
-                    width: '100%',
-                    height: '100%',
-                    background: 'white',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
                     border: 'none',
+                    backgroundColor: 'transparent',
+                    color: '#718096',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
                   }}
-                  aria-label="Refine search"
+                  aria-label="Close feedback"
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#F7FAFC';
+                    e.currentTarget.style.backgroundColor = '#F7FAFC';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
-                  <MessageCircle
-                    size={20}
-                    style={{
-                      background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                    }}
-                  />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
                 </button>
               </div>
-            </div>
+            ) : (
+              /* Refine Search Bubble */
+              <div
+                style={refineSectionStyle}
+                onClick={handleToggleFeedback}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                  e.currentTarget.style.opacity = '0.9';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.opacity = '1';
+                }}
+              >
+                <p style={refineTextStyle}>Not quite right? Refine your search</p>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                  padding: '2px',
+                }}>
+                  <button
+                    style={{
+                      ...refineButtonStyle,
+                      width: '100%',
+                      height: '100%',
+                      background: 'white',
+                      border: 'none',
+                    }}
+                    aria-label="Refine search"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#F7FAFC';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'white';
+                    }}
+                  >
+                    <MessageCircle
+                      size={20}
+                      style={{
+                        background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                      }}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         </main>
 
@@ -307,76 +414,90 @@ const FindTheLookPage = () => {
         />
       )}
 
-      {/* Push/Pull Tab - always visible */}
-      <div
-        onClick={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
-        style={{
-          position: 'fixed',
-          right: isJourneySidebarExpanded ? 'calc(30vw + 16px)' : '16px',
-          top: '100px',
-          zIndex: 102,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '12px 16px',
-          backgroundColor: 'var(--card-background, #ffffff)',
-          borderRadius: isJourneySidebarExpanded ? '0 8px 8px 0' : '8px 0 0 8px',
-          boxShadow: '-2px 2px 8px rgba(0,0,0,0.15)',
-          cursor: 'pointer',
-          transition: 'right 0.3s ease-out, border-radius 0.3s ease-out',
-          border: '1px solid var(--border-color, #e2e8f0)',
-          borderRight: isJourneySidebarExpanded ? '1px solid var(--border-color, #e2e8f0)' : 'none',
-          borderLeft: isJourneySidebarExpanded ? 'none' : '1px solid var(--border-color, #e2e8f0)',
-        }}
-      >
-        {isJourneySidebarExpanded ? (
-          <ChevronRight size={18} color="var(--consumer-purple, #793DB0)" />
-        ) : (
-          <ChevronLeft size={18} color="var(--consumer-purple, #793DB0)" />
-        )}
-        <span style={{
-          fontSize: '13px',
-          fontWeight: '600',
-          color: 'var(--consumer-purple, #793DB0)',
-          whiteSpace: 'nowrap',
-        }}>
-          Summary
-        </span>
-      </div>
-
-      {/* Slide-out Journey Sidebar - Floating Card Style */}
+      {/* Sidebar Container - Tab + Sidebar slide together as one unit */}
       <div
         style={{
           position: 'fixed',
           right: '16px',
           top: '80px',
-          width: '30vw',
-          minWidth: '350px',
-          maxWidth: '500px',
-          height: '85vh',
           zIndex: 101,
-          transform: isJourneySidebarExpanded ? 'translateX(0)' : 'translateX(calc(100% + 32px))',
+          transform: isJourneySidebarExpanded ? 'translateX(0)' : 'translateX(calc(100% + 16px))',
           transition: 'transform 0.3s ease-out',
-          backgroundColor: 'var(--card-background, #ffffff)',
-          borderRadius: '16px',
-          boxShadow: isJourneySidebarExpanded ? '0 8px 32px rgba(0,0,0,0.2)' : 'none',
+          display: 'flex',
+          alignItems: 'flex-start',
+          pointerEvents: 'none', // Allow clicks to pass through container
         }}
       >
-        <div style={{ height: '100%', padding: '16px' }}>
-          <JourneyBuilderSidebar
-            foundations={[
-              { label: 'Location', values: ['New York'] },
-              { label: 'Style', values: ['Casual', 'Chic'] },
-              { label: 'Occasion', values: ['Dinner'] },
-            ]}
-            narrativeText="Shopping from New York for a casual chic dinner look. Budget: $100-$300."
-            currentBatch={1}
-            journeyTitle="Casual Dinner Journey"
-            isExpanded={isJourneySidebarExpanded}
-            onToggle={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
-          />
+        {/* Push/Pull Tab - attached to left edge of sidebar */}
+        <div
+          onClick={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+          style={{
+            marginTop: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '12px 16px',
+            backgroundColor: 'var(--card-background, #ffffff)',
+            borderRadius: isJourneySidebarExpanded ? '0 8px 8px 0' : '8px 0 0 8px',
+            boxShadow: '-2px 2px 8px rgba(0,0,0,0.15)',
+            cursor: 'pointer',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderLeft: 'none',
+            pointerEvents: 'auto',
+          }}
+        >
+          {isJourneySidebarExpanded ? (
+            <ChevronRight size={18} color="var(--consumer-purple, #793DB0)" />
+          ) : (
+            <ChevronLeft size={18} color="var(--consumer-purple, #793DB0)" />
+          )}
+          <span style={{
+            fontSize: '13px',
+            fontWeight: '600',
+            color: 'var(--consumer-purple, #793DB0)',
+            whiteSpace: 'nowrap',
+          }}>
+            Summary
+          </span>
+        </div>
+
+        {/* Journey Sidebar Card */}
+        <div
+          style={{
+            width: '30vw',
+            minWidth: '350px',
+            maxWidth: '500px',
+            height: '85vh',
+            backgroundColor: 'var(--card-background, #ffffff)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            pointerEvents: 'auto',
+          }}
+        >
+          <div style={{ height: '100%', padding: '16px' }}>
+            <JourneyBuilderSidebar
+              foundations={[
+                { label: 'Location', values: ['New York'] },
+                { label: 'Style', values: ['Casual', 'Chic'] },
+                { label: 'Occasion', values: ['Dinner'] },
+              ]}
+              narrativeText="Shopping from New York for a casual chic dinner look. Budget: $100-$300."
+              currentBatch={1}
+              journeyTitle="Casual Dinner Journey"
+              isExpanded={isJourneySidebarExpanded}
+              onToggle={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Growl Notification */}
+      <Growl
+        message={growl.message}
+        type={growl.type}
+        show={growl.show}
+        onClose={() => setGrowl({ show: false, message: '', type: 'success' })}
+      />
 
       <style>{`
         @keyframes fadeIn {
