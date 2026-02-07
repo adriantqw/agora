@@ -144,12 +144,13 @@ function FoundationRow({ label, values }) {
   );
 }
 
-export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle }) {
+export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle, onTitleChange }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [localTitle, setLocalTitle] = useState(journeyTitle);
 
   const handleSaveTitle = () => {
     setIsEditingTitle(false);
+    onTitleChange?.(localTitle);
     // In future: Call API to persist title change
     console.log('Title saved:', localTitle);
   };
