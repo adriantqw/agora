@@ -1,10 +1,11 @@
 import json
 import mlflow
 import uuid
+import logging
 
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, \
-    HumanMessage, AIMessage, RemoveMessage
+    HumanMessage, AIMessage, RemoveMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
@@ -21,6 +22,8 @@ from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
+logger = logging.getLogger(__name__)
+
 load_dotenv()
 
 
@@ -34,7 +37,7 @@ class PersonalStylistAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "personal_stylist"
         self.agent_config = load_config("agent")[ self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
@@ -65,13 +68,14 @@ class PersonalStylistAgent:
         # Create react agent with custom state schema and middleware
         self.agent = self._compile_graph()
 
-    def chat(self, message: str, thread_id: str, personality: str = 'friendly') -> dict:
+    def chat(self, message: str, thread_id: str, user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -81,16 +85,21 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+
         return self.agent.invoke({"messages": [("user", message)], "personality": personality}, config=config)
     
-    def submit_answers(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
+    def submit_answers(self, thread_id: str, answers: list[UserResponse], user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Submit UI answers to update the journey.
 
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -100,16 +109,21 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+
         return self.agent.invoke({"ui_answers": answers, "personality": personality}, config=config)
 
-    async def chat_stream(self, message: str, thread_id: str, personality: str = 'friendly'):
+    async def chat_stream(self, message: str, thread_id: str, user_id: str = None, personality: str = 'friendly'):
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             message: User message to process
             thread_id: Unique identifier for the conversation thread
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Yields:
@@ -119,16 +133,22 @@ class PersonalStylistAgent:
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
+        logger.info(f"[chat_stream] Starting stream for thread {thread_id} with message: {message}")
+
         return self.agent.astream_events({"messages": [("user", message)], "personality": personality}, config=config, version="v2")
     
-    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse], personality: str = 'friendly') -> dict:
+    async def submit_answers_stream(self, thread_id: str, answers: list[UserResponse], user_id: str = None, personality: str = 'friendly') -> dict:
         """
         Invoke the agent with a message and thread_id for session continuity. Streams event updates to the UI.
 
         Args:
             thread_id: Unique identifier for the conversation thread
             answers: List of UserResponse objects with answers to UI questions
+            user_id: Unique identifier for the user (used for memory retrieval)
             personality: Agent personality configuration (e.g. 'friendly')
 
         Returns:
@@ -137,8 +157,12 @@ class PersonalStylistAgent:
         # Validate personality
         if personality not in self.personality_config:
             raise ValueError(f"Personality '{personality}' not valid. Available personalities are: {list(self.personality_config.keys())}")
+        
+        session_info = {"thread_id": thread_id}
+        if user_id:
+            session_info["user_id"] = user_id
+        config = {"configurable": session_info, "recursion_limit": self.recursion_limit}
 
-        config = {"configurable": {"thread_id": thread_id}, "recursion_limit": self.recursion_limit}
         return self.agent.astream_events({"ui_answers": answers, "personality": personality}, config=config, version="v2")
 
     def get_state(self, thread_id: str):
@@ -167,17 +191,29 @@ class PersonalStylistAgent:
         ui_answers = state.get("ui_answers")
         journey = state.get("journey")
         ui_inputs = state.get("ui_inputs")  # Now a nested list [[batch1], [batch2], ...]
-        last_msg = state.get("messages", [])[-1]
+        messages = state.get("messages", [])
+        last_msg = messages[-1] if messages else None
 
         # Get the latest batch of questions for context
         latest_batch = ui_inputs[-1] if ui_inputs else []
 
         # Format the journey update prompt
         # Use mode='json' to properly serialize Path objects to strings
+        # Handle both Pydantic models (UserResponse) and dicts (ui_inputs from state)
+        def serialize_ui_input(ui):
+            if hasattr(ui, 'model_dump'):
+                return ui.model_dump(mode='json')
+            return ui  # Already a dict
+
+        def serialize_answer(ans):
+            if hasattr(ans, 'model_dump'):
+                return ans.model_dump(mode='json')
+            return ans  # Already a dict
+
         prompt = self.journey_update_prompt.format(
             journey_state=journey.model_dump_json() if journey else "None",
-            ui_inputs_history=json.dumps([ui.model_dump(mode='json') for ui in latest_batch]) if latest_batch else "None",
-            ui_answers=json.dumps([ans.model_dump(mode='json') for ans in ui_answers]) if ui_answers else "None"
+            ui_inputs_history=json.dumps([serialize_ui_input(ui) for ui in latest_batch]) if latest_batch else "None",
+            ui_answers=json.dumps([serialize_answer(ans) for ans in ui_answers]) if ui_answers else "None"
         )
 
         # Use structured output to get updated journey
@@ -235,6 +271,9 @@ class PersonalStylistAgent:
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
+        import logging
+        logger = logging.getLogger(__name__)
+
         messages = []
         journey: JourneySchema = state.get("journey")
 
@@ -249,15 +288,28 @@ class PersonalStylistAgent:
             journey_schema=JourneySchema.model_json_schema(),
             ui_component_schema=UIInputList.model_json_schema(),
         )
-        messages.append(SystemMessage(prompt))
 
-        # Format style dna prompt if applicable
+        # Combine all system prompts into one to avoid multiple consecutive system messages
+        combined_prompt = prompt
         if state.get("style_dna"):
             style_dna_prompt = self.style_dna_prompt.format(user_style_dna=state.get("style_dna"))
-            messages.append(SystemMessage(style_dna_prompt))
+            combined_prompt = f"{prompt}\n\n{style_dna_prompt}"
+
+        messages.append(SystemMessage(combined_prompt))
+
+        # Filter state messages to ensure valid Gemini sequencing
+        filtered_messages = self._filter_messages_for_gemini(state["messages"])
+        messages.extend(filtered_messages)
+
+        # Ensure last message is HumanMessage before invoking with tools
+        if messages and not isinstance(messages[-1], HumanMessage):
+            # If last message isn't HumanMessage, add a continuation prompt
+            messages.append(HumanMessage(content="Please continue generating UI components based on the journey so far."))
+
+        # Debug logging for message sequence
+        logger.debug(f"Final message sequence before Gemini invoke: {[type(m).__name__ for m in messages]}")
 
         # Invoke model and return result
-        messages.extend(state["messages"])
         response = self.model.bind_tools(self.tools).invoke(messages)
         return {"messages": [response]}
 
@@ -283,9 +335,13 @@ class PersonalStylistAgent:
                     if image_option.id is None:
                         image_option.id = str(uuid.uuid4().hex)
 
+        # Convert UIInput Pydantic models to dicts for msgpack serialization
+        # LangGraph's MemorySaver can't serialize Pydantic models directly
+        ui_inputs_dicts = [ui.model_dump(mode='json') for ui in final_response.ui_inputs]
+
         return {
             "messages": [AIMessage(final_response.message)],
-            "ui_inputs": [final_response.ui_inputs]
+            "ui_inputs": [ui_inputs_dicts]  # Wrap in list to maintain nested structure [[batch]]
         }
     
     def _retrieve_memory(self, state: PersonalStylistState, config: RunnableConfig):
@@ -301,10 +357,10 @@ class PersonalStylistAgent:
     def _trim_messages(self, state: PersonalStylistState):
         """Trim message history"""
         messages = state.get("messages", [])
-    
+
         if len(messages) <= self.max_context_msgs:
-            return {} 
-        
+            return {}
+
         # Identify the oldest messages to drop
         number_to_delete = len(messages) - self.max_context_msgs
 
@@ -312,6 +368,56 @@ class PersonalStylistAgent:
         to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
 
         return {"messages": to_remove}
+
+    def _filter_messages_for_gemini(self, messages: list) -> list:
+        """
+        Filter messages to ensure valid Gemini API sequencing.
+
+        Rules enforced:
+        1. Remove SystemMessages from state (we already add fresh ones)
+        2. Remove AIMessage with tool_calls if not followed by ToolMessage
+        3. Ensure no consecutive AIMessages
+        4. Keep valid User → AI → Tool → User flow
+
+        Args:
+            messages: Raw messages from state
+
+        Returns:
+            Filtered messages valid for Gemini API
+        """
+        if not messages:
+            return []
+
+        filtered = []
+
+        for i, msg in enumerate(messages):
+            # Skip SystemMessages from state (we add fresh ones)
+            if isinstance(msg, SystemMessage):
+                continue
+
+            # Skip AIMessages with tool_calls that aren't followed by ToolMessage
+            if isinstance(msg, AIMessage) and msg.tool_calls:
+                # Check if next message is ToolMessage
+                if i + 1 < len(messages) and isinstance(messages[i + 1], ToolMessage):
+                    filtered.append(msg)
+                else:
+                    # Orphaned tool call - skip it
+                    continue
+
+            # Skip consecutive AIMessages (keep only the last one)
+            elif isinstance(msg, AIMessage):
+                # Check if previous filtered message is also AIMessage
+                if filtered and isinstance(filtered[-1], AIMessage):
+                    # Replace previous AIMessage with this one
+                    filtered[-1] = msg
+                else:
+                    filtered.append(msg)
+
+            # Keep HumanMessage and ToolMessage as-is
+            else:
+                filtered.append(msg)
+
+        return filtered
 
     def _compile_graph(self):
         """Compile the agent's state graph."""

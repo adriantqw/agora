@@ -21,22 +21,69 @@ function isQuestionAnswered(question, answer) {
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
         (typeof answer.value === 'string' && answer.value.trim() !== '');
     case 'scale-rating':
-      return answer.value !== undefined && answer.value !== null;
+      const scaleValidationChecks = {
+        isUndefined: answer?.value === undefined,
+        isNull: answer?.value === null,
+        isEmpty: answer?.value === '',
+      };
+      const scaleResult = !(answer.value === undefined || answer.value === null || answer.value === '') && !isNaN(Number(answer.value)) && Number(answer.value) >= 0;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[isQuestionAnswered] Scale-rating validation:', {
+          questionId: question.id,
+          answer: answer,
+          answerValue: answer?.value,
+          valueType: typeof answer?.value,
+          validationChecks: scaleValidationChecks,
+          result: scaleResult
+        });
+      }
+      return scaleResult;
+    case 'image-select':
+      const imageResult = Array.isArray(answer?.selectedOptions) && answer.selectedOptions.length === 1;
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[isQuestionAnswered] Image-select validation:', {
+          questionId: question.id,
+          answer: answer,
+          selectedOptions: answer?.selectedOptions,
+          selectionCount: answer?.selectedOptions?.length,
+          result: imageResult
+        });
+      }
+      return imageResult;
     case 'free-text':
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
-      return !!answer.value;
+      return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length === 1;
+    case 'color-palette':
+      return Array.isArray(answer.selectedOptions) && answer.selectedOptions.length === 1;
     case 'dual-range':
-      return answer.minValue !== undefined && answer.maxValue !== undefined;
+      return answer.minValue !== undefined &&
+        answer.maxValue !== undefined &&
+        answer.minValue !== null &&
+        answer.maxValue !== null &&
+        answer.minValue < answer.maxValue;
     default:
-      return !!answer.value;
+      return answer.value !== undefined && answer.value !== null && answer.value !== '';
   }
 }
 
 function getSelectedOptions(question, answer) {
   if (!answer) return [];
-  if (Array.isArray(answer.selectedOptions)) return answer.selectedOptions;
-  if (answer.value && question.options) return [answer.value];
+
+  // First try: check selectedOptions array (preferred format)
+  if (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) {
+    return answer.selectedOptions;
+  }
+
+  // Second try: parse value field (for compatibility)
+  if (typeof answer.value === 'string' && answer.value.trim() !== '') {
+    // Check if it's comma-separated (multi-select format)
+    if (answer.value.includes(',')) {
+      return answer.value.split(',').map(s => s.trim());
+    }
+    return [answer.value];
+  }
+
   return [];
 }
 
@@ -78,40 +125,42 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
   const currentMin = answer?.minValue ?? minValue;
   const currentMax = answer?.maxValue ?? maxValue;
 
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [draggingHandle, setDraggingHandle] = React.useState(null);
-  const [showTooltip, setShowTooltip] = React.useState({ min: false, max: false });
-
   const trackRef = React.useRef(null);
+  const isDraggingRef = React.useRef(false);
+  const draggingHandleRef = React.useRef(null);
+  const showTooltipRef = React.useRef({ min: false, max: false });
 
-  const updateValues = (newMin, newMax) => {
+  const [, forceUpdate] = React.useReducer(x => x + 1, 0);
+
+  const updateValues = React.useCallback((newMin, newMax) => {
     onAnswer({
       questionId: question.id,
       minValue: newMin,
       maxValue: newMax,
       timestamp: Date.now(),
     });
-  };
+  }, [question.id, onAnswer]);
 
-  const getPercentFromValue = (value) => {
+  const getPercentFromValue = React.useCallback((value) => {
     return ((value - minValue) / (maxValue - minValue)) * 100;
-  };
+  }, [minValue, maxValue]);
 
-  const getValueFromPercent = (percent) => {
+  const getValueFromPercent = React.useCallback((percent) => {
     const rawValue = percent * (maxValue - minValue) + minValue;
     return Math.round(rawValue / step) * step;
-  };
+  }, [maxValue, minValue, step]);
 
-  const handleMouseDown = (e, handle) => {
+  const handleMouseDown = React.useCallback((e, handle) => {
     if (readOnly) return;
     e.preventDefault();
-    setIsDragging(true);
-    setDraggingHandle(handle);
-    setShowTooltip({ ...showTooltip, [handle]: true });
-  };
+    isDraggingRef.current = true;
+    draggingHandleRef.current = handle;
+    showTooltipRef.current = { ...showTooltipRef.current, [handle]: true };
+    forceUpdate();
+  }, [readOnly]);
 
   const handleMouseMove = React.useCallback((e) => {
-    if (!isDragging || !draggingHandle || !trackRef.current) return;
+    if (!isDraggingRef.current || !draggingHandleRef.current || !trackRef.current) return;
 
     const rect = trackRef.current.getBoundingClientRect();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
@@ -120,7 +169,7 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
 
     const value = getValueFromPercent(percent);
 
-    if (draggingHandle === 'min') {
+    if (draggingHandleRef.current === 'min') {
       if (value <= currentMax - minGap) {
         updateValues(value, currentMax);
       }
@@ -129,16 +178,17 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
         updateValues(currentMin, value);
       }
     }
-  }, [isDragging, draggingHandle, currentMin, currentMax, minGap, minValue, maxValue, step]);
+  }, [currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
 
   const handleMouseUp = React.useCallback(() => {
-    setIsDragging(false);
-    setDraggingHandle(null);
-    setShowTooltip({ min: false, max: false });
+    isDraggingRef.current = false;
+    draggingHandleRef.current = null;
+    showTooltipRef.current = { min: false, max: false };
+    forceUpdate();
   }, []);
 
   React.useEffect(() => {
-    if (isDragging) {
+    if (isDraggingRef.current) {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       document.addEventListener('touchmove', handleMouseMove);
@@ -151,9 +201,9 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
         document.removeEventListener('touchend', handleMouseUp);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [handleMouseMove, handleMouseUp]);
 
-  const handleTrackClick = (e) => {
+  const handleTrackClick = React.useCallback((e) => {
     if (readOnly || e.target.closest('.slider-handle')) return;
 
     const rect = trackRef.current.getBoundingClientRect();
@@ -172,9 +222,9 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
         updateValues(currentMin, value);
       }
     }
-  };
+  }, [readOnly, currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
 
-  const handleInputChange = (handle, inputValue) => {
+  const handleInputChange = React.useCallback((handle, inputValue) => {
     let val = parseInt(inputValue.replace(/[^0-9-]/g, ''), 10);
     if (isNaN(val)) val = handle === 'min' ? minValue : maxValue;
 
@@ -185,10 +235,11 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
       val = Math.max(currentMin + minGap, Math.min(val, maxValue));
       updateValues(currentMin, val);
     }
-  };
+  }, [minValue, maxValue, currentMin, currentMax, minGap, updateValues]);
 
   const minPercent = getPercentFromValue(currentMin);
   const maxPercent = getPercentFromValue(currentMax);
+  const showTooltip = showTooltipRef.current;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', width: '100%' }}>
@@ -245,7 +296,7 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
               borderRadius: '3px',
               left: `${minPercent}%`,
               width: `${maxPercent - minPercent}%`,
-              transition: isDragging ? 'none' : 'all 0.1s',
+              transition: isDraggingRef.current ? 'none' : 'all 0.1s',
             }}
           />
 
@@ -254,8 +305,8 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
             className="slider-handle"
             onMouseDown={(e) => handleMouseDown(e, 'min')}
             onTouchStart={(e) => handleMouseDown(e, 'min')}
-            onMouseEnter={() => !readOnly && setShowTooltip({ ...showTooltip, min: true })}
-            onMouseLeave={() => !isDragging && setShowTooltip({ ...showTooltip, min: false })}
+            onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, min: true }) && forceUpdate()}
+            onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, min: false }) && forceUpdate()}
             style={{
               position: 'absolute',
               width: '20px',
@@ -314,8 +365,8 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
             className="slider-handle"
             onMouseDown={(e) => handleMouseDown(e, 'max')}
             onTouchStart={(e) => handleMouseDown(e, 'max')}
-            onMouseEnter={() => !readOnly && setShowTooltip({ ...showTooltip, max: true })}
-            onMouseLeave={() => !isDragging && setShowTooltip({ ...showTooltip, max: false })}
+            onMouseEnter={() => !readOnly && (showTooltipRef.current = { ...showTooltipRef.current, max: true }) && forceUpdate()}
+            onMouseLeave={() => !isDraggingRef.current && (showTooltipRef.current = { ...showTooltipRef.current, max: false }) && forceUpdate()}
             style={{
               position: 'absolute',
               width: '20px',
@@ -401,9 +452,54 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
   const selected = getSelectedOptions(question, answer);
   const label = question.rowLabel || question.question.slice(0, 20);
 
+  // Debug logging for development
+  if (process.env.NODE_ENV === 'development') {
+    React.useEffect(() => {
+      console.log('ChipRow debug:', {
+        questionId: question.id,
+        questionType: question.type,
+        answer,
+        selected,
+        options: question.options?.slice(0, 3)
+      });
+    }, [question.id, answer, selected]);
+  }
+
   /* --- scale-rating: chips[] override or $-repeat fallback --- */
   if (question.type === 'scale-rating') {
-    const selectedLevel = answer?.value != null ? Number(answer.value) : null;
+    // Local state for smooth slider interaction
+    const [localValue, setLocalValue] = React.useState(
+      (answer?.value != null && answer.value !== '') ? Number(answer.value) : (question.min ?? 0)
+    );
+
+    // Sync local state with answer prop changes
+    React.useEffect(() => {
+      const newValue = (answer?.value != null && answer.value !== '') ? Number(answer.value) : (question.min ?? 0);
+      console.log('[ChipRow] Scale-rating state update:', {
+        questionId: question.id,
+        answerProp: answer,
+        localValue: localValue,
+        newValue: newValue
+      });
+      setLocalValue(newValue);
+    }, [answer?.value, question.min]);
+
+    const handleSliderChange = (newValue) => {
+      setLocalValue(newValue);
+      onAnswer({
+        questionId: question.id,
+        value: newValue,
+        timestamp: Date.now(),
+      });
+    };
+
+    const pct = localValue != null
+      ? ((localValue - question.min) / (question.max - question.min)) * 100
+      : 0;
+
+    const gradientBackground = localValue != null
+      ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${pct}%, var(--border-color) ${pct}%, var(--border-color) 100%)`
+      : 'var(--border-color)';
 
     if (question.chips) {
       // Discrete chip override from backend
@@ -423,12 +519,24 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
               <Chip
                 key={chip.value}
                 label={chip.label}
-                selected={selectedLevel === chip.value}
-                onClick={() => onAnswer({
-                  questionId: question.id,
-                  value: chip.value,
-                  timestamp: Date.now(),
-                })}
+                selected={localValue === chip.value}
+                onClick={() => {
+                  console.log('[ChipRow] Scale-rating chip clicked:', {
+                    questionId: question.id,
+                    chipValue: chip.value,
+                    chipLabel: chip.label,
+                    answerObject: {
+                      questionId: question.id,
+                      value: chip.value,
+                      timestamp: Date.now()
+                    }
+                  });
+                  onAnswer({
+                    questionId: question.id,
+                    value: chip.value,
+                    timestamp: Date.now(),
+                  });
+                }}
                 readOnly={readOnly}
               />
             ))}
@@ -437,55 +545,79 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
       );
     }
 
-    // Fallback: continuous slider with $-repeat labels
-    const pct = selectedLevel != null
-      ? ((selectedLevel - question.min) / (question.max - question.min)) * 100
+    // Fallback: discrete slider (1-5 style)
+    const min = question.min ?? 1;
+    const max = question.max ?? 5;
+    const step = 1;
+
+    // Calculate background gradient for "filled" look
+    const sliderPct = localValue != null
+      ? ((localValue - min) / (max - min)) * 100
       : 0;
+
+    const sliderBackground = localValue != null
+      ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${sliderPct}%, var(--border-color) ${sliderPct}%, var(--border-color) 100%)`
+      : 'var(--border-color)';
 
     return (
       <div style={{
         padding: '10px 0',
         borderBottom: '1px solid var(--color-border-subtle)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', minWidth: '120px' }}>
-            {label}
-          </span>
-          <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
+              {label}
+            </div>
+            {localValue != null && (
+              <div style={{
+                fontSize: '14px',
+                fontWeight: '700',
+                color: 'var(--consumer-purple)',
+                background: 'var(--consumer-purple-light)',
+                padding: '2px 8px',
+                borderRadius: '4px'
+              }}>
+                {localValue} / {max}
+              </div>
+            )}
+          </div>
+
+          <div style={{ position: 'relative', padding: '0 4px' }}>
             <input
               type="range"
-              className="curate-budget-slider"
-              min={question.min}
-              max={question.max}
-              step={question.step}
-              value={selectedLevel ?? question.min}
+              min={min}
+              max={max}
+              step={step}
+              value={localValue ?? min}
+              onChange={(e) => handleSliderChange(Number(e.target.value))}
               disabled={readOnly}
-              onChange={(e) => onAnswer({
-                questionId: question.id,
-                value: Number(e.target.value),
-                timestamp: Date.now(),
-              })}
               style={{
                 width: '100%',
-                background: selectedLevel != null
-                  ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${pct}%, var(--border-color) ${pct}%, var(--border-color) 100%)`
-                  : 'var(--border-color)',
+                height: '6px',
+                background: sliderBackground,
+                borderRadius: '3px',
+                outline: 'none',
+                appearance: 'none',
+                cursor: readOnly ? 'default' : 'grab',
+                accentColor: 'var(--consumer-purple)',
               }}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>$</span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{'$'.repeat(question.max)}</span>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginTop: '8px',
+              padding: '0 2px'
+            }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'left', maxWidth: '40%' }}>
+                {question.minLabel || question.min_label || min}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right', maxWidth: '40%' }}>
+                {question.maxLabel || question.max_label || max}
+              </span>
             </div>
           </div>
-          <span style={{
-            minWidth: '48px',
-            textAlign: 'right',
-            fontSize: '14px',
-            fontWeight: '700',
-            color: selectedLevel != null ? 'var(--consumer-purple)' : 'var(--text-muted)',
-          }}>
-            {selectedLevel != null ? '$'.repeat(selectedLevel) : '—'}
-          </span>
         </div>
       </div>
     );
@@ -562,6 +694,222 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     );
   }
 
+  /* --- image-select: image card grid selection --- */
+  if (question.type === 'image-select') {
+    const selected = getSelectedOptions(question, answer)[0] || null;
+
+    console.log('[ChipRow] Image-select rendering:', {
+      questionId: question.id,
+      selected,
+      answer,
+      optionsCount: question.options?.length,
+      hasImages: question.options?.some(opt => opt.imageUrl)
+    });
+
+    return (
+      <div style={{
+        padding: '10px 0',
+        borderBottom: '1px solid var(--color-border-subtle)',
+      }}>
+        {label && (
+          <div style={{
+            fontSize: '13px',
+            color: 'var(--text-secondary)',
+            fontWeight: '500',
+            marginBottom: '12px',
+          }}>
+            {label}
+          </div>
+        )}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '12px',
+        }}>
+          {question.options?.map(opt => {
+            const isSelected = selected === (opt.id || opt.value);
+            const hasImage = !!opt.imageUrl;
+
+            return (
+              <div
+                key={opt.id || opt.value}
+                onClick={() => {
+                  if (readOnly) return;
+                  console.log('[ChipRow] Image card clicked:', {
+                    questionId: question.id,
+                    optionId: opt.id || opt.value,
+                    label: opt.label
+                  });
+                  onAnswer({
+                    questionId: question.id,
+                    selectedOptions: [opt.id || opt.value],
+                    timestamp: Date.now(),
+                  });
+                }}
+                style={{
+                  position: 'relative',
+                  borderRadius: '12px',
+                  border: isSelected ? '2px solid var(--consumer-purple)' : '1px solid var(--border-color)',
+                  background: isSelected ? 'var(--consumer-purple-light)' : 'var(--card-background)',
+                  cursor: readOnly ? 'default' : 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                  overflow: 'hidden',
+                  ...(readOnly ? {} : {
+                    ':hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                    }
+                  })
+                }}
+                onMouseEnter={(e) => {
+                  if (!readOnly) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!readOnly) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                {/* Image */}
+                {hasImage ? (
+                  <img
+                    src={opt.imageUrl}
+                    alt={opt.label}
+                    style={{
+                      width: '100%',
+                      height: '160px',
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      display: 'block',
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '160px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--color-background-subtle)',
+                    color: 'var(--text-tertiary)',
+                    fontSize: '40px',
+                  }}>
+                    🖼️
+                  </div>
+                )}
+
+                {/* Selection Checkmark */}
+                {isSelected && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '32px',
+                    height: '32px',
+                    background: 'var(--consumer-purple)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                )}
+
+                {/* Label */}
+                <div style={{
+                  padding: '12px',
+                  borderTop: isSelected ? 'none' : '1px solid var(--color-border-subtle)',
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    color: isSelected ? 'var(--consumer-purple)' : 'var(--text-primary)',
+                    textAlign: 'center',
+                  }}>
+                    {opt.label}
+                  </div>
+                  {opt.description && (
+                    <div style={{
+                      fontSize: '12px',
+                      color: 'var(--text-secondary)',
+                      textAlign: 'center',
+                      marginTop: '4px',
+                    }}>
+                      {opt.description}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  /* --- color-palette: render colour swatches instead of text chips --- */
+  if (question.type === 'color-palette') {
+    const selectedOpt = getSelectedOptions(question, answer)[0] || null;
+
+    return (
+      <div style={{
+        padding: '10px 0',
+        borderBottom: '1px solid var(--color-border-subtle)',
+      }}>
+        <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', marginBottom: '10px' }}>
+          {label}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {question.options?.map(opt => {
+            const isSelected = selectedOpt === (opt.id || opt.value);
+            const hexColor = opt.value;
+            return (
+              <button
+                key={opt.id || opt.value}
+                type="button"
+                onClick={readOnly ? undefined : () => onAnswer({
+                  questionId: question.id,
+                  selectedOptions: [opt.id || opt.value],
+                  timestamp: Date.now(),
+                })}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: hexColor,
+                  border: isSelected ? '3px solid var(--consumer-purple)' : '2px solid var(--border-color)',
+                  cursor: readOnly ? 'default' : 'pointer',
+                  outline: isSelected ? '2px solid var(--consumer-purple-light)' : 'none',
+                  outlineOffset: '2px',
+                  transition: 'border 0.15s, outline 0.15s, transform 0.15s',
+                  transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                  padding: 0,
+                  position: 'relative',
+                }}
+                title={hexColor}
+              >
+                {isSelected && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"
+                    style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   /* --- chip-based types: multi-select, single-choice, hybrid-select --- */
   const isMulti = question.type === 'multi-select' ||
     (question.type === 'hybrid-select' && question.multiSelect);
@@ -573,15 +921,23 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
         ? selected.filter(id => id !== optionId)
         : [...selected, optionId];
     } else {
+      // Single-choice: toggle selection
       newSelected = selected.includes(optionId) ? [] : [optionId];
     }
-    onAnswer({
+
+    // Consistent answer structure for all question types
+    const answerData = {
       questionId: question.id,
-      // hybrid-select: value is freetext only — clear it when a chip is picked
-      value: question.type === 'hybrid-select' ? '' : (newSelected.length ? newSelected.join(',') : ''),
       selectedOptions: newSelected,
       timestamp: Date.now(),
-    });
+    };
+
+    // Add value field only for hybrid-select (free-text input compatibility)
+    if (question.type === 'hybrid-select') {
+      answerData.value = '';  // Clear free-text when chip is selected
+    }
+
+    onAnswer(answerData);
   };
 
   return (
@@ -596,11 +952,11 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {question.options?.map(opt => (
             <Chip
-              key={opt.id}
+              key={opt.id || opt.value}
               iconName={opt.icon}
               label={opt.label}
-              selected={selected.includes(opt.id)}
-              onClick={() => handleChipClick(opt.id)}
+              selected={selected.includes(opt.id) || selected.includes(opt.value)}
+              onClick={() => handleChipClick(opt.id || opt.value)}
               readOnly={readOnly}
             />
           ))}
@@ -642,20 +998,37 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
 }
 
 /* ── Main export — single unified card for any batch ── */
-export default function JourneyQuestionCard({ batch, answers, onAnswer, onContinue, readOnly }) {
+export default function JourneyQuestionCard({ batch, answers, onAnswer, onContinue, readOnly, submitting }) {
   const allAnswered = batch.questions
     .filter(q => q.required)
     .every(q => isQuestionAnswered(q, answers[q.id]));
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[JourneyQuestionCard] Validation check:', {
+      batchLabel: batch.label,
+      requiredQuestions: batch.questions.filter(q => q.required).map(q => ({
+        id: q.id,
+        type: q.type,
+        isAnswered: isQuestionAnswered(q, answers[q.id]),
+        answer: answers[q.id]
+      })),
+      allAnswered: allAnswered,
+      submitting: submitting,
+      isDisabled: !allAnswered || submitting
+    });
+  }
+
+  const isDisabled = !allAnswered || submitting;
+
   return (
     <>
-    <div style={{
-      background: 'var(--card-background)',
-      borderRadius: '16px',
-      boxShadow: 'var(--shadow-md)',
-      padding: '24px 28px',
-      animation: 'fadeInBatch 0.4s ease-out',
-    }}>
+      <div style={{
+        background: 'var(--card-background)',
+        borderRadius: '16px',
+        boxShadow: 'var(--shadow-md)',
+        padding: '24px 28px',
+        animation: 'fadeInBatch 0.4s ease-out',
+      }}>
         {/* Header: sparkle + label */}
         <div style={{
           display: 'flex',
@@ -672,43 +1045,64 @@ export default function JourneyQuestionCard({ batch, answers, onAnswer, onContin
           {batch.label.toUpperCase()}
         </div>
 
-      {/* Rows — every question renders as a chip-row */}
-      {batch.questions.map(question => (
-        <ChipRow
-          key={question.id}
-          question={question}
-          answer={answers[question.id]}
-          onAnswer={onAnswer}
-          readOnly={readOnly}
-        />
-      ))}
+        {/* Rows — every question renders as a chip-row */}
+        {batch.questions.map(question => (
+          <ChipRow
+            key={question.id}
+            question={question}
+            answer={answers[question.id]}
+            onAnswer={onAnswer}
+            readOnly={readOnly}
+          />
+        ))}
 
-      {/* Confirm pill — hidden when card is frozen */}
-      {!readOnly && (
+        {/* Confirm pill — shows badge when frozen, button when active */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-          <button
-            type="button"
-            onClick={onContinue}
-            disabled={!allAnswered}
-            style={{
+          {readOnly ? (
+            <div style={{
               padding: '8px 24px',
               borderRadius: '9999px',
-              border: `1px solid ${allAnswered ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
-              background: 'transparent',
-              color: allAnswered ? 'var(--consumer-purple)' : 'var(--text-muted)',
+              background: 'var(--gradient-user-answer)',
+              color: '#fff',
               fontSize: '14px',
               fontWeight: '600',
-              cursor: allAnswered ? 'pointer' : 'not-allowed',
-              transition: 'border-color 0.2s, color 0.2s',
-            }}
-          >
-            Confirm
-          </button>
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              animation: 'fadeIn 0.3s ease-in-out',
+            }}>
+              ✓ Confirmed
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onContinue}
+              disabled={isDisabled}
+              style={{
+                padding: '8px 24px',
+                borderRadius: '9999px',
+                border: `1px solid ${!isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)'}`,
+                background: 'transparent',
+                color: !isDisabled ? 'var(--consumer-purple)' : 'var(--text-muted)',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: !isDisabled ? 'pointer' : 'not-allowed',
+                transition: 'border-color 0.2s, color 0.2s',
+                opacity: isDisabled ? 0.6 : 1,
+              }}
+            >
+              {submitting ? 'Submitting...' : 'Confirm'}
+            </button>
+          )}
         </div>
-      )}
-    </div>
+      </div>
 
-    <style>{`
+      <style>{`
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
       .curate-budget-slider {
         -webkit-appearance: none;
         appearance: none;

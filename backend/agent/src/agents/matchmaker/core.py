@@ -30,7 +30,7 @@ class MatchMakerAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "matchmaker"
         self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])

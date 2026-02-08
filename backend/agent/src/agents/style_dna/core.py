@@ -33,7 +33,7 @@ class StyleDnaAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, memory, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "style_dna"
         self.agent_config: dict = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])

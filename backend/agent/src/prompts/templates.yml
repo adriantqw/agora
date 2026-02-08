@@ -262,7 +262,7 @@ style_dna: |
     3. Any outliers detected and how they were handled
 
 celebrity_img_search: |
-    Given the identified celebrity and style: 
+    Given the identified celebrity and style:
     - Celebrity: {cebrity_twin_name}
     - Style profile: {celebrity_twin_reasoning}
 

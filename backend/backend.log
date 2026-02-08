@@ -1,0 +1,628 @@
+INFO:     Will watch for changes in these directories: ['/Users/justynlgh/Documents/agora/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [29348] using WatchFiles
+INFO:     Started server process [29372]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:53592 - "OPTIONS /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53593 - "OPTIONS /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53592 - "GET /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53593 - "GET /api/consumer/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53593 - "OPTIONS /api/curate-my-fit/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53592 - "OPTIONS /api/curate-my-fit/start HTTP/1.1" 200 OK
+2026-02-05 07:18:07,259 - INFO - Starting batch for consumer user_consumer123 with query: I am attending a garden wedding in autumn. I am looking for a floral dress, hopefully something pink or red
+2026-02-05 07:18:07,259 - INFO - Calling PersonalStylist agent with message: User search query: I am attending a garden wedding in autumn. I am looking for a floral dress, hopef...
+2026-02-05 07:18:07,299 - INFO - Starting batch for consumer user_consumer123 with query: I am attending a garden wedding in autumn. I am looking for a floral dress, hopefully something pink or red
+2026-02-05 07:18:07,299 - INFO - Calling PersonalStylist agent with message: User search query: I am attending a garden wedding in autumn. I am looking for a floral dress, hopef...
+2026/02/05 07:18:07 WARNING mlflow.tracing.fluent: Failed to start span personal_stylist: No module named 'alembic'. For full traceback, set logging level to debug.
+2026/02/05 07:18:07 WARNING mlflow.tracing.fluent: Failed to start span personal_stylist: No module named 'alembic'. For full traceback, set logging level to debug.
+2026/02/05 07:18:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e28d40> was created in a different Context
+2026/02/05 07:18:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e1d780> was created in a different Context
+2026/02/05 07:18:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146d41940> was created in a different Context
+2026/02/05 07:18:07 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e0ce80> was created in a different Context
+2026-02-05 07:18:07,406 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:07,412 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:14,071 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1464ad8c0> was created in a different Context
+2026-02-05 07:18:14,475 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:14 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146d41940> was created in a different Context
+2026-02-05 07:18:18,830 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:18 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146d1dfc0> was created in a different Context
+2026/02/05 07:18:18 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146266a40> was created in a different Context
+2026/02/05 07:18:18 WARNING mlflow.langchain.langchain_tracer: Failed to parse tool definition for tracing: {'retrieval': None, 'computer_use': None, 'file_search': None, 'code_execution': None, 'enterprise_web_search': None, 'function_declarations': None, 'google_maps': None, 'google_search': {'exclude_domains': None, 'blocking_confidence': None, 'time_range_filter': None}, 'google_search_retrieval': None, 'url_context': None}.
+2026-02-05 07:18:18,869 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:27,750 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146a16200> was created in a different Context
+2026/02/05 07:18:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1462d7400> was created in a different Context
+2026/02/05 07:18:27 WARNING mlflow.langchain.langchain_tracer: Failed to parse tool definition for tracing: {'retrieval': None, 'computer_use': None, 'file_search': None, 'code_execution': None, 'enterprise_web_search': None, 'function_declarations': None, 'google_maps': None, 'google_search': {'exclude_domains': None, 'blocking_confidence': None, 'time_range_filter': None}, 'google_search_retrieval': None, 'url_context': None}.
+2026-02-05 07:18:27,791 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:29,249 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:29 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146266a40> was created in a different Context
+2026-02-05 07:18:37,276 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:37 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460fd000> was created in a different Context
+2026-02-05 07:18:40,068 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:40 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1462b2080> was created in a different Context
+2026/02/05 07:18:40 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1467ad180> was created in a different Context
+2026-02-05 07:18:40,144 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:47,183 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:47 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146bf2c40> was created in a different Context
+2026/02/05 07:18:47 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460fd000> was created in a different Context
+2026-02-05 07:18:47,286 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:18:56,380 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:18:57 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e29c40> was created in a different Context
+2026-02-05 07:18:57,155 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:19:01,845 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:02 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e2a140> was created in a different Context
+2026-02-05 07:19:02,511 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:19:11,703 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:12 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e28500> was created in a different Context
+2026-02-05 07:19:12,442 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:19:18,856 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:19 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e0d980> was created in a different Context
+2026-02-05 07:19:19,507 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:19:27,119 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e0e000> was created in a different Context
+2026/02/05 07:19:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1464a0040> was created in a different Context
+2026/02/05 07:19:27 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146b82600> was created in a different Context
+2026-02-05 07:19:33,953 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-image-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146e90a40> was created in a different Context
+2026/02/05 07:19:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460fd000> was created in a different Context
+2026/02/05 07:19:34 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1462d7400> was created in a different Context
+2026-02-05 07:19:39,596 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:39 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460dadc0> was created in a different Context
+2026/02/05 07:19:39 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146d8be80> was created in a different Context
+2026-02-05 07:19:39,612 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:19:47,975 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:48 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146d8be80> was created in a different Context
+2026/02/05 07:19:48 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1464b5400> was created in a different Context
+2026-02-05 07:19:48,008 - INFO - Agent result keys: dict_keys(['messages', 'journey', 'ui_inputs', 'ui_answers', 'personality'])
+2026-02-05 07:19:48,009 - INFO - Parsed batch response with 3 questions
+2026-02-05 07:19:48,009 - INFO - Response keys: dict_keys(['threadId', 'blurb', 'questions', 'summaryUpdates', 'imageUrls'])
+2026-02-05 07:19:48,009 - INFO - Number of questions: 3
+2026-02-05 07:19:48,009 - INFO - ThreadId: curate_a21fbe09-7a6c-4e6a-b428-4d734ff19801
+2026-02-05 07:19:48,009 - INFO - Response serialized successfully, size: 2768 bytes
+2026-02-05 07:19:48,009 - INFO - Batch started successfully with thread_id: curate_a21fbe09-7a6c-4e6a-b428-4d734ff19801
+INFO:     127.0.0.1:53592 - "POST /api/curate-my-fit/start HTTP/1.1" 200 OK
+2026-02-05 07:19:54,934 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:19:54 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460b4200> was created in a different Context
+2026/02/05 07:19:54 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x14640a0c0> was created in a different Context
+2026-02-05 07:19:54,955 - INFO - AFC is enabled with max remote calls: 10.
+2026-02-05 07:20:15,481 - INFO - HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent "HTTP/1.1 200 OK"
+2026/02/05 07:20:15 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x1460b4200> was created in a different Context
+2026/02/05 07:20:15 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146bfa5c0> was created in a different Context
+2026-02-05 07:20:15,498 - INFO - Agent result keys: dict_keys(['messages', 'journey', 'ui_inputs', 'ui_answers', 'personality'])
+2026-02-05 07:20:15,498 - INFO - Parsed batch response with 3 questions
+2026-02-05 07:20:15,498 - INFO - Response keys: dict_keys(['threadId', 'blurb', 'questions', 'summaryUpdates', 'imageUrls'])
+2026-02-05 07:20:15,498 - INFO - Number of questions: 3
+2026-02-05 07:20:15,498 - INFO - ThreadId: curate_42b80800-29fd-4edd-8b2a-46ecc296c0de
+2026-02-05 07:20:15,498 - INFO - Response serialized successfully, size: 2714 bytes
+2026-02-05 07:20:15,498 - INFO - Batch started successfully with thread_id: curate_42b80800-29fd-4edd-8b2a-46ecc296c0de
+INFO:     127.0.0.1:53593 - "POST /api/curate-my-fit/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54936 - "OPTIONS /api/curate-my-fit/submit HTTP/1.1" 200 OK
+2026-02-05 07:21:41,899 - INFO - Submitting answers for thread curate_42b80800-29fd-4edd-8b2a-46ecc296c0de
+2026/02/05 07:21:41 WARNING mlflow.tracing.fluent: Failed to start span personal_stylist: No module named 'alembic'. For full traceback, set logging level to debug.
+2026/02/05 07:21:41 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146ec6580> was created in a different Context
+2026/02/05 07:21:41 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146ea9a40> was created in a different Context
+2026/02/05 07:21:41 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146ec7700> was created in a different Context
+2026/02/05 07:21:41 WARNING mlflow.utils.autologging_utils: Encountered unexpected error during autologging: <Token var=<ContextVar name='current_context' default={} at 0x106d8b2e0> at 0x146220c80> was created in a different Context
+2026-02-05 07:21:41,971 - ERROR - Unexpected error in submit_batch_answers: Object of type PosixPath is not JSON serializable
+Traceback (most recent call last):
+  File "/Users/justynlgh/Documents/agora/backend/app/routes/curate_my_fit.py", line 106, in submit_batch_answers
+    result = await curate_my_fit_service.submit_batch_answers(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/app/services/curate_my_fit_service.py", line 104, in submit_batch_answers
+    result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/app/services/curate_my_fit_service.py", line 179, in _submit_answers_async
+    return await agent.agent.ainvoke({"ui_answers": answers, "personality": personality}, config=config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/main.py", line 3158, in ainvoke
+    async for chunk in self.astream(
+    ...<29 lines>...
+            chunks.append(chunk)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/main.py", line 2971, in astream
+    async for _ in runner.atick(
+    ...<13 lines>...
+            yield o
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+    await arun_with_retry(
+    ...<15 lines>...
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/_retry.py", line 137, in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+    input = await asyncio.create_task(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        step.ainvoke(input, config, **kwargs), context=context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 610, in run_in_executor
+    return await asyncio.get_running_loop().run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 601, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/agent/src/agents/personal_stylist/core.py", line 167, in _update_journey
+    ui_inputs_history=json.dumps([ui.model_dump() for ui in ui_inputs]) if ui_inputs else "None",
+                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type PosixPath is not JSON serializable
+During task with name 'update_journey' and id '2f3fdfed-75b0-fbcb-99c1-a8dee227cff6'
+2026-02-05 07:21:41,974 - ERROR - Full traceback:
+Traceback (most recent call last):
+  File "/Users/justynlgh/Documents/agora/backend/app/routes/curate_my_fit.py", line 106, in submit_batch_answers
+    result = await curate_my_fit_service.submit_batch_answers(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/Users/justynlgh/Documents/agora/backend/app/services/curate_my_fit_service.py", line 104, in submit_batch_answers
+    result = await _submit_answers_async(stylist_agent, thread_id, user_responses)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/justynlgh/Documents/agora/backend/app/services/curate_my_fit_service.py", line 179, in _submit_answers_async
+    return await agent.agent.ainvoke({"ui_answers": answers, "personality": personality}, config=config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/main.py", line 3158, in ainvoke
+    async for chunk in self.astream(
+    ...<29 lines>...
+            chunks.append(chunk)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/main.py", line 2971, in astream
+    async for _ in runner.atick(
+    ...<13 lines>...
+            yield o
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/_runner.py", line 304, in atick
+    await arun_with_retry(
+    ...<15 lines>...
+    )
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/pregel/_retry.py", line 137, in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 705, in ainvoke
+    input = await asyncio.create_task(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        step.ainvoke(input, config, **kwargs), context=context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langgraph/_internal/_runnable.py", line 473, in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 610, in run_in_executor
+    return await asyncio.get_running_loop().run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+    )
+    ^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/site-packages/langchain_core/runnables/config.py", line 601, in wrapper
+    return func(*args, **kwargs)
+  File "/Users/justynlgh/Documents/agora/backend/agent/src/agents/personal_stylist/core.py", line 167, in _update_journey
+    ui_inputs_history=json.dumps([ui.model_dump() for ui in ui_inputs]) if ui_inputs else "None",
+                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/__init__.py", line 231, in dumps
+    return _default_encoder.encode(obj)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 200, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 261, in iterencode
+    return _iterencode(o, 0)
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type PosixPath is not JSON serializable
+During task with name 'update_journey' and id '2f3fdfed-75b0-fbcb-99c1-a8dee227cff6'
+
+INFO:     127.0.0.1:54936 - "POST /api/curate-my-fit/submit HTTP/1.1" 500 Internal Server Error
+WARNING:  WatchFiles detected changes in 'agent/src/agents/personal_stylist/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29372]
+INFO:     Started server process [32693]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'agent/src/agents/personal_stylist/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [32693]
+INFO:     Started server process [33828]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'agent/src/agents/personal_stylist/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33828]
+INFO:     Started server process [33979]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [33979]
+INFO:     Started server process [35766]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [35766]
+INFO:     Started server process [36002]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [36002]
+INFO:     Started server process [39660]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [39660]
+Python(44833) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [44833]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [44833]
+Python(49481) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49481]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49481]
+Python(49541) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49541]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49541]
+Python(49631) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49631]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49631]
+Python(49669) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49669]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49669]
+Python(49721) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49721]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49721]
+Python(49753) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [49753]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [49753]
+Python(51461) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51461]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51461]
+Python(51510) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51510]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51510]
+Python(51556) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51556]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51556]
+Python(51591) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51591]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'agent/src/agents/personal_stylist/core.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51591]
+Python(51926) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [51926]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51926]
+Python(52990) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [52990]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [52990]
+Python(53248) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53248]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53248]
+Python(53293) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53293]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53293]
+Python(53327) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53327]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53327]
+Python(53389) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53389]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53389]
+Python(53613) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53613]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53613]
+Python(53688) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [53688]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [53688]
+Python(55923) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [55923]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [55923]
+Python(56094) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56094]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56094]
+Python(56230) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56230]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56230]
+Python(56275) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56275]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56275]
+Python(56311) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56311]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56311]
+Python(56377) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56377]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56377]
+Python(56526) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [56526]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/models/journey.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [56526]
+Python(59861) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+WARNING:  WatchFiles detected changes in 'app/models/curate_my_fit.py'. Reloading...
+INFO:     Started server process [59861]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Python(59979) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+WARNING:  WatchFiles detected changes in 'app/models/__init__.py'. Reloading...
+INFO:     Started server process [59979]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+Python(60008) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60008]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60008]
+Python(60168) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60168]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60168]
+Python(60397) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60397]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60397]
+Python(60513) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60513]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60513]
+Python(60585) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60585]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60585]
+Python(60653) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60653]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60653]
+Python(60738) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60738]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60738]
+Python(60810) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60810]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60810]
+Python(60967) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [60967]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'app/services/curate_my_fit_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60967]
+Python(61030) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [61030]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'init_db.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61030]
+Python(61431) MallocStackLogging: can't turn off malloc stack logging because it was not enabled.
+INFO:     Started server process [61431]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

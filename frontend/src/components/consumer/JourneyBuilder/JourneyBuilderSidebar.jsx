@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Layers, Pencil, Sparkles, Goal } from 'lucide-react';
 import { getIconByName } from '../../../utils/iconMapper';
 
@@ -144,9 +144,14 @@ function FoundationRow({ label, values }) {
   );
 }
 
-export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle }) {
+export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle, isStreaming }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [localTitle, setLocalTitle] = useState(journeyTitle);
+
+  // Sync local title when prop changes (e.g. from streaming journey_field events)
+  useEffect(() => {
+    if (!isEditingTitle) setLocalTitle(journeyTitle);
+  }, [journeyTitle, isEditingTitle]);
 
   const handleSaveTitle = () => {
     setIsEditingTitle(false);
@@ -183,7 +188,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
             autoFocus
             style={{
-              fontSize: '2cqw',
+              fontSize: '16px',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -198,7 +203,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
           <div
             onClick={() => setIsEditingTitle(true)}
             style={{
-              fontSize: '3cqw',
+              fontSize: '17px',
               fontWeight: '700',
               background: 'var(--gradient-user-answer)',
               WebkitBackgroundClip: 'text',
@@ -229,16 +234,24 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
         {/* Foundations section */}
         <div style={{ marginBottom: '20px' }}>
           <SectionHeader label="Journey Foundations" icon={Layers} />
-          {foundations.map((item, i) => (
-            <FoundationRow key={i} label={item.label} values={item.values} />
-          ))}
+          {foundations.length === 0 && isStreaming ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} className="sidebar-shimmer" style={{ height: '44px', borderRadius: '10px' }} />
+              ))}
+            </div>
+          ) : (
+            foundations.map((item, i) => (
+              <FoundationRow key={i} label={item.label} values={item.values} />
+            ))
+          )}
         </div>
 
         {/* Style DNA section */}
         <div>
           <SectionHeader label="Style Vibe" icon={Sparkles} />
 
-          {currentBatch < 1 ? (
+          {!narrativeText && (currentBatch < 1 || isStreaming) ? (
             <div className="sidebar-shimmer-container">
               <div className="sidebar-shimmer" style={{ height: '32px', borderRadius: '8px', marginBottom: '10px' }} />
               <div className="sidebar-shimmer" style={{ height: '32px', borderRadius: '8px', width: '70%' }} />

@@ -7,6 +7,8 @@ streaming events across all agent types.
 
 from typing import Any
 
+from .partial_json import PartialJsonTracker
+
 
 class AgentEventParser:
     """
@@ -15,12 +17,18 @@ class AgentEventParser:
     Extracts metadata from LangGraph streaming events, providing
     a consistent interface for processing agent output streams.
 
+    For personal_stylist, this parser is **stateful**: it accumulates
+    JSON text chunks from structured output nodes (update_journey,
+    parse_ui) and emits field-level deltas as they complete.
+
     Usage:
-        parser = AgentEventParser("matchmaker")
-        async for event in agent.match_stream(journey, thread_id):
+        parser = AgentEventParser("personal_stylist")
+        async for event in agent.chat_stream(message, thread_id):
             metadata = parser.parse(event)
             if metadata["thinking_messages"]:
                 print(metadata["thinking_messages"][-1])
+            if metadata.get("journey_delta"):
+                print("Journey field update:", metadata["journey_delta"])
     """
 
     AGENT_TYPES = [
@@ -56,6 +64,11 @@ class AgentEventParser:
             "fitting_assistant": self._parse_fitting_assistant,
             "style_dna": self._parse_style_dna,
         }
+
+        # Stateful trackers for personal_stylist structured output streaming
+        if agent_type == "personal_stylist":
+            self._journey_tracker = PartialJsonTracker()
+            self._ui_tracker = PartialJsonTracker()
 
     def parse(self, event: dict) -> dict:
         """
@@ -99,6 +112,37 @@ class AgentEventParser:
                             thinking_messages.append(thinking_text)
 
         return thinking_messages
+
+    def _extract_text_chunks(self, data: dict) -> list[str]:
+        """
+        Extract text content chunks from streaming event data.
+
+        During structured output generation, the model emits text parts
+        containing partial JSON. These are found in the chunk's content list
+        as {"type": "text", "text": "..."} entries.
+
+        Args:
+            data: The 'data' field from a LangGraph event
+
+        Returns:
+            List of text chunk strings (may be empty)
+        """
+        text_chunks = []
+        msg_source = data.get('chunk') or data.get('output')
+
+        if msg_source and hasattr(msg_source, 'content'):
+            content = msg_source.content
+            if isinstance(content, list):
+                for part in content:
+                    if isinstance(part, dict) and part.get('type') == 'text':
+                        text = part.get('text', '')
+                        if text:
+                            text_chunks.append(text)
+            elif isinstance(content, str) and content:
+                # Sometimes content is a plain string
+                text_chunks.append(content)
+
+        return text_chunks
 
     def _extract_state(self, data: dict) -> dict | None:
         """
@@ -153,28 +197,90 @@ class AgentEventParser:
 
     def _parse_personal_stylist(self, event: dict) -> dict:
         """
-        Parse events from PersonalStylistAgent.
+        Parse events from PersonalStylistAgent with field-level streaming.
+
+        Handles three event scenarios:
+        1. on_chat_model_stream from update_journey: accumulates JSON chunks,
+           detects completed journey fields, returns deltas
+        2. on_chat_model_stream from parse_ui: accumulates JSON chunks,
+           detects completed message/ui_inputs fields
+        3. on_chat_model_stream from agent: extracts thinking tokens
+        4. on_chat_model_end: resets trackers for the completed node
 
         Returns:
             Dict with keys:
             - thinking_messages: list[str]
-            - ui_components: list - UI input components for user
-            - user_responses: list - User's answers to UI components
-            - journey: dict | None - Current JourneySchema state
+            - journey_delta: dict - Newly completed journey fields
+            - message: str | None - Blurb text from parse_ui
+            - questions: list | None - UI components from parse_ui
+            - ui_components: list - (backward compat)
+            - user_responses: list - (backward compat)
+            - journey: dict | None - Full journey from state (backward compat)
         """
-        data = event.get('data', {})
-        state = self._extract_state(data)
+        event_type = event.get("event", "")
+        data = event.get("data", {})
+        metadata = event.get("metadata", {})
+        node = metadata.get("langgraph_node")
 
         result = {
-            "thinking_messages": self._extract_thinking_messages(data),
+            "thinking_messages": [],
+            "journey_delta": {},
+            "message": None,
+            "questions": None,
             "ui_components": [],
             "user_responses": [],
             "journey": None,
         }
 
+        # --- Only extract thinking from agent/tools nodes ---
+        _THINKING_NODES = {"agent", "tools"}
+
+        # --- Handle streaming chunks from LLM calls ---
+        if event_type == "on_chat_model_stream":
+            # Extract {"type": "text"} parts
+            text_chunks = self._extract_text_chunks(data)
+
+            if node in _THINKING_NODES:
+                # Agent/tools node text is internal reasoning — treat as thinking.
+                # User-facing blurb comes from parse_ui node (UIInputList.message).
+                # Also grab any native {"type": "thinking"} parts
+                result["thinking_messages"] = self._extract_thinking_messages(data)
+                result["thinking_messages"].extend(text_chunks)
+
+            elif node == "update_journey" and text_chunks:
+                for chunk in text_chunks:
+                    delta = self._journey_tracker.feed(chunk)
+                    if delta:
+                        result["journey_delta"].update(delta)
+
+            elif node == "parse_ui" and text_chunks:
+                for chunk in text_chunks:
+                    delta = self._ui_tracker.feed(chunk)
+                    if "message" in delta:
+                        result["message"] = delta["message"]
+                    if "ui_inputs" in delta:
+                        result["questions"] = delta["ui_inputs"]
+
+            return result
+
+        # --- Reset trackers when a node's model call completes ---
+        if event_type == "on_chat_model_end":
+            # Don't extract thinking here — it was already streamed
+            # token-by-token via on_chat_model_stream events above.
+
+            if node == "update_journey":
+                self._journey_tracker.reset()
+            elif node == "parse_ui":
+                self._ui_tracker.reset()
+
+            return result
+
+        # --- Handle state events (on_chain_stream, on_chain_end, etc.) ---
+        # No thinking extraction from state events (avoids leaking structured output)
+
+        state = self._extract_state(data)
         if state:
-            # UI input components - now a nested list [[batch1], [batch2], ...]
-            # Extract the latest batch for streaming
+            # UI input components - nested list [[batch1], [batch2], ...]
             ui_inputs_batches = state.get('ui_inputs', [])
             if isinstance(ui_inputs_batches, list) and ui_inputs_batches:
                 latest_batch = ui_inputs_batches[-1] if ui_inputs_batches else []

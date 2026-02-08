@@ -149,16 +149,19 @@ class Txt2ImgGenerator:
             example_img_paths: Optional example images
 
         Returns:
-            dict with status, image_path, and optional error
+            dict with status, image_path (local temp file path), and optional error
         """
         last_error = None
         for attempt in range(max_retries + 1):
             try:
                 messages = self._compile_model_messages(prompt, example_img_paths)
                 output = await model.ainvoke(messages)
-                image_path = self._extract_image_path_from_output(output)
-                if image_path:
-                    return {"status": "completed", "image_path": image_path}
+                temp_image_path = self._extract_image_path_from_output(output)
+                if temp_image_path:
+                    # Return local temp file path
+                    writer({"info": f"Image generated: {temp_image_path}"})
+                    return {"status": "completed", "image_path": temp_image_path}
+                    
                 last_error = "No image found in model response"
             except Exception as e:
                 last_error = str(e)
