@@ -6,12 +6,12 @@ const AIChatBubble = ({ message }) => {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '0',
-    maxWidth: '800px',
+    maxWidth: '700px',
   };
 
   const avatarStyle = {
-    width: '48px',
-    height: '48px',
+    width: '36px',
+    height: '36px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -21,15 +21,15 @@ const AIChatBubble = ({ message }) => {
   const bubbleStyle = {
     flex: '1',
     backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
+    borderRadius: '12px',
     borderTopLeftRadius: '4px',
-    padding: '16px 24px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+    padding: '10px 16px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
   };
 
   const messageStyle = {
-    fontSize: '15px',
-    lineHeight: '1.6',
+    fontSize: '13px',
+    lineHeight: '1.5',
     color: '#1A202C',
     margin: 0,
   };
@@ -37,7 +37,7 @@ const AIChatBubble = ({ message }) => {
   return (
     <div style={containerStyle}>
       <div style={avatarStyle}>
-        <Mascot variant="avatar" size={48} />
+        <Mascot variant="avatar" size={36} />
       </div>
 
       <div style={bubbleStyle}>

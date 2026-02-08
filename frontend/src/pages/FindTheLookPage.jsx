@@ -25,7 +25,6 @@ import findTheLookService from '../services/findTheLookService';
  */
 function transformMatchesToLooks(matches) {
   const looks = [];
-  const standaloneItems = [];
   let lookCounter = 0;
 
   for (const match of matches) {
@@ -35,7 +34,7 @@ function transformMatchesToLooks(matches) {
       const items = match.productSet.map((p, i) => ({
         id: p.id || `item-${lookCounter}-${i}`,
         name: p.name || 'Unnamed Product',
-        brand: p.reason ? p.reason.split('.')[0] : '',
+        brand: p.brand || '',
         price: p.price ?? 0,
         image: p.imageUrl || '',
         description: p.reason || '',
@@ -45,6 +44,7 @@ function transformMatchesToLooks(matches) {
 
       looks.push({
         id: `look-${lookCounter}`,
+        type: 'set',
         name: match.title || `Look ${lookCounter}`,
         brand: match.description || '',
         price: totalPrice,
@@ -52,29 +52,25 @@ function transformMatchesToLooks(matches) {
         items,
       });
     } else {
-      // Standalone ProductMatch
-      standaloneItems.push({
-        id: match.id || `standalone-${standaloneItems.length}`,
+      // Standalone ProductMatch -> individual carousel entry
+      const item = {
+        id: match.id || `product-${looks.length}`,
         name: match.name || 'Unnamed Product',
-        brand: match.reason ? match.reason.split('.')[0] : '',
+        brand: match.brand || '',
         price: match.price ?? 0,
         image: match.imageUrl || '',
         description: match.reason || '',
+      };
+      looks.push({
+        id: item.id,
+        type: 'product',
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        image: item.image,
+        items: [item],
       });
     }
-  }
-
-  // Group standalone items into a "Top Picks" look
-  if (standaloneItems.length > 0) {
-    const totalPrice = standaloneItems.reduce((sum, item) => sum + (item.price || 0), 0);
-    looks.push({
-      id: 'look-top-picks',
-      name: 'Top Picks',
-      brand: 'Curated for you',
-      price: totalPrice,
-      image: standaloneItems[0]?.image || '',
-      items: standaloneItems,
-    });
   }
 
   return looks;
@@ -286,10 +282,10 @@ const FindTheLookPage = () => {
 
   const mainContentStyle = {
     display: 'grid',
-    gridTemplateRows: 'auto 2.5fr 1.5fr 1fr',
-    gap: '24px',
+    gridTemplateRows: 'auto auto auto 1fr',
+    gap: '12px',
     height: '100%',
-    padding: '32px 64px',
+    padding: '24px 48px',
     overflow: 'hidden',
   };
 
@@ -302,17 +298,10 @@ const FindTheLookPage = () => {
   };
 
   const titleStyle = {
-    fontSize: '32px',
+    fontSize: '22px',
     fontWeight: '700',
     color: '#1A202C',
-    marginBottom: '16px',
     margin: 0,
-  };
-
-  const itemsGridContainerStyle = {
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
   };
 
   const chatAreaStyle = {
@@ -320,7 +309,8 @@ const FindTheLookPage = () => {
     flexDirection: 'column',
     gap: '12px',
     overflow: 'hidden',
-    padding: '0 24px',
+    padding: '0',
+    minHeight: 0,
   };
 
   const chatInputContainerStyle = {
@@ -518,7 +508,7 @@ const FindTheLookPage = () => {
           {(isLoading || isRefining) ? renderLoadingState() : (
             <>
               {/* Look Carousel */}
-              <section style={{ overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+              <section style={{ overflow: 'hidden' }}>
                 {looks.length > 0 && (
                   <LookCarousel
                     looks={looks}
@@ -528,24 +518,14 @@ const FindTheLookPage = () => {
               </section>
 
               {/* Items Grid */}
-              <section style={itemsGridContainerStyle}>
-                <div
-                  className="items-scroll-container"
-                  style={{
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    height: '100%',
-                    WebkitOverflowScrolling: 'touch',
-                  }}
-                >
-                  {selectedLook?.items && (
-                    <ItemGrid
-                      items={selectedLook.items}
-                      onItemClick={handleItemClick}
-                      onAddToQueue={handleAddToQueue}
-                    />
-                  )}
-                </div>
+              <section style={{ overflow: 'hidden', minHeight: 0, maxHeight: '32vh' }}>
+                {selectedLook?.items && (
+                  <ItemGrid
+                    items={selectedLook.items}
+                    onItemClick={handleItemClick}
+                    onAddToQueue={handleAddToQueue}
+                  />
+                )}
               </section>
             </>
           )}
@@ -554,7 +534,7 @@ const FindTheLookPage = () => {
           <section style={chatAreaStyle}>
             {/* AI Recommendation */}
             {aiMessage && !isLoading && (
-              <div style={{ flex: '1', overflowY: 'auto' }}>
+              <div style={{ flex: '1', overflowY: 'auto', minHeight: 0 }}>
                 <AIChatBubble message={aiMessage} />
               </div>
             )}

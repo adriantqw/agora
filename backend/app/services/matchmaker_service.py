@@ -144,9 +144,12 @@ def _resolve_journey_schema(
         stylist_state = stylist_agent.get_state(stylist_thread_id)
         if stylist_state:
             values = stylist_state.values if hasattr(stylist_state, 'values') else stylist_state
-            journey_schema = values.get("journey")
-            if journey_schema:
-                return journey_schema
+            journey_data = values.get("journey")
+            if journey_data:
+                # Ensure we return a JourneySchema, not a raw dict
+                if isinstance(journey_data, dict):
+                    return JourneySchema(**journey_data)
+                return journey_data
 
         raise ValueError("Could not retrieve journey from stylist thread")
 
@@ -183,27 +186,45 @@ def _convert_journey_to_schema(journey: Journey, db: Session) -> JourneySchema:
     )
 
 
+def _get_attr(obj, key, default=None):
+    """Get attribute from a Pydantic model or dict."""
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
+
+
 def _extract_and_enrich_matches(agent_state: dict, db: Session) -> list[dict]:
     """Extract matches from agent state and enrich with product details."""
     matches_data = agent_state.get("matches", [])
     enriched = []
-    
+
     for item in matches_data:
-        if hasattr(item, 'product_set'):
+        product_set = _get_attr(item, 'product_set') or _get_attr(item, 'productSet')
+        if product_set:
             # ProductMatchSet
             enriched_set = {
-                "title": item.title,
-                "description": item.description,
+                "title": _get_attr(item, 'title'),
+                "description": _get_attr(item, 'description'),
                 "productSet": [
-                    _enrich_product_match(product.id, product.score, product.reason, db)
-                    for product in item.product_set
+                    _enrich_product_match(
+                        _get_attr(product, 'id', ''),
+                        _get_attr(product, 'score'),
+                        _get_attr(product, 'reason', ''),
+                        db
+                    )
+                    for product in product_set
                 ]
             }
             enriched.append(enriched_set)
         else:
             # ProductMatch
-            enriched.append(_enrich_product_match(item.id, item.score, item.reason, db))
-    
+            enriched.append(_enrich_product_match(
+                _get_attr(item, 'id', ''),
+                _get_attr(item, 'score'),
+                _get_attr(item, 'reason', ''),
+                db
+            ))
+
     return enriched
 
 
