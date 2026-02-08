@@ -58,11 +58,7 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
               style={{
                 ...getCardStyle(isSelected, disabled),
                 transform: isHovered && !disabled ? 'translateY(-4px)' : 'translateY(0)',
-                boxShadow: isSelected
-                  ? theme.shadows.pink || shadows.blue
-                  : isHovered && !disabled
-                    ? shadows.md
-                    : shadows.sm
+                boxShadow: isHovered && !disabled ? shadows.md : shadows.sm
               }}
               role="button"
               tabIndex={disabled ? -1 : 0}
@@ -145,40 +141,38 @@ export default function ColorPalette({ question, onAnswer, currentAnswer, disabl
                 )}
               </div>
 
-              {/* Color Names (optional, for accessibility) */}
-              {isSelected && (
+              {/* Color Hex Codes */}
+              <div style={{
+                marginTop: spacing.md,
+                paddingTop: spacing.md,
+                borderTop: `1px solid ${colors.neutral300}`
+              }}>
                 <div style={{
-                  marginTop: spacing.md,
-                  paddingTop: spacing.md,
-                  borderTop: `1px solid ${colors.neutral300}`
+                  fontSize: typography.sizes.xs,
+                  color: colors.neutral500,
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: spacing.xs,
+                  justifyContent: 'center'
                 }}>
-                  <div style={{
-                    fontSize: typography.sizes.xs,
-                    color: colors.neutral500,
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: spacing.xs,
-                    justifyContent: 'center'
-                  }}>
-                    {paletteColors.map((color, index) => (
-                      <code
-                        key={`${option.id}-code-${index}`}
-                        style={{
-                          padding: `2px ${spacing.xs}`,
-                          background: colors.neutral100,
-                          borderRadius: spacing.xs,
-                          fontFamily: 'monospace',
-                          fontSize: typography.sizes.xs,
-                          color: colors.text?.primary || colors.neutral900
-                        }}
-                      >
-                        {color}
-                      </code>
-                    ))}
-                  </div>
+                  {paletteColors.map((color, index) => (
+                    <code
+                      key={`${option.id}-code-${index}`}
+                      style={{
+                        padding: `2px ${spacing.xs}`,
+                        background: colors.neutral100,
+                        borderRadius: spacing.xs,
+                        fontFamily: 'monospace',
+                        fontSize: typography.sizes.xs,
+                        color: colors.text?.primary || colors.neutral900
+                      }}
+                    >
+                      {color}
+                    </code>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

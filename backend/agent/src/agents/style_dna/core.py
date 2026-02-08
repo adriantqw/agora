@@ -3,7 +3,7 @@ import mlflow
 from pydantic import FileUrl, FilePath
 from dotenv import load_dotenv
 
-from langchain_core.messages import SystemMessage, AIMessage, HumanMessage
+from langchain_core.messages import SystemMessage, AIMessage, HumanMessage, RemoveMessage
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt.tool_node import ToolNode
@@ -33,11 +33,12 @@ class StyleDnaAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, memory, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "style_dna"
         self.agent_config: dict = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
+        self.max_context_msgs = self.agent_config["max_context_msgs"]
 
         # Load prompts
         templates = load_prompt_templates()
@@ -199,6 +200,21 @@ class StyleDnaAgent:
 
         return {"current_style_dna": current_dna}
 
+    def _trim_messages(self, state: StyleDnaState):
+        """Trim message history"""
+        messages = state.get("messages", [])
+
+        if len(messages) <= self.max_context_msgs:
+            return {}
+
+        # Identify the oldest messages to drop
+        number_to_delete = len(messages) - self.max_context_msgs
+
+        # Create RemoveMessage objects for those IDs
+        to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
+
+        return {"messages": to_remove}
+
     def _analyze_ootd(self, state: StyleDnaState):
         """Pre-process OOTD images into multimodal messages."""
         ootd_images = state.get("ootd_images", [])
@@ -295,6 +311,7 @@ class StyleDnaAgent:
 
         # Define nodes
         workflow.add_node("load_memory", self._load_memory)
+        workflow.add_node("trim_messages", self._trim_messages)
         workflow.add_node("analyze_ootd", self._analyze_ootd)
         workflow.add_node("analyze_interaction", self._analyze_interaction)
         workflow.add_node("agent", self._invoke_model)
@@ -306,9 +323,12 @@ class StyleDnaAgent:
         # Entry point - always load memory first
         workflow.set_entry_point("load_memory")
 
-        # After loading memory, route based on input type
+        # After loading memory, trim messages
+        workflow.add_edge("load_memory", "trim_messages")
+
+        # After trimming, route based on input type
         workflow.add_conditional_edges(
-            "load_memory",
+            "trim_messages",
             self._route_after_load,
             {
                 "analyze_ootd": "analyze_ootd",

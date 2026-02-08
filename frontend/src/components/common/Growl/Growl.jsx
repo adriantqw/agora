@@ -3,7 +3,7 @@ import { Check, X, AlertCircle, Info } from 'lucide-react';
 import { useThemeColors } from '../../../hooks/useThemeColors';
 
 /**
- * Growl notification component that appears in the bottom-left corner
+ * Growl notification component that appears in bottom-left corner
  *
  * @param {Object} props
  * @param {string} props.message - The message to display
@@ -11,12 +11,14 @@ import { useThemeColors } from '../../../hooks/useThemeColors';
  * @param {number} props.duration - Auto-dismiss duration in ms (0 = no auto-dismiss)
  * @param {function} props.onClose - Callback when notification is closed
  * @param {boolean} props.show - Whether to show the notification
+ * @param {Object} props.customStyle - Custom style overrides for background, color, border
  */
-const Growl = ({ message, type = 'success', duration = 3000, onClose, show }) => {
+const Growl = ({ message, type = 'success', duration = 3000, onClose, show, customStyle = {} }) => {
   const colors = useThemeColors();
   const [isVisible, setIsVisible] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
 
+  // Handle show/hide transitions
   useEffect(() => {
     if (show) {
       setIsVisible(true);
@@ -25,50 +27,63 @@ const Growl = ({ message, type = 'success', duration = 3000, onClose, show }) =>
       // Auto-dismiss if duration is set
       if (duration > 0) {
         const timer = setTimeout(() => {
-          handleClose();
+          // Trigger exit animation
+          setIsExiting(true);
+          setTimeout(() => {
+            setIsVisible(false);
+            onClose?.();
+          }, 300);
         }, duration);
 
         return () => clearTimeout(timer);
       }
+    } else {
+      // show is false, trigger exit animation
+      if (isVisible) {
+        setIsExiting(true);
+        const timer = setTimeout(() => {
+          setIsVisible(false);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [show, duration]);
+  }, [show, duration, onClose, isVisible]);
 
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(() => {
       setIsVisible(false);
-      setIsExiting(false);
       onClose?.();
     }, 300); // Match animation duration
   };
 
-  if (!isVisible && !show) return null;
+  if (!isVisible) return null;
 
   // Style configuration per type
   const styles = {
     success: {
-      background: colors.status.success.background,
-      color: colors.status.success.text,
-      border: colors.status.success.border,
-      icon: Check
+      background: customStyle.background || colors.status.success.background,
+      color: customStyle.textColor || colors.status.success.text,
+      border: customStyle.border || colors.status.success.border,
+      icon: customStyle.icon || Check
     },
     error: {
-      background: colors.status.error.background,
-      color: colors.status.error.text,
-      border: colors.status.error.border,
-      icon: X
+      background: customStyle.background || colors.status.error.background,
+      color: customStyle.textColor || colors.status.error.text,
+      border: customStyle.border || colors.status.error.border,
+      icon: customStyle.icon || X
     },
     warning: {
-      background: colors.status.warning?.background || '#FEF3C7',
-      color: colors.status.warning?.text || '#92400E',
-      border: colors.status.warning?.border || '#FCD34D',
-      icon: AlertCircle
+      background: customStyle.background || colors.status.warning?.background || '#FEF3C7',
+      color: customStyle.textColor || colors.status.warning?.text || '#92400E',
+      border: customStyle.border || colors.status.warning?.border || '#FCD34D',
+      icon: customStyle.icon || AlertCircle
     },
     info: {
-      background: colors.status.info?.background || '#DBEAFE',
-      color: colors.status.info?.text || '#1E40AF',
-      border: colors.status.info?.border || '#93C5FD',
-      icon: Info
+      background: customStyle.background || colors.status.info?.background || '#DBEAFE',
+      color: customStyle.textColor || colors.status.info?.text || '#1E40AF',
+      border: customStyle.border || colors.status.info?.border || '#93C5FD',
+      icon: customStyle.icon || Info
     }
   };
 
@@ -116,11 +131,12 @@ const Growl = ({ message, type = 'success', duration = 3000, onClose, show }) =>
       {/* Message */}
       <div
         style={{
-          flex: 1,
-          fontSize: '14px',
-          fontWeight: '600',
-          lineHeight: '1.4'
-        }}
+            flex: 1,
+            fontSize: '14px',
+            fontWeight: '600',
+            lineHeight: '1.4',
+            color: 'inherit'
+          }}
       >
         {message}
       </div>

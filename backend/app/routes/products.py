@@ -60,7 +60,8 @@ async def upload_image(
         "success": True,
         "data": {
             "url": result["url"],
-            "filename": result["filename"]
+            "filename": result["filename"],
+            "type": result.get("type")
         }
     }
 

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Layers, Pencil, Sparkles, Goal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Layers, Pencil, Sparkles, Goal, Image } from 'lucide-react';
 import { getIconByName } from '../../../utils/iconMapper';
 
 // Map foundation labels to icons
@@ -144,12 +144,18 @@ function FoundationRow({ label, values }) {
   );
 }
 
-export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle }) {
+export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle, onTitleChange, isStreaming, moodBoardUrl }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [localTitle, setLocalTitle] = useState(journeyTitle);
 
+  // Sync local title when prop changes (e.g. from streaming journey_field events)
+  useEffect(() => {
+    if (!isEditingTitle) setLocalTitle(journeyTitle);
+  }, [journeyTitle, isEditingTitle]);
+
   const handleSaveTitle = () => {
     setIsEditingTitle(false);
+    onTitleChange?.(localTitle);
     // In future: Call API to persist title change
     console.log('Title saved:', localTitle);
   };
@@ -183,7 +189,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
             autoFocus
             style={{
-              fontSize: '2cqw',
+              fontSize: '16px',
               fontWeight: '700',
               color: 'var(--consumer-purple)',
               marginBottom: '8px',
@@ -198,7 +204,7 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
           <div
             onClick={() => setIsEditingTitle(true)}
             style={{
-              fontSize: '3cqw',
+              fontSize: '17px',
               fontWeight: '700',
               background: 'var(--gradient-user-answer)',
               WebkitBackgroundClip: 'text',
@@ -229,16 +235,24 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
         {/* Foundations section */}
         <div style={{ marginBottom: '20px' }}>
           <SectionHeader label="Journey Foundations" icon={Layers} />
-          {foundations.map((item, i) => (
-            <FoundationRow key={i} label={item.label} values={item.values} />
-          ))}
+          {foundations.length === 0 && isStreaming ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} className="sidebar-shimmer" style={{ height: '44px', borderRadius: '10px' }} />
+              ))}
+            </div>
+          ) : (
+            foundations.map((item, i) => (
+              <FoundationRow key={i} label={item.label} values={item.values} />
+            ))
+          )}
         </div>
 
         {/* Style DNA section */}
         <div>
           <SectionHeader label="Style Vibe" icon={Sparkles} />
 
-          {currentBatch < 1 ? (
+          {!narrativeText && (currentBatch < 1 || isStreaming) ? (
             <div className="sidebar-shimmer-container">
               <div className="sidebar-shimmer" style={{ height: '32px', borderRadius: '8px', marginBottom: '10px' }} />
               <div className="sidebar-shimmer" style={{ height: '32px', borderRadius: '8px', width: '70%' }} />
@@ -254,6 +268,29 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             </p>
           )}
         </div>
+
+        {/* Mood Board section */}
+        {moodBoardUrl && (
+          <div style={{ marginTop: '20px' }}>
+            <SectionHeader label="Mood Board" icon={Image} />
+            <div style={{
+              borderRadius: '10px',
+              overflow: 'hidden',
+              border: '1px solid var(--border-color)',
+              background: 'rgba(255, 255, 255, 0.5)',
+            }}>
+              <img
+                src={moodBoardUrl}
+                alt="Mood Board"
+                style={{
+                  width: '100%',
+                  display: 'block',
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`

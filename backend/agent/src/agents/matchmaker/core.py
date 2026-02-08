@@ -1,7 +1,8 @@
 import mlflow
 from dotenv import load_dotenv
 
-from langchain_core.messages import SystemMessage, AIMessage
+from langchain_core.messages import SystemMessage, AIMessage, RemoveMessage
+from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph
 from langgraph.prebuilt.tool_node import ToolNode
@@ -12,6 +13,7 @@ from .schemas import MatchResult
 from .tools import search_products
 from ..tools import load_image, google_search
 from ..schemas import JourneySchema
+from ..memory_utils import AgoraMemory
 from ...models.langchain_utils import load_model_from_config
 from ...utils.yaml import load_prompt_templates, load_config
 
@@ -28,11 +30,12 @@ class MatchMakerAgent:
 
     def __init__(self):
         """Initialize the agent with model, tools, and checkpointer."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "matchmaker"
         self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])
         self.recursion_limit = self.agent_config["recursion_limit"]
+        self.max_context_msgs = self.agent_config["max_context_msgs"]
 
         templates = load_prompt_templates()
         self.system_prompt: str = templates[self.agent_key]
@@ -41,6 +44,7 @@ class MatchMakerAgent:
         self.personality_config: dict = load_config("personality")
 
         self.checkpointer = MemorySaver()
+        self.memory_store = AgoraMemory()
         self.tools = [search_products, load_image]
         if self.agent_config["enable_google_search_tool"]:
             self.tools.append(google_search)
@@ -81,7 +85,7 @@ class MatchMakerAgent:
             "personality": personality
         }, config=config)
     
-    def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
+    async def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences in streaming mode.
 
@@ -101,7 +105,7 @@ class MatchMakerAgent:
         # Compile user message
         message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
         if message:
-            message_list.append([("user", message)])
+            message_list.append(("user", message))
 
         # Compile the config
         config = {
@@ -175,17 +179,45 @@ class MatchMakerAgent:
             "messages": [AIMessage(response.message)],
             "matches": response.matches
         }
+    
+    def _retrieve_memory(self, state: MatchmakerState, config: RunnableConfig):
+        """Retrieve memory (StyleDna) for the user"""
+        user_id = config.get("configurable", {}).get("user_id")
+        if user_id:
+            style_dna = self.memory_store.retrieve_memory(user_id)
+            return {"style_dna": style_dna}
+        else:
+            return {}
+
+    def _trim_messages(self, state: MatchmakerState):
+        """Trim message history"""
+        messages = state.get("messages", [])
+
+        if len(messages) <= self.max_context_msgs:
+            return {}
+
+        # Identify the oldest messages to drop
+        number_to_delete = len(messages) - self.max_context_msgs
+
+        # Create RemoveMessage objects for those IDs
+        to_remove = [RemoveMessage(id=m.id) for m in messages[:number_to_delete]]
+
+        return {"messages": to_remove}
 
     def _compile_graph(self):
         """Compile the agent's state graph."""
         workflow = StateGraph(MatchmakerState)
         tool_node = ToolNode(self.tools)
 
+        workflow.add_node("retrieve_memory", self._retrieve_memory)
+        workflow.add_node("trim_messages", self._trim_messages)
         workflow.add_node("agent", self._invoke_model)
         workflow.add_node("tools", tool_node)
         workflow.add_node("parse_matches", self._parse_matches)
 
-        workflow.set_entry_point("agent")
+        workflow.set_entry_point("retrieve_memory")
+        workflow.add_edge("retrieve_memory", "trim_messages")
+        workflow.add_edge("trim_messages", "agent")
         workflow.add_conditional_edges("agent", self._should_continue, {
             "tools": "tools",
             "parse_matches": "parse_matches"

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 90
 
     # CORS
-    CORS_ORIGINS: str = "https://agora-frontend-1053141806402.europe-west1.run.app,http://localhost:3000,http://localhost:5173"
+    CORS_ORIGINS: str = "https://agora-frontend-1053141806402.europe-west1.run.app,http://localhost:3000,http://localhost:3001"
 
     # Server
     HOST: str = "0.0.0.0"
@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     # Google AI Configuration
     GOOGLE_API_KEY: str = ""
 
+    # Serp API Configuration (for Google Search integration)
+    SERP_API_KEY: str = ""
+
     # Catalogue Processing
     CATALOGUE_UPLOAD_DIR: str = "data/uploads/catalogues"
     TESSERACT_PATH: str = "/usr/bin/tesseract"
@@ -38,6 +41,9 @@ class Settings(BaseSettings):
     # MLflow Settings
     MLFLOW_TRACKING_URI: str = "sqlite:///mlflow.db"
     MLFLOW_EXPERIMENT_NAME: str = "agora"
+
+    # SERP API
+    SERP_API_KEY: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 

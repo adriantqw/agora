@@ -15,16 +15,16 @@ from .utils import stream_and_print
 def create_mock_journey() -> JourneySchema:
     """Create a mock journey for testing."""
     return JourneySchema(
-        title="Summer Beach Vacation",
-        summary="A relaxed bohemian beach look for summer vacation",
-        occasion="vacation",
-        location="beach",
-        style_preferences=["bohemian", "minimalist"],
-        fit_preferences=["relaxed"],
-        colour_preferences=["#FFFFFF", "#F5F5DC", "#ADD8E6"],
-        time_of_day="afternoon",
-        season="summer",
-        budget_rating=3
+        title="Evening Party",
+        summary="A glamorous evening party outfit with classic elegance",
+        occasion="party",
+        location="nightclub",
+        style_preferences=["classic", "old_money"],
+        fit_preferences=[],
+        colour_preferences=[],
+        time_of_day="evening",
+        season="winter",
+        budget_rating=4
     )
 
 
@@ -32,17 +32,18 @@ def create_mock_product_selections() -> ProductSelections:
     """Create mock product selections for testing."""
     return ProductSelections(
         matches=[
-            ProductSelected(id="product_001"),
-            ProductSelected(id="product_002"),
             ProductSelectedSet(
-                title="Beach Day Ensemble",
-                description="A complete beach-ready look",
+                title="The 'Uptown After Dark' Edit",
+                description="A sophisticated blend of structured tailoring and playful evening glamour, perfect for a winter night out.",
                 product_set=[
-                    ProductSelected(id="product_003"),
-                    ProductSelected(id="product_004"),
-                    ProductSelected(id="product_005"),
+                    ProductSelected(id="product_07133e69-0869-4ce3-8bf9-9fcb9ec7aac5"),
+                    ProductSelected(id="product_3ec097a7-d0f8-44e7-9e71-b49a27e513f7"),
+                    ProductSelected(id="product_b2341c11-da64-4ef4-a187-78a441e1e5a6"),
+                    ProductSelected(id="product_7f741955-b906-4712-9648-0a83de9d583f"),
                 ]
             ),
+            ProductSelected(id="product_47b9121a-f905-418a-b36e-6462e381bc17"),
+            ProductSelected(id="product_24f90f5e-aa4d-4cb2-8685-3f6e9483a241"),
         ]
     )
 
@@ -97,7 +98,7 @@ async def test_fit_stream():
         journey=journey,
         product_selections=selections,
         thread_id=thread_id,
-        message="Create stylish summer lookbooks",
+        message="Create stylish evening lookbooks for a winter night out",
         personality="friendly"
     )
 

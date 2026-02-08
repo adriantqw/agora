@@ -46,6 +46,8 @@ mlflow.db
 *.ipynb
 
 agora_memory.db
+agora.db-shm
+agora.db-wal
 
 /data/
 

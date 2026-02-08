@@ -3,14 +3,17 @@
 ### Catalogue ingestor config
 catalogue_ingestor: &base_agent_recipe
   model: &base_model_recipe
-    name: gemini-3-pro-preview
+    # name: gemini-3-pro-preview
+    name: gemini-3-flash-preview
     params: &base_model_params_recipe
+      max_retries: 3
       temperature: 0.7
       max_tokens: 2048
       thinking_level: low
       include_thoughts: true
   recursion_limit: 100
   enable_google_search_tool: false
+  max_context_msgs: 25
 
 ## Consumer agents
 ### Personal stylist config

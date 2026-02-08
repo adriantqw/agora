@@ -8,6 +8,7 @@ export default function Mascot({
   position = 'bottom-right',
   onClick,
   size,
+  disabled = false,
 }) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
@@ -22,8 +23,8 @@ export default function Mascot({
   const containerStyle = position === 'bottom-right'
     ? {
         position: 'fixed',
-        bottom: '20px',
-        right: '20px',
+        bottom: '36px',
+        right: '36px',
         zIndex: 50,
       }
     : position === 'bottom-left'
@@ -123,25 +124,30 @@ export default function Mascot({
       {/* Speech Bubble */}
       {showSpeechBubble && message && (
         <div
-          onClick={onClick}
+          className={`mascot-speech-bubble ${disabled ? 'mascot-disabled' : ''}`}
+          onClick={disabled ? undefined : onClick}
           style={{
             position: 'absolute',
             bottom: position === 'bottom-left' ? '100%' : '40px',
             ...(position === 'bottom-left' ? { left: '20px' } : { right: '85px' }),
             ...(position === 'bottom-left' && { marginBottom: '12px' }),
-            background: isLetsGo ? 'var(--gradient-user-answer)' : 'white',
-            border: isLetsGo ? 'none' : '2px solid #F5A5B8',
+            background: disabled ? '#e2e8f0' : isLetsGo ? 'var(--gradient-user-answer)' : 'white',
+            border: disabled ? '2px solid #cbd5e1' : isLetsGo ? 'none' : '2px solid #F5A5B8',
             borderRadius: '16px 16px 4px 16px',
             padding: '16px 24px',
             fontSize: '17px',
             fontWeight: '600',
-            color: isLetsGo ? '#ffffff' : '#1a202c',
+            color: disabled ? '#94a3b8' : isLetsGo ? '#ffffff' : '#1a202c',
             whiteSpace: 'nowrap',
-            boxShadow: isLetsGo
-              ? '0 6px 20px rgba(102, 126, 234, 0.35)'
-              : '0 4px 12px rgba(245, 165, 184, 0.25)',
+            boxShadow: disabled
+              ? '0 2px 8px rgba(0, 0, 0, 0.06)'
+              : isLetsGo
+                ? '0 6px 20px rgba(102, 126, 234, 0.35)'
+                : '0 4px 12px rgba(245, 165, 184, 0.25)',
             animation: 'fadeIn 0.3s ease-in-out',
-            cursor: onClick ? 'pointer' : 'default',
+            cursor: disabled ? 'not-allowed' : onClick ? 'pointer' : 'default',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            opacity: disabled ? 0.7 : 1,
           }}>
           {message}
         </div>
@@ -166,6 +172,11 @@ export default function Mascot({
       </div>
 
       <style>{`
+        .mascot-speech-bubble:not(.mascot-disabled):hover {
+          transform: translateY(-2px) scale(1.03);
+          box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4) !important;
+        }
+
         @keyframes mascot-bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }

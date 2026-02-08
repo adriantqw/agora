@@ -1,7 +1,11 @@
 from datetime import datetime
+import os
+import asyncio
+from pathlib import Path
 
 from agent.src.agents.personal_stylist.core import PersonalStylistAgent
 from agent.src.agents.personal_stylist.schemas import UserResponse
+from app.services.storage_service import storage_service
 
 # Initialize agent (singleton)
 stylist_agent = PersonalStylistAgent()
@@ -37,15 +41,81 @@ def get_state(thread_id: str) -> dict:
     return _format_response(thread_id, state.values if state else {})
 
 
+async def _upload_temp_images_async(ui_inputs: list) -> list:
+    """Upload temporary image files to R2 and update paths with public URLs."""
+    if not ui_inputs:
+        return ui_inputs
+
+    for ui_input in ui_inputs:
+        # Check if this UI input has image_options
+        if isinstance(ui_input, dict) and ui_input.get("image_options"):
+            for image_option in ui_input["image_options"]:
+                image_path = image_option.get("image_path", "")
+
+                # Check if this is a temp file path (contains /tmp/ or img-gen- pattern)
+                if image_path and os.path.exists(image_path) and ("/tmp/" in image_path or "img-gen-" in image_path):
+                    try:
+                        # Upload to R2
+                        result = await storage_service.upload_file_from_path(
+                            image_path,
+                            folder="generated-images"
+                        )
+
+                        if "url" in result:
+                            # Replace temp path with R2 URL
+                            image_option["image_path"] = result["url"]
+
+                            # Clean up temp file
+                            try:
+                                os.remove(image_path)
+                            except Exception:
+                                pass
+                    except Exception as e:
+                        # Log error but don't fail the request
+                        print(f"Failed to upload temp image {image_path}: {e}")
+
+    return ui_inputs
+
+
+def _upload_temp_images(ui_inputs: list) -> list:
+    """Synchronous wrapper for uploading temp images."""
+    try:
+        # Try to get the current event loop
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # We're already in an async context, can't use asyncio.run()
+            # Return ui_inputs as-is and let the async path handle it
+            return ui_inputs
+        else:
+            # No running loop, safe to use asyncio.run()
+            return asyncio.run(_upload_temp_images_async(ui_inputs))
+    except RuntimeError:
+        # No event loop, create one
+        return asyncio.run(_upload_temp_images_async(ui_inputs))
+
+
 def _format_response(thread_id: str, state: dict) -> dict:
     """Format state for API response."""
     journey = state.get("journey")
-    ui_inputs = state.get("ui_inputs", [])
+    # ui_inputs is now a nested list [[batch1], [batch2], ...] - get the latest batch
+    ui_inputs_batches = state.get("ui_inputs", [])
+    latest_batch = ui_inputs_batches[-1] if ui_inputs_batches else []
+
+    # Convert to dicts if they're Pydantic models
+    latest_batch_dicts = []
+    for ui in latest_batch:
+        if hasattr(ui, "model_dump"):
+            latest_batch_dicts.append(ui.model_dump())
+        else:
+            latest_batch_dicts.append(ui)
+
+    # Upload temp images to R2 and replace paths with public URLs
+    latest_batch_dicts = _upload_temp_images(latest_batch_dicts)
 
     return {
         "threadId": thread_id,
         "journey": journey.model_dump() if journey else None,
-        "uiInputs": [ui.model_dump() for ui in ui_inputs] if ui_inputs else []
+        "uiInputs": latest_batch_dicts
     }
 
 

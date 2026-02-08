@@ -75,6 +75,7 @@ class CatalogueItemResponse(BaseModel):
     colours: List[str]
     page: int
     imageUrl: str
+    imageType: Optional[str] = None
     bboxData: dict
     productId: Optional[str]
     isConverted: bool
@@ -85,6 +86,15 @@ class CatalogueItemResponse(BaseModel):
     @classmethod
     def from_model(cls, item):
         """Convert ORM model to response schema."""
+        # Extract image type from image URL if available
+        image_type = None
+        if item.image_url:
+            # Extract extension from URL
+            from urllib.parse import urlparse
+            path = urlparse(item.image_url).path
+            ext = path.rsplit('.', 1)[-1].lower() if '.' in path else None
+            image_type = f"image/{ext}" if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif'] else None
+
         return cls(
             id=item.id,
             catalogueId=item.catalogue_id,
@@ -95,6 +105,7 @@ class CatalogueItemResponse(BaseModel):
             colours=item.colours or [],
             page=item.page,
             imageUrl=item.image_url,
+            imageType=image_type,
             bboxData=item.bbox_data,
             productId=item.product_id,
             isConverted=item.is_converted,

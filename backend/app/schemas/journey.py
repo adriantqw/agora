@@ -30,6 +30,9 @@ class JourneyBase(BaseModel):
     status_color: str
     status_label: str
     closet_url: Optional[str] = None
+    summary: Optional[str] = None  # AI-generated summary
+    search_query: Optional[str] = None  # Initial user query
+    image_urls: Optional[List[str]] = None  # R2 URLs of uploaded images
 
 class JourneyCreate(JourneyBase):
     outfits: List[OutfitCreate] = []

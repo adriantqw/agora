@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
@@ -15,7 +15,15 @@ class Journey(Base):
     status_color = Column(String, nullable=False)
     status_label = Column(String, nullable=False)
     closet_url = Column(String, nullable=True)
-    
+
+    # New field for curate-my-fit integration
+    thread_id = Column(String, nullable=True, index=True, unique=True)  # Agent thread ID for question tracking
+
+    # New fields for curate-my-fit integration
+    summary = Column(Text, nullable=True)  # AI-generated summary
+    search_query = Column(Text, nullable=True)  # Initial user query
+    image_urls = Column(JSON, nullable=True)  # R2 URLs of uploaded images
+
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 

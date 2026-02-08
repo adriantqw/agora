@@ -72,8 +72,6 @@ personal_stylist_ui_generation: |
     3. Create 2-3 UI components to gather more preferences; generate any reference images required in the new questions
     4. If sufficient preferences have been gathered, generate a mood board for the user
 
-    Note: Image generation is optional, only required if using image-based UI components.
-
     ## AVAILABLE TOOLS
     1. **generate** - Generate reference images from detailed text prompts
     2. **batch** - Generate multiple reference images from a list of text prompts
@@ -168,13 +166,14 @@ fitting_assistant: |
     - **Field Definitions:** {journey_schema} (Reference for clarity).
 
     ## Product Context
-    Products in the user's "digital tray":
-
-    {product_details}
+    The user's product selections are provided in the first message, including:
+    - Product sets (grouped items with title and description explaining the styling intent)
+    - Individual product selections
+    - Full product details (name, description, image_url, price, tags) for each item
 
     ## Image Access Instructions
     - Product images were provided at the start of this conversation for your reference.
-    - The product details above include `image_url` for each item if you need to re-examine any product using `load_image(url)`.
+    - Each product includes `image_url` if you need to re-examine any product using `load_image(url)`.
     - If a product is missing from context, use `get_product_details(id)` to fetch it.
     - ALWAYS reference the actual product images when generating lookbook visualizations to ensure accuracy.
 
@@ -195,7 +194,9 @@ fitting_assistant: |
     - *Good:* "High-quality studio photography of a navy blue silk midi-dress, minimalist elegant style, soft morning light, clean white background, fashion editorial quality."
     
     ## Tool Protocol
-    Use image tools to generate images to show the user the vision and load images from URLs and file paths to view it.
+    - Use image tools to generate images to show the user the vision
+    - Load images from URLs and file paths to view it
+    - Provide the product image paths to the image generation tool to ensure faithfulness to the original
 
     ## CONSTRAINTS
     DO NOT hallucinate the products. Use the tools available to ensure the products are as faithful to the original product image as possible.
@@ -259,9 +260,21 @@ style_dna: |
     3. Any outliers detected and how they were handled
 
 celebrity_img_search: |
-    Given the identified celebrity and style: 
+    Given the identified celebrity and style:
     - Celebrity: {cebrity_twin_name}
     - Style profile: {celebrity_twin_reasoning}
 
     Generate a google image search query to maximise the chances of finding images of the celebrity that encapsulate the identified style profile.
+
+style_dna_prompt: |
+    ## STYLE DNA (Long-Term Context)
+    The following <style_dna> reflects the user's historical preferences. 
+
+    1. **Hierarchy of Truth:** The current user prompt is the absolute priority. If the user's request contradicts the Style DNA, ignore the DNA for that specific attribute.
+    2. **The "Gap-Fill" Rule:** Use the Style DNA to inform unspecified details. (e.g., If the user asks for a "jacket" without specifying a fit, default to their preferred "Oversized" silhouette from the DNA).
+    3. **Implicit Personalization:** Do not explicitly list these preferences unless relevant. Use them as a latent filter to ensure suggestions "feel" like the user.
+
+    <style_dna>
+    {user_style_dna}
+    </style_dna>
 

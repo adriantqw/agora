@@ -65,14 +65,24 @@ class ProductResponse(BaseModel):
     quantity: int
     tags: List[str]
     image: Optional[str]
+    imageType: Optional[str] = None
     description: Optional[str]
-    created_at: datetime = Field(alias="createdAt")
-    updated_at: datetime = Field(alias="updatedAt")
+    createdAt: datetime
+    updatedAt: datetime
 
     model_config = {"from_attributes": True, "populate_by_name": True}
 
     @classmethod
     def from_product(cls, product):
+        # Extract image type from image URL if available
+        image_type = None
+        if product.image:
+            # Extract extension from URL
+            from urllib.parse import urlparse
+            path = urlparse(product.image).path
+            ext = path.rsplit('.', 1)[-1].lower() if '.' in path else None
+            image_type = f"image/{ext}" if ext in ['jpg', 'jpeg', 'png', 'webp', 'gif'] else None
+
         return cls(
             id=product.id,
             name=product.name,
@@ -81,9 +91,10 @@ class ProductResponse(BaseModel):
             quantity=product.quantity,
             tags=product.tags or [],
             image=product.image,
+            imageType=image_type,
             description=product.description,
-            created_at=product.created_at,
-            updated_at=product.updated_at
+            createdAt=product.created_at,
+            updatedAt=product.updated_at
         )
 
 
