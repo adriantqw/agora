@@ -17,7 +17,12 @@ function isQuestionAnswered(question, answer) {
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
         (typeof answer.value === 'string' && answer.value.trim() !== '');
     case 'scale-rating':
-      return answer.value !== undefined && answer.value !== null;
+      // scale-rating now uses minValue/maxValue like dual-range
+      return answer.minValue !== undefined &&
+        answer.maxValue !== undefined &&
+        answer.minValue !== null &&
+        answer.maxValue !== null &&
+        answer.minValue < answer.maxValue;
     case 'free-text':
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
@@ -54,8 +59,9 @@ function resolveAnswerLabel(question, answer) {
       return free || null;
     }
     case 'scale-rating': {
-      if (answer.value === undefined || answer.value === null) return null;
-      return '$'.repeat(Number(answer.value));
+      // scale-rating now uses minValue/maxValue like dual-range
+      if (answer.minValue === undefined || answer.maxValue === undefined) return null;
+      return `$${answer.minValue} - $${answer.maxValue}`;
     }
     case 'free-text': {
       const val = typeof answer.value === 'string' ? answer.value.trim() : '';
@@ -564,10 +570,6 @@ export default function CurateMyLookPage() {
         maxValue: answer.maxValue || undefined,
         timestamp: answer.timestamp || Date.now(),
       };
-      // scale-rating stores answer in value field — send as selectedOptions
-      if (question?.type === 'scale-rating' && answer.value != null && !entry.selectedOptions) {
-        entry.selectedOptions = [String(answer.value)];
-      }
       // free-text stores answer in value field — send as freeText
       if (question?.type === 'free-text' && answer.value && !entry.freeText) {
         entry.freeText = answer.value;
