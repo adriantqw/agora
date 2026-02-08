@@ -352,6 +352,7 @@ export default function CurateMyLookPage() {
   const [journeyTitle, setJourneyTitle] = useState('My Journey');
   const [foundations, setFoundations] = useState([]);
   const [narrativeText, setNarrativeText] = useState('');
+  const [moodBoardUrl, setMoodBoardUrl] = useState('');
 
   // Streaming state
   const [thinkingText, setThinkingText] = useState('');
@@ -362,6 +363,9 @@ export default function CurateMyLookPage() {
   const [streamedJourney, setStreamedJourney] = useState({});
   const thinkingStartTime = useRef(null);
   const cleanupRef = useRef(null);
+  // Store turn 1 thinking so it persists (collapsed) while turn 2 streams
+  const [prevThinkingText, setPrevThinkingText] = useState('');
+  const prevThinkingStartTime = useRef(null);
   const chatScrollRef = useRef(null);
 
   // Auto-scroll chat to bottom when new streaming content arrives
@@ -432,6 +436,7 @@ export default function CurateMyLookPage() {
                 const updated = { ...prev, ...delta };
                 if (updated.title) setJourneyTitle(updated.title);
                 if (updated.summary) setNarrativeText(updated.summary);
+                if (updated.mood_board_path) setMoodBoardUrl(updated.mood_board_path);
                 const journeyFoundations = extractFoundationsFromJourney(updated);
                 if (journeyFoundations.length > 0) setFoundations(journeyFoundations);
                 return updated;
@@ -534,6 +539,9 @@ export default function CurateMyLookPage() {
     }
 
     // If this is the last batch, submit answers to backend via streaming
+    // Save turn 1 thinking before clearing for turn 2
+    setPrevThinkingText(thinkingText);
+    prevThinkingStartTime.current = thinkingStartTime.current;
     setSubmitting(true);
     setError(null);
     setThinkingText('');
@@ -583,6 +591,7 @@ export default function CurateMyLookPage() {
             const updated = { ...prev, ...delta };
             if (updated.title) setJourneyTitle(updated.title);
             if (updated.summary) setNarrativeText(updated.summary);
+            if (updated.mood_board_path) setMoodBoardUrl(updated.mood_board_path);
             const journeyFoundations = extractFoundationsFromJourney(updated);
             if (journeyFoundations.length > 0) setFoundations(journeyFoundations);
             return updated;
@@ -642,13 +651,31 @@ export default function CurateMyLookPage() {
     );
   };
 
+  const isJourneyReady = !hasMore || !!moodBoardUrl;
+
   const handleQuickMatch = () => {
-    console.log('Quick Match clicked', { foundations, narrativeText });
+    navigate('/search', {
+      state: {
+        threadId,
+        journeyTitle,
+        foundations,
+        narrativeText,
+        moodBoardUrl,
+        quickMatch: true,
+      },
+    });
   };
 
-  const handleLetsGo = async () => {
-    // Submit final batch
-    await handleConfirm(batches.length - 1);
+  const handleLetsGo = () => {
+    navigate('/search', {
+      state: {
+        threadId,
+        journeyTitle,
+        foundations,
+        narrativeText,
+        moodBoardUrl,
+      },
+    });
   };
 
 
@@ -756,8 +783,12 @@ export default function CurateMyLookPage() {
             </div>
           )}
 
-          {/* Thinking dropdown — persists after streaming ends (auto-collapses) */}
-          <ThinkingDropdown text={thinkingText} isActive={isThinking} startTime={thinkingStartTime.current} />
+          {/* Turn 1 thinking dropdown — shows prevThinkingText (collapsed) once turn 2 starts, or current thinkingText during turn 1 */}
+          <ThinkingDropdown
+            text={prevThinkingText || (!submitting ? thinkingText : '')}
+            isActive={!submitting && isThinking}
+            startTime={prevThinkingStartTime.current || (!submitting ? thinkingStartTime.current : null)}
+          />
 
           {/* Streaming UI: blurb + shimmer during initial load */}
           {(loading || (isStreaming && batches.length === 0)) && (
@@ -805,9 +836,10 @@ export default function CurateMyLookPage() {
             </div>
           ))}
 
-          {/* Streaming UI: blurb + shimmer during submission */}
+          {/* Streaming UI: thinking + blurb + shimmer during submission */}
           {submitting && (
             <div style={{ marginTop: '24px' }}>
+              <ThinkingDropdown text={thinkingText} isActive={isThinking} startTime={thinkingStartTime.current} />
               {!messageText && (isThinking || isStreaming) && (
                 <div style={{ marginBottom: '16px' }}>
                   <div className="shimmer-bar" style={{ height: '20px', width: '90%', borderRadius: '8px', marginBottom: '8px' }} />
@@ -829,6 +861,7 @@ export default function CurateMyLookPage() {
             currentBatch={currentBatch}
             journeyTitle={journeyTitle}
             isStreaming={isStreaming}
+            moodBoardUrl={moodBoardUrl}
           />
         </div>
       </div>
@@ -838,8 +871,9 @@ export default function CurateMyLookPage() {
         variant="default"
         position="bottom-right"
         isSearching={!isReady || submitting}
-        message={confirmedBatches.size > 0 ? (hasMore ? "Quick Match →" : "Let's Goooo!") : ''}
-        onClick={isReady && !submitting ? handleLetsGo : handleQuickMatch}
+        message={confirmedBatches.size > 0 ? (isJourneyReady ? "Let's Goooo!" : "Quick Match →") : ''}
+        onClick={isJourneyReady ? handleLetsGo : handleQuickMatch}
+        disabled={isStreaming || submitting}
       />
 
       <style>{`

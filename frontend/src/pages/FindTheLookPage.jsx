@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
-import { MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import LookCarousel from '../components/find-the-look/LookCarousel';
 import ItemGrid from '../components/find-the-look/ItemGrid';
@@ -9,16 +10,103 @@ import ProductDetailModal from '../components/find-the-look/ProductDetailModal';
 import FittingRoomQueue from '../components/find-the-look/FittingRoomQueue';
 import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
 import Growl from '../components/common/Growl/Growl';
-import { mockLooks, aiRecommendations } from '../data/mockLooks';
+import findTheLookService from '../services/findTheLookService';
+
+/**
+ * Transform MatchMaker matches into the look format components expect.
+ *
+ * MatchMaker returns:
+ *   - ProductMatchSet: { title, description, productSet: [{ id, name, imageUrl, price, score, reason }] }
+ *   - Standalone ProductMatch: { id, name, imageUrl, price, score, reason }
+ *
+ * Components expect:
+ *   - Look: { id, name, brand, price, image, items: [{ id, name, brand, price, image, description }] }
+ */
+function transformMatchesToLooks(matches) {
+  const looks = [];
+  const standaloneItems = [];
+  let lookCounter = 0;
+
+  for (const match of matches) {
+    if (match.productSet) {
+      // ProductMatchSet -> a "look" with nested items
+      lookCounter++;
+      const items = match.productSet.map((p, i) => ({
+        id: p.id || `item-${lookCounter}-${i}`,
+        name: p.name || 'Unnamed Product',
+        brand: p.reason ? p.reason.split('.')[0] : '',
+        price: p.price ?? 0,
+        image: p.imageUrl || '',
+        description: p.reason || '',
+      }));
+
+      const totalPrice = items.reduce((sum, item) => sum + (item.price || 0), 0);
+
+      looks.push({
+        id: `look-${lookCounter}`,
+        name: match.title || `Look ${lookCounter}`,
+        brand: match.description || '',
+        price: totalPrice,
+        image: items[0]?.image || '',
+        items,
+      });
+    } else {
+      // Standalone ProductMatch
+      standaloneItems.push({
+        id: match.id || `standalone-${standaloneItems.length}`,
+        name: match.name || 'Unnamed Product',
+        brand: match.reason ? match.reason.split('.')[0] : '',
+        price: match.price ?? 0,
+        image: match.imageUrl || '',
+        description: match.reason || '',
+      });
+    }
+  }
+
+  // Group standalone items into a "Top Picks" look
+  if (standaloneItems.length > 0) {
+    const totalPrice = standaloneItems.reduce((sum, item) => sum + (item.price || 0), 0);
+    looks.push({
+      id: 'look-top-picks',
+      name: 'Top Picks',
+      brand: 'Curated for you',
+      price: totalPrice,
+      image: standaloneItems[0]?.image || '',
+      items: standaloneItems,
+    });
+  }
+
+  return looks;
+}
 
 const FindTheLookPage = () => {
-  const [selectedLook, setSelectedLook] = useState(mockLooks[1]); // Start with middle item
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Navigation state from CurateMyLookPage
+  const journeyId = location.state?.journeyId;
+  const navJourneyTitle = location.state?.journeyTitle;
+  const navFoundations = location.state?.foundations;
+  const navNarrative = location.state?.narrative;
+
+  // Streaming state
+  const [isLoading, setIsLoading] = useState(true);
+  const [isThinking, setIsThinking] = useState(false);
+  const [thinkingText, setThinkingText] = useState('');
+  const [threadId, setThreadId] = useState(null);
+  const [aiMessage, setAiMessage] = useState('');
+  const [looks, setLooks] = useState([]);
+  const [error, setError] = useState(null);
+  const [isRefining, setIsRefining] = useState(false);
+
+  // UI state
+  const [selectedLook, setSelectedLook] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isJourneySidebarExpanded, setIsJourneySidebarExpanded] = useState(false);
   const [showFeedbackInput, setShowFeedbackInput] = useState(false);
   const [feedbackText, setFeedbackText] = useState('');
-  const [journeyTitle, setJourneyTitle] = useState("Casual Dinner Journey");
+  const [journeyTitle, setJourneyTitle] = useState(navJourneyTitle || 'My Journey');
 
   const [growl, setGrowl] = useState({
     show: false,
@@ -27,15 +115,54 @@ const FindTheLookPage = () => {
   });
 
   const { addToQueue } = useFittingRoom();
+  const cleanupRef = useRef(null);
+
+  // Stream callbacks shared between initial load and refinement
+  const makeCallbacks = (onDone) => ({
+    onThinkingStart: () => {
+      setIsThinking(true);
+      setThinkingText('');
+    },
+    onThinking: (content) => setThinkingText(prev => prev + content),
+    onThinkingEnd: () => setIsThinking(false),
+    onProcessing: () => {},
+    onComplete: (data) => {
+      const newLooks = transformMatchesToLooks(data.matches || []);
+      setLooks(newLooks);
+      setSelectedLook(newLooks[0] || null);
+      setThreadId(data.threadId);
+      setAiMessage(data.message || '');
+      setIsLoading(false);
+      setIsRefining(false);
+      onDone?.();
+    },
+    onError: (msg) => {
+      setError(msg || 'Failed to find matches. Please try again.');
+      setIsLoading(false);
+      setIsRefining(false);
+    },
+  });
+
+  // Start match stream on mount
+  useEffect(() => {
+    if (!journeyId) {
+      setError('No journey found. Please complete the style quiz first.');
+      setIsLoading(false);
+      return;
+    }
+
+    cleanupRef.current = findTheLookService.startMatchStream(
+      journeyId,
+      makeCallbacks()
+    );
+
+    return () => {
+      cleanupRef.current?.();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get fitting room items from context
-  const getQueueItems = () => {
-    // This is a placeholder - you'd get actual items from your fitting room context
-    // For now, returning empty array
-    return [];
-  };
-
-  const queueItems = getQueueItems();
+  const queueItems = [];
 
   const handleSelectLook = (look) => {
     setSelectedLook(look);
@@ -48,12 +175,11 @@ const FindTheLookPage = () => {
 
   const handleAddToQueue = (item) => {
     addToQueue(item);
-    // Optional: Show toast notification
-    console.log('Added to queue:', item.name);
+    setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
   };
 
   const handleRemoveFromQueue = (itemId) => {
-    // This is a placeholder - you'd implement actual remove logic
     console.log('Removed from queue:', itemId);
   };
 
@@ -63,22 +189,23 @@ const FindTheLookPage = () => {
   };
 
   const handleFeedbackSubmit = () => {
-    if (feedbackText.trim()) {
-      console.log('Feedback submitted:', feedbackText);
+    if (!feedbackText.trim() || !threadId || !journeyId) return;
 
-      setGrowl({
-        show: true,
-        message: 'Feedback sent successfully!',
-        type: 'success'
-      });
+    setIsRefining(true);
+    setShowFeedbackInput(false);
 
-      setFeedbackText('');
-      setShowFeedbackInput(false);
+    cleanupRef.current?.();
+    cleanupRef.current = findTheLookService.refineMatchStream(
+      journeyId,
+      threadId,
+      feedbackText.trim(),
+      makeCallbacks(() => {
+        setGrowl({ show: true, message: 'Matches refined!', type: 'success' });
+        setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+      })
+    );
 
-      setTimeout(() => {
-        setGrowl({ show: false, message: '', type: 'success' });
-      }, 3000);
-    }
+    setFeedbackText('');
   };
 
   const handleKeyDown = (e) => {
@@ -88,7 +215,56 @@ const FindTheLookPage = () => {
     }
   };
 
-  const currentRecommendation = aiRecommendations[selectedLook?.id];
+  // Error state
+  if (error) {
+    return (
+      <div style={{
+        height: '100vh',
+        backgroundColor: '#FFE4E9',
+        fontFamily: '"Readex Pro", -apple-system, sans-serif',
+      }}>
+        <Header variant="full" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 'calc(100vh - 65px)',
+        }}>
+          <div style={{
+            maxWidth: '500px',
+            padding: '32px',
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>😔</div>
+            <div style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#333' }}>
+              Oops! Something went wrong
+            </div>
+            <div style={{ fontSize: '14px', color: '#666', marginBottom: '24px' }}>
+              {error}
+            </div>
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#793DB0',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const pageStyle = {
     height: '100vh',
@@ -100,7 +276,7 @@ const FindTheLookPage = () => {
   const gridContainerStyle = {
     display: 'grid',
     gridTemplateColumns: '2fr 1fr',
-    height: 'calc(100vh - 65px)', // 65px = header height
+    height: 'calc(100vh - 65px)',
   };
 
   const mainContentStyle = {
@@ -205,6 +381,67 @@ const FindTheLookPage = () => {
     position: 'relative',
   };
 
+  // Loading / Thinking state overlay for main content
+  const renderLoadingState = () => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      gap: '24px',
+      gridRow: '2 / 4',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '12px 24px',
+        borderRadius: '24px',
+        background: 'rgba(121, 61, 176, 0.08)',
+        border: '1px solid rgba(121, 61, 176, 0.15)',
+      }}>
+        <Sparkles size={16} color="#793DB0" />
+        <span style={{ fontSize: '14px', fontWeight: '600', color: '#793DB0' }}>
+          {isThinking ? 'Finding your perfect looks' : 'Preparing matches'}
+        </span>
+        <span style={{ display: 'flex', gap: '3px' }}>
+          {[0, 1, 2].map(i => (
+            <span key={i} style={{
+              width: '4px', height: '4px',
+              backgroundColor: '#793DB0', borderRadius: '50%',
+              animation: `wiggle 1.4s ease-in-out infinite ${i * 0.2}s`,
+            }} />
+          ))}
+        </span>
+      </div>
+      {thinkingText && (
+        <div style={{
+          maxWidth: '500px',
+          maxHeight: '150px',
+          overflowY: 'auto',
+          fontSize: '12px',
+          lineHeight: '1.6',
+          color: '#666',
+          textAlign: 'center',
+          padding: '0 16px',
+        }}>
+          {thinkingText}
+        </div>
+      )}
+      {/* Shimmer placeholders */}
+      <div style={{ display: 'flex', gap: '16px' }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} className="shimmer-bar" style={{
+            width: '160px',
+            height: '200px',
+            borderRadius: '12px',
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div style={pageStyle}>
       <Header variant="full" />
@@ -235,6 +472,27 @@ const FindTheLookPage = () => {
         .items-scroll-container::-webkit-scrollbar-thumb:hover {
           background: #A0AEC0;
         }
+
+        @keyframes wiggle {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-6px); }
+        }
+
+        @keyframes shimmer {
+          from { background-position: -200% 0; }
+          to   { background-position: 200% 0; }
+        }
+
+        .shimmer-bar {
+          background: linear-gradient(90deg, #f0e6f6 25%, #e8d5f5 50%, #f0e6f6 75%);
+          background-size: 200% 100%;
+          animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
       `}</style>
 
       <div style={gridContainerStyle} className="find-look-grid">
@@ -243,41 +501,47 @@ const FindTheLookPage = () => {
           {/* Page Title - Journey Name */}
           <h1 style={titleStyle}>{journeyTitle}</h1>
 
-          {/* Look Carousel */}
-          <section style={{ overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-            <LookCarousel
-              looks={mockLooks}
-              onSelectLook={handleSelectLook}
-            />
-          </section>
+          {(isLoading || isRefining) ? renderLoadingState() : (
+            <>
+              {/* Look Carousel */}
+              <section style={{ overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+                {looks.length > 0 && (
+                  <LookCarousel
+                    looks={looks}
+                    onSelectLook={handleSelectLook}
+                  />
+                )}
+              </section>
 
-          {/* Items Grid */}
-          <section style={itemsGridContainerStyle}>
-            <div
-              className="items-scroll-container"
-              style={{
-                overflowX: 'auto',
-                overflowY: 'hidden',
-                height: '100%',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              <ItemGrid
-                items={selectedLook.items}
-                onItemClick={handleItemClick}
-                onAddToQueue={handleAddToQueue}
-              />
-            </div>
-          </section>
+              {/* Items Grid */}
+              <section style={itemsGridContainerStyle}>
+                <div
+                  className="items-scroll-container"
+                  style={{
+                    overflowX: 'auto',
+                    overflowY: 'hidden',
+                    height: '100%',
+                    WebkitOverflowScrolling: 'touch',
+                  }}
+                >
+                  {selectedLook?.items && (
+                    <ItemGrid
+                      items={selectedLook.items}
+                      onItemClick={handleItemClick}
+                      onAddToQueue={handleAddToQueue}
+                    />
+                  )}
+                </div>
+              </section>
+            </>
+          )}
 
           {/* Chat Area - AI Message + User Input + Refine Search */}
           <section style={chatAreaStyle}>
             {/* AI Recommendation */}
-            {currentRecommendation && (
+            {aiMessage && !isLoading && (
               <div style={{ flex: '1', overflowY: 'auto' }}>
-                <AIChatBubble
-                  message={currentRecommendation.message}
-                />
+                <AIChatBubble message={aiMessage} />
               </div>
             )}
 
@@ -296,7 +560,7 @@ const FindTheLookPage = () => {
                 <button
                   onClick={handleFeedbackSubmit}
                   style={sendButtonStyle}
-                  disabled={!feedbackText.trim()}
+                  disabled={!feedbackText.trim() || isRefining}
                   aria-label="Send feedback"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -334,55 +598,57 @@ const FindTheLookPage = () => {
                 </button>
               </div>
             ) : (
-              /* Refine Search Bubble */
-              <div
-                style={refineSectionStyle}
-                onClick={handleToggleFeedback}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.02)';
-                  e.currentTarget.style.opacity = '0.9';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.opacity = '1';
-                }}
-              >
-                <p style={refineTextStyle}>Not quite right? Refine your search</p>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                  padding: '2px',
-                }}>
-                  <button
-                    style={{
-                      ...refineButtonStyle,
-                      width: '100%',
-                      height: '100%',
-                      background: 'white',
-                      border: 'none',
-                    }}
-                    aria-label="Refine search"
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#F7FAFC';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'white';
-                    }}
-                  >
-                    <MessageCircle
-                      size={20}
+              !isLoading && !isRefining && (
+                /* Refine Search Bubble */
+                <div
+                  style={refineSectionStyle}
+                  onClick={handleToggleFeedback}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                >
+                  <p style={refineTextStyle}>Not quite right? Refine your search</p>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                    padding: '2px',
+                  }}>
+                    <button
                       style={{
-                        background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
+                        ...refineButtonStyle,
+                        width: '100%',
+                        height: '100%',
+                        background: 'white',
+                        border: 'none',
                       }}
-                    />
-                  </button>
+                      aria-label="Refine search"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#F7FAFC';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'white';
+                      }}
+                    >
+                      <MessageCircle
+                        size={20}
+                        style={{
+                          background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                        }}
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </section>
         </main>
@@ -474,12 +740,8 @@ const FindTheLookPage = () => {
       >
         <div style={{ height: '100%', padding: '16px' }}>
           <JourneyBuilderSidebar
-            foundations={[
-              { label: 'Location', values: ['New York'] },
-              { label: 'Style', values: ['Casual', 'Chic'] },
-              { label: 'Occasion', values: ['Dinner'] },
-            ]}
-            narrativeText="Shopping from New York for a casual chic dinner look. Budget: $100-$300."
+            foundations={navFoundations || []}
+            narrativeText={navNarrative || ''}
             currentBatch={1}
             journeyTitle={journeyTitle}
             onTitleChange={setJourneyTitle}
@@ -501,13 +763,6 @@ const FindTheLookPage = () => {
           border: '#E2E8F0'
         }}
       />
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 };

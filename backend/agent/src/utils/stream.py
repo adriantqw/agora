@@ -5,8 +5,6 @@ Provides the AgentEventParser class for extracting metadata from
 streaming events across all agent types.
 """
 
-from typing import Any
-
 from .partial_json import PartialJsonTracker
 
 

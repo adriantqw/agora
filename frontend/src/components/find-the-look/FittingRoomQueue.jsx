@@ -19,7 +19,6 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     fontWeight: '700',
     color: '#793DB0',
     marginBottom: '24px',
-    marginBottom: '15px',
   };
 
   const emptyStateStyle = {

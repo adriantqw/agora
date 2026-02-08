@@ -1,8 +1,8 @@
-from datetime import datetime
 from typing import AsyncIterator, Dict, Any, Optional
 
 from agent.src.agents.matchmaker.core import MatchMakerAgent
 from agent.src.agents.schemas import JourneySchema
+from agent.src.utils.stream import AgentEventParser
 from sqlalchemy.orm import Session
 
 from app.models.journey import Journey
@@ -57,34 +57,47 @@ async def match_stream(
     db: Session,
     consumer_id: str
 ) -> AsyncIterator[dict]:
-    """Async streaming matching - yields events."""
+    """Async streaming matching - yields rich SSE events using AgentEventParser."""
     # Get journey and verify ownership
     journey = _get_journey_with_ownership(journey_id, consumer_id, db)
-    
+
     # Convert Journey to JourneySchema
     journey_schema = _convert_journey_to_schema(journey, db)
-    
+
     # Generate thread_id if not provided
     if not thread_id:
         import uuid
         thread_id = f"matchmaker_{uuid.uuid4()}"
-    
+
     try:
-        # Stream events from agent
+        yield {"type": "thinking_start"}
+
+        # Stream events from agent using AgentEventParser
+        parser = AgentEventParser("matchmaker")
         async for event in await matchmaker_agent.match_stream(journey_schema, thread_id, message, personality):
-            yield _format_stream_event(event)
-        
-        # Send final state with enriched matches
+            parsed = parser.parse(event)
+
+            # Stream thinking messages token-by-token
+            for thought in parsed["thinking_messages"]:
+                yield {"type": "thinking", "content": thought}
+
+        yield {"type": "thinking_end"}
+        yield {"type": "processing", "message": "Finding your perfect matches..."}
+
+        # Get final state and enrich matches
         final_state = matchmaker_agent.get_state(thread_id)
         if final_state:
-            matches = _extract_and_enrich_matches(final_state.values if hasattr(final_state, 'values') else {}, db)
-            message = _extract_message(final_state.values if hasattr(final_state, 'values') else {})
+            state_values = final_state.values if hasattr(final_state, 'values') else {}
+            matches = _extract_and_enrich_matches(state_values, db)
+            msg = _extract_message(state_values)
             yield {
                 "type": "complete",
-                "threadId": thread_id,
-                "matches": matches,
-                "message": message,
-                "iterationCount": final_state.values.get("iteration_count", 1) if hasattr(final_state, 'values') else 1
+                "data": {
+                    "threadId": thread_id,
+                    "matches": matches,
+                    "message": msg,
+                    "iterationCount": state_values.get("iteration_count", 1)
+                }
             }
     except Exception as e:
         yield {
@@ -225,10 +238,3 @@ def _extract_message(agent_state: dict) -> str:
     return "Matches found!"
 
 
-def _format_stream_event(event: dict) -> dict:
-    """Format streaming event."""
-    return {
-        "type": "progress",
-        "thinkingMessage": event.get("thinking", "Processing..."),
-        "timestamp": datetime.utcnow().isoformat()
-    }

@@ -956,13 +956,27 @@ async def _agent_stream_async(agent_stream_coro):
     The parser is instantiated per-stream (stateful — tracks partial JSON).
     """
     parser = AgentEventParser("personal_stylist")
+    had_non_thinking = False  # Track if non-thinking content appeared since last thinking
 
     async for event in await agent_stream_coro:
         parsed = parser.parse(event)
 
         # Stream thinking messages token-by-token
         for thought in parsed["thinking_messages"]:
+            # Insert line break separator when thinking resumes after non-thinking content
+            if had_non_thinking:
+                yield {"type": "thinking", "content": "\n\n"}
+                had_non_thinking = False
             yield {"type": "thinking", "content": thought}
+
+        # Track non-thinking events so we can insert separators
+        has_non_thinking_content = (
+            parsed.get("journey_delta") or
+            parsed.get("message") or
+            parsed.get("questions")
+        )
+        if has_non_thinking_content:
+            had_non_thinking = True
 
         # Stream journey field updates as they complete
         if parsed.get("journey_delta"):

@@ -274,6 +274,8 @@ const ConsumerLandingPage = () => {
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
             transition: 'all 0.3s ease',
             overflow: 'hidden',
+            position: 'relative',
+            zIndex: 10,
           }}
           onFocus={(e) => {
             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';

@@ -69,7 +69,7 @@ async def match_stream(
                 db=db,
                 consumer_id=current_consumer.id
             ):
-                yield f"data: {json.dumps(event)}\n\n"
+                yield f"data: {json.dumps(event, default=str)}\n\n"
         except ValueError as e:
             # Journey not found or ownership error
             if "not found" in str(e).lower():
