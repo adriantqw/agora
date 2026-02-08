@@ -621,7 +621,14 @@ export default function CurateMyLookPage() {
             }, 100);
           } else {
             setHasMore(false);
-            // Journey complete — frontend decides what to do with data.journeyId
+            navigate('/find-the-look', {
+              state: {
+                journeyId: data.journeyId,
+                journeyTitle,
+                foundations,
+                narrative: narrativeText,
+              }
+            });
           }
         },
         onError: (msg) => {
