@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 from enum import Enum
 
 class UserResponse(BaseModel):
@@ -11,15 +11,7 @@ class ImageOption(BaseModel):
     """An option for an image choice input field."""
     id: Optional[str] = Field(default=None, description="Unique identifier (auto-generated if not provided)")
     label: str = Field(description="Display label for this option")
-    image_path: str = Field(description="Path to the image file (local path, temp path, or HTTP/HTTPS URL)")
-
-    @field_validator('image_path')
-    @classmethod
-    def validate_image_path(cls, v: str) -> str:
-        """Validate that image_path is a non-empty string."""
-        if not v or not isinstance(v, str):
-            raise ValueError("image_path must be a non-empty string")
-        return v
+    image_path: str = Field(description="Path to the image file (local path or HTTP/HTTPS URL)")
 
 class UIInputType(str, Enum):
     IMAGE_CHOICE = "image_choice"

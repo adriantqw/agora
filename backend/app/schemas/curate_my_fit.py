@@ -61,6 +61,13 @@ class StartBatchRequest(BaseModel):
     # images will be handled via multipart/form-data
 
 
+class StartBatchStreamRequest(BaseModel):
+    """Request schema for streaming start batch (images pre-uploaded)."""
+    searchQuery: str
+    imageUrls: List[str] = []
+    imageTypes: List[str] = []
+
+
 # Start Response Schema
 class StartBatchResponse(BaseModel):
     """Response schema for POST /api/curate-my-fit/start."""

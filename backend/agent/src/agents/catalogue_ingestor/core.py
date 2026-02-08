@@ -27,7 +27,7 @@ class CatalogueIngestor:
     
     def __init__(self):
         """Initialize the agent."""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         self.agent_key = "catalogue_ingestor"
         self.agent_config = load_config("agent")[self.agent_key]
         self.model = load_model_from_config(self.agent_config["model"])

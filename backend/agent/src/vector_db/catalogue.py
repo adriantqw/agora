@@ -12,7 +12,7 @@ from app.models.product import Product
 class CatalogueVectorDb:
     def __init__(self, name: str):
         """Initialize catalogue vector database"""
-        mlflow.langchain.autolog()
+        # mlflow.langchain.autolog()
         try:
             self.cfg = load_config('vector_db')[name]
         except KeyError:
