@@ -654,7 +654,7 @@ export default function CurateMyLookPage() {
   const isJourneyReady = !hasMore || !!moodBoardUrl;
 
   const handleQuickMatch = () => {
-    navigate('/search', {
+    navigate('/find-the-look', {
       state: {
         threadId,
         journeyTitle,
@@ -667,7 +667,7 @@ export default function CurateMyLookPage() {
   };
 
   const handleLetsGo = () => {
-    navigate('/search', {
+    navigate('/find-the-look', {
       state: {
         threadId,
         journeyTitle,
