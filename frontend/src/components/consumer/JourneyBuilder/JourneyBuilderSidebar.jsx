@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Layers, Pencil, Sparkles, Goal } from 'lucide-react';
+import { Layers, Pencil, Sparkles, Goal, Image } from 'lucide-react';
 import { getIconByName } from '../../../utils/iconMapper';
 
 // Map foundation labels to icons
@@ -144,7 +144,7 @@ function FoundationRow({ label, values }) {
   );
 }
 
-export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle, isStreaming }) {
+export default function JourneyBuilderSidebar({ foundations, narrativeText, currentBatch, journeyTitle, isStreaming, moodBoardUrl }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [localTitle, setLocalTitle] = useState(journeyTitle);
 
@@ -267,6 +267,29 @@ export default function JourneyBuilderSidebar({ foundations, narrativeText, curr
             </p>
           )}
         </div>
+
+        {/* Mood Board section */}
+        {moodBoardUrl && (
+          <div style={{ marginTop: '20px' }}>
+            <SectionHeader label="Mood Board" icon={Image} />
+            <div style={{
+              borderRadius: '10px',
+              overflow: 'hidden',
+              border: '1px solid var(--border-color)',
+              background: 'rgba(255, 255, 255, 0.5)',
+            }}>
+              <img
+                src={moodBoardUrl}
+                alt="Mood Board"
+                style={{
+                  width: '100%',
+                  display: 'block',
+                  objectFit: 'cover',
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`
