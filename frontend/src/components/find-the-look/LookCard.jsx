@@ -11,35 +11,36 @@ const LookCard = ({ look, isActive, onClick }) => {
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
     height: '100%',
     boxSizing: 'border-box',
     ...(isActive ? {
-      transform: 'scale(1)',
+      transform: 'scale(1.05)',
+      zIndex: 2,
       opacity: '1',
       backgroundColor: '#FFFFFF',
       border: '2px solid #793DB0',
       boxShadow: '0 4px 12px rgba(121, 61, 176, 0.2)',
     } : {
-      transform: 'scale(0.95)',
+      transform: 'scale(0.90)',
       opacity: '0.7',
       backgroundColor: '#F7FAFC',
       border: '1px solid #E2E8F0',
       boxShadow: 'none',
     }),
     ...(isHovered && !isActive ? {
-      transform: 'scale(0.97)',
+      transform: 'scale(0.92)',
       boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
     } : {}),
   };
 
   const imageStyle = {
-    width: '40%',
-    height: '100%',
+    width: '100%',
+    height: '65%',
     objectFit: 'cover',
     flexShrink: 0,
-    borderRadius: '8px 0 0 8px',
-    margin: '0',
+    borderRadius: '4px',
+    margin: '6px 6px 0 6px',
   };
 
   const infoStyle = {
@@ -60,18 +61,18 @@ const LookCard = ({ look, isActive, onClick }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 10px 0' }}>
+        {isSet ? <Package size={11} color="#793DB0" /> : <ShoppingBag size={11} color="#793DB0" />}
+        <span style={{ fontSize: '9px', color: '#793DB0', fontWeight: '600', textTransform: 'uppercase' }}>
+          {isSet ? `${look.items.length} items` : 'Product'}
+        </span>
+      </div>
       <img
         src={look.image}
         alt={look.name}
         style={imageStyle}
       />
       <div style={infoStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          {isSet ? <Package size={11} color="#793DB0" /> : <ShoppingBag size={11} color="#793DB0" />}
-          <span style={{ fontSize: '9px', color: '#793DB0', fontWeight: '600', textTransform: 'uppercase' }}>
-            {isSet ? `${look.items.length} items` : 'Product'}
-          </span>
-        </div>
         <p style={{
           fontSize: '11px',
           fontWeight: '700',
