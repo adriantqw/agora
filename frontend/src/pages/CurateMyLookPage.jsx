@@ -339,8 +339,12 @@ function QuestionShimmer() {
 export default function CurateMyLookPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const initialQuery = location.state?.searchQuery || '';
+  const rawQuery = location.state?.searchQuery || '';
   const initialImages = location.state?.images || [];
+  const initialQuery = rawQuery || (() => {
+    console.log('[CurateMyLookPage] No user query provided, using default');
+    return 'help my select a fit';
+  })();
 
   // API state
   const [threadId, setThreadId] = useState(null);
