@@ -15,7 +15,8 @@ matchmaker_agent = MatchMakerAgent()
 
 
 def match(
-    journey_id: str,
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
     thread_id: Optional[str],
     message: Optional[str],
     personality: str,
@@ -23,11 +24,8 @@ def match(
     consumer_id: str
 ) -> dict:
     """Synchronous matching - returns final state with enriched products."""
-    # Get journey and verify ownership
-    journey = _get_journey_with_ownership(journey_id, consumer_id, db)
-    
-    # Convert Journey to JourneySchema
-    journey_schema = _convert_journey_to_schema(journey, db)
+    # Get JourneySchema from DB journey or directly from stylist agent state
+    journey_schema = _resolve_journey_schema(journey_id, stylist_thread_id, consumer_id, db)
     
     # Generate thread_id if not provided
     if not thread_id:
@@ -50,7 +48,8 @@ def match(
 
 
 async def match_stream(
-    journey_id: str,
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
     thread_id: Optional[str],
     message: Optional[str],
     personality: str,
@@ -58,11 +57,8 @@ async def match_stream(
     consumer_id: str
 ) -> AsyncIterator[dict]:
     """Async streaming matching - yields rich SSE events using AgentEventParser."""
-    # Get journey and verify ownership
-    journey = _get_journey_with_ownership(journey_id, consumer_id, db)
-
-    # Convert Journey to JourneySchema
-    journey_schema = _convert_journey_to_schema(journey, db)
+    # Get JourneySchema from DB journey or directly from stylist agent state
+    journey_schema = _resolve_journey_schema(journey_id, stylist_thread_id, consumer_id, db)
 
     # Generate thread_id if not provided
     if not thread_id:
@@ -126,6 +122,40 @@ def get_state(thread_id: str, db: Session) -> dict:
     }
 
 
+def _resolve_journey_schema(
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
+    consumer_id: str,
+    db: Session,
+) -> JourneySchema:
+    """
+    Resolve a JourneySchema from either a DB journey ID or a stylist thread ID.
+
+    - If journeyId is provided, load the Journey record and reconstruct the schema.
+    - If only stylistThreadId is provided (quick match before journey is saved),
+      fetch the journey directly from the PersonalStylist agent state.
+    """
+    if journey_id:
+        journey = _get_journey_with_ownership(journey_id, consumer_id, db)
+        return _convert_journey_to_schema(journey, db)
+
+    if stylist_thread_id:
+        from app.services.curate_my_fit_service import stylist_agent
+        stylist_state = stylist_agent.get_state(stylist_thread_id)
+        if stylist_state:
+            values = stylist_state.values if hasattr(stylist_state, 'values') else stylist_state
+            journey_data = values.get("journey")
+            if journey_data:
+                # Ensure we return a JourneySchema, not a raw dict
+                if isinstance(journey_data, dict):
+                    return JourneySchema(**journey_data)
+                return journey_data
+
+        raise ValueError("Could not retrieve journey from stylist thread")
+
+    raise ValueError("Either journeyId or stylistThreadId must be provided")
+
+
 def _get_journey_with_ownership(journey_id: str, consumer_id: str, db: Session) -> Journey:
     """Fetch journey and verify consumer owns it."""
     journey = db.query(Journey).filter(Journey.id == journey_id).first()
@@ -156,27 +186,45 @@ def _convert_journey_to_schema(journey: Journey, db: Session) -> JourneySchema:
     )
 
 
+def _get_attr(obj, key, default=None):
+    """Get attribute from a Pydantic model or dict."""
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
+
+
 def _extract_and_enrich_matches(agent_state: dict, db: Session) -> list[dict]:
     """Extract matches from agent state and enrich with product details."""
     matches_data = agent_state.get("matches", [])
     enriched = []
-    
+
     for item in matches_data:
-        if hasattr(item, 'product_set'):
+        product_set = _get_attr(item, 'product_set') or _get_attr(item, 'productSet')
+        if product_set:
             # ProductMatchSet
             enriched_set = {
-                "title": item.title,
-                "description": item.description,
+                "title": _get_attr(item, 'title'),
+                "description": _get_attr(item, 'description'),
                 "productSet": [
-                    _enrich_product_match(product.id, product.score, product.reason, db)
-                    for product in item.product_set
+                    _enrich_product_match(
+                        _get_attr(product, 'id', ''),
+                        _get_attr(product, 'score'),
+                        _get_attr(product, 'reason', ''),
+                        db
+                    )
+                    for product in product_set
                 ]
             }
             enriched.append(enriched_set)
         else:
             # ProductMatch
-            enriched.append(_enrich_product_match(item.id, item.score, item.reason, db))
-    
+            enriched.append(_enrich_product_match(
+                _get_attr(item, 'id', ''),
+                _get_attr(item, 'score'),
+                _get_attr(item, 'reason', ''),
+                db
+            ))
+
     return enriched
 
 

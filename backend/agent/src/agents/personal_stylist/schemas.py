@@ -34,6 +34,7 @@ class UIInput(BaseModel):
 
 class UIInputList(BaseModel):
     message: str = Field(description="Message in response to the user, accompanying the UI components")
-    ui_inputs: list[UIInput] = Field(
-        description="List of UI components to display. Each component has a 'type' field that determines its structure."
+    ui_inputs: Optional[list[UIInput]] = Field(
+        default_factory=list,
+        description="List of UI components to display. Each component has a 'type' field that determines its structure. If you've already gathered enough information, this list can be empty or omitted."
     )

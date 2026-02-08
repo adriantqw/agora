@@ -4,7 +4,7 @@ import LookCard from './LookCard';
 import CarouselDots from './CarouselDots';
 
 const LookCarousel = ({ looks, onSelectLook }) => {
-  const [activeIndex, setActiveIndex] = useState(1); // Start with middle item
+  const [activeIndex, setActiveIndex] = useState(0); // Start with first item
 
   const handlePrevious = () => {
     if (activeIndex > 0) {
@@ -31,15 +31,15 @@ const LookCarousel = ({ looks, onSelectLook }) => {
   const containerStyle = {
     position: 'relative',
     width: '100%',
-    padding: '0 48px', // Space for arrow buttons
+    padding: '10px 36px', // Space for arrow buttons
   };
 
   const arrowButtonStyle = (disabled) => ({
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
-    width: '40px',
-    height: '40px',
+    width: '30px',
+    height: '30px',
     borderRadius: '50%',
     backgroundColor: '#FFFFFF',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
@@ -56,12 +56,12 @@ const LookCarousel = ({ looks, onSelectLook }) => {
   const carouselTrackStyle = {
     display: 'flex',
     transition: 'transform 0.5s ease-out',
-    transform: `translateX(calc(-${activeIndex * 100}% / 3 + 33.33%))`,
+    transform: `translateX(calc(-${activeIndex * 25}% + 37.5%))`,
   };
 
   const carouselItemStyle = {
     width: 'calc(100% / 3)',
-    height: '32vh',
+    height: '20vh',
     flexShrink: 0,
     padding: '0 8px',
   };
