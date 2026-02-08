@@ -281,11 +281,11 @@ const FindTheLookPage = () => {
   };
 
   const mainContentStyle = {
-    display: 'grid',
-    gridTemplateRows: 'auto auto auto 1fr',
-    gap: '12px',
+    display: 'flex',
+    gridTemplateRows: 'auto auto 1fr auto',
+    gap: '32px', // Increased from 12px for better "luxury" spacing
     height: '100%',
-    padding: '24px 48px',
+    padding: '30px 50px', // Slightly more padding on the sides
     overflow: 'hidden',
   };
 
@@ -347,12 +347,16 @@ const FindTheLookPage = () => {
   };
 
   const refineSectionStyle = {
+    position: 'fixed',
+    bottom: '32px',
+    right: 'calc(30vw + 40px)',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    zindex: 1000
   };
 
   const refineTextStyle = {
@@ -505,6 +509,15 @@ const FindTheLookPage = () => {
           {/* Page Title - Journey Name */}
           <h1 style={titleStyle}>{journeyTitle}</h1>
 
+          {/* Chat Area - AI Message + User Input + Refine Search */}
+          <section style={chatAreaStyle}>
+            {/* AI Recommendation */}
+            {aiMessage && !isLoading && (
+              <div style={{ overflow: 'visible', minHeight: 'fit-content', width: '100%' }}>
+                <AIChatBubble message={aiMessage} />
+              </div>
+            )}
+
           {(isLoading || isRefining) ? renderLoadingState() : (
             <>
               {/* Look Carousel */}
@@ -518,7 +531,7 @@ const FindTheLookPage = () => {
               </section>
 
               {/* Items Grid */}
-              <section style={{ overflow: 'hidden', minHeight: 0, maxHeight: '32vh' }}>
+              <section style={{ overflow: 'hidden', minHeight: 0, maxHeight: '30vh' }}>
                 {selectedLook?.items && (
                   <ItemGrid
                     items={selectedLook.items}
@@ -529,15 +542,6 @@ const FindTheLookPage = () => {
               </section>
             </>
           )}
-
-          {/* Chat Area - AI Message + User Input + Refine Search */}
-          <section style={chatAreaStyle}>
-            {/* AI Recommendation */}
-            {aiMessage && !isLoading && (
-              <div style={{ flex: '1', overflowY: 'auto', minHeight: 0 }}>
-                <AIChatBubble message={aiMessage} />
-              </div>
-            )}
 
             {/* Feedback Input (replaces Refine Search when active) */}
             {showFeedbackInput ? (

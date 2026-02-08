@@ -19,12 +19,16 @@ const AIChatBubble = ({ message }) => {
   };
 
   const bubbleStyle = {
-    flex: '1',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    borderTopLeftRadius: '4px',
-    padding: '10px 16px',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+    background: 'rgba(255, 255, 255, 0.6)', // Slightly more opaque than the grid for readability
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '20px 20px 20px 4px',    // Sharp corner on bottom-left for "tail" effect
+    padding: '16px 20px',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.02)',
+    color: '#2D3748',                      // Darker slate for better contrast on glass
+    fontSize: '14px',
+    lineHeight: '1.6',
   };
 
   const messageStyle = {

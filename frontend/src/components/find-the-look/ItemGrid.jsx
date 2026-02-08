@@ -4,10 +4,13 @@ import ItemCard from './ItemCard';
 
 const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
   const containerStyle = {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '16px',
-    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+    background: 'rgba(255, 255, 255, 0.4)', // Semi-transparent
+    backdropFilter: 'blur(12px)',           // The "Frosted" effect
+    WebkitBackdropFilter: 'blur(12px)',     // Safari support
+    borderRadius: '24px',                   // Softer, rounder corners
+    padding: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.3)', // Subtle highlight edge
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',  // Very soft, large shadow
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
