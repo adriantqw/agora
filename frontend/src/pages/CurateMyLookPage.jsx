@@ -659,6 +659,24 @@ export default function CurateMyLookPage() {
 
   const isJourneyReady = !hasMore || !!moodBoardUrl;
 
+  const navigateToFindTheLook = async (extraState = {}) => {
+    try {
+      const result = await curateMyFitService.createJourney(threadId);
+      navigate('/find-the-look', {
+        state: {
+          journeyId: result.journeyId,
+          journeyTitle,
+          foundations,
+          narrative: narrativeText,
+          ...extraState,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to create journey:', err);
+      setError('Failed to start matching. Please try again.');
+    }
+  };
+
   const handleQuickMatch = () => {
     navigate('/find-the-look', {
       state: {
