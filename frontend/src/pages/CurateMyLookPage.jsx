@@ -163,9 +163,11 @@ function extractFoundationsFromJourney(journey) {
   if (journey.location) rows.push({ label: 'Location', values: [journey.location] });
   if (journey.style_preferences?.length) rows.push({ label: 'Style', values: journey.style_preferences.slice(0, 2) });
   if (journey.occasion) rows.push({ label: 'Occasion', values: [journey.occasion] });
+  if (journey.time_of_day) rows.push({ label: 'Time of Day', values: [journey.time_of_day] });
   if (journey.fit_preference) rows.push({ label: 'Sizing', values: [journey.fit_preference] });
   if (journey.season) rows.push({ label: 'Season', values: [journey.season] });
   if (journey.budget_rating != null) rows.push({ label: 'Budget', values: [`${journey.budget_rating}/5`] });
+  if (journey.colour_palette?.length) rows.push({ label: 'Colour Palette', values: journey.colour_palette });
   return rows;
 }
 

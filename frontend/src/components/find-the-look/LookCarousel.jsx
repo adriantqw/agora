@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import LookCard from './LookCard';
 import CarouselDots from './CarouselDots';
@@ -8,13 +8,17 @@ const LookCarousel = ({ looks, onSelectLook }) => {
 
   const handlePrevious = () => {
     if (activeIndex > 0) {
-      setActiveIndex(activeIndex - 1);
+      const newIndex = activeIndex - 1;
+      setActiveIndex(newIndex);
+      onSelectLook?.(looks[newIndex]);
     }
   };
 
   const handleNext = () => {
     if (activeIndex < looks.length - 1) {
-      setActiveIndex(activeIndex + 1);
+      const newIndex = activeIndex + 1;
+      setActiveIndex(newIndex);
+      onSelectLook?.(looks[newIndex]);
     }
   };
 
@@ -27,6 +31,10 @@ const LookCarousel = ({ looks, onSelectLook }) => {
     setActiveIndex(index);
     onSelectLook(look);
   };
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [looks]);
 
   const containerStyle = {
     position: 'relative',

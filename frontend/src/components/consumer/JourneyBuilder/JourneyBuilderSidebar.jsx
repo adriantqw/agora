@@ -8,10 +8,15 @@ const FOUNDATION_ICONS = {
   'Department': 'Store',
   'Age Range': 'User',
   'Sizing & Fit': 'Ruler',
+  'Sizing': 'Ruler',
   'Weather': 'Cloud',
   'Time of Day': 'Clock',
   'Location': 'MapPin',
   'Budget': 'DollarSign',
+  'Style': 'Shirt',
+  'Occasion': 'PartyPopper',
+  'Season': 'Sun',
+  'Colour Palette': 'Palette',
 };
 
 function SectionHeader({ label, icon: Icon }) {
@@ -38,6 +43,7 @@ function FoundationRow({ label, values }) {
   const displayValues = hasValues ? values.slice(0, 2) : [];
   const overflow = hasValues ? values.length - 2 : 0;
   const overflowValues = overflow > 0 ? values.slice(2) : [];
+  const isColorValue = (value) => typeof value === 'string' && value.trim().startsWith('#');
 
   // Get icon component
   const iconName = FOUNDATION_ICONS[label] || 'HelpCircle';
@@ -104,17 +110,32 @@ function FoundationRow({ label, values }) {
         ) : (
           <>
             {displayValues.map((val, i) => (
-              <div key={i} style={{
-                fontSize: '11px',
-                fontWeight: '600',
-                color: 'var(--consumer-purple)',
-                background: 'rgba(139, 92, 246, 0.12)',
-                padding: '4px 11px',
-                borderRadius: '12px',
-                whiteSpace: 'nowrap',
-              }}>
-                {val}
-              </div>
+              isColorValue(val) ? (
+                <span
+                  key={i}
+                  title={val}
+                  style={{
+                    display: 'inline-block',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: val,
+                    border: '1.5px solid rgba(0,0,0,0.1)',
+                  }}
+                />
+              ) : (
+                <div key={i} style={{
+                  fontSize: '11px',
+                  fontWeight: '600',
+                  color: 'var(--consumer-purple)',
+                  background: 'rgba(139, 92, 246, 0.12)',
+                  padding: '4px 11px',
+                  borderRadius: '12px',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {val}
+                </div>
+              )
             ))}
             {overflow > 0 && (
               <div

@@ -37,7 +37,10 @@ const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
   };
 
   const handleFitAll = () => {
-    items.forEach(item => onAddToQueue(item));
+    for (const item of items) {
+      const wasAdded = onAddToQueue(item);
+      if (!wasAdded) break;
+    }
   };
 
   return (

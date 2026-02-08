@@ -77,6 +77,7 @@ function transformMatchesToLooks(matches) {
 }
 
 const FindTheLookPage = () => {
+  const MAX_CAROUSEL_ITEMS = 12;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -113,11 +114,11 @@ const FindTheLookPage = () => {
     type: 'success'
   });
 
-  const { addToQueue } = useFittingRoom();
+  const { addToQueue, queue, removeFromQueue } = useFittingRoom();
   const cleanupRef = useRef(null);
 
   // Stream callbacks shared between initial load and refinement
-  const makeCallbacks = (onDone) => ({
+  const makeCallbacks = (onDone, isRefinement = false) => ({
     onThinkingStart: () => {
       setIsThinking(true);
       setThinkingText('');
@@ -126,9 +127,21 @@ const FindTheLookPage = () => {
     onThinkingEnd: () => setIsThinking(false),
     onProcessing: () => {},
     onComplete: (data) => {
-      const newLooks = transformMatchesToLooks(data.matches || []);
-      setLooks(newLooks);
-      setSelectedLook(newLooks[0] || null);
+      const allLooks = transformMatchesToLooks(data.matches || []);
+      const newMatchCount = Math.max(0, data.newMatchCount || 0);
+
+      if (isRefinement && newMatchCount > 0) {
+        const boundedNewCount = Math.min(newMatchCount, allLooks.length);
+        const newLooks = allLooks.slice(allLooks.length - boundedNewCount);
+        const oldLooks = allLooks.slice(0, allLooks.length - boundedNewCount);
+        const mergedLooks = [...newLooks, ...oldLooks].slice(0, MAX_CAROUSEL_ITEMS);
+        setLooks(mergedLooks);
+        setSelectedLook(mergedLooks[0] || null);
+      } else {
+        const limitedLooks = allLooks.slice(0, MAX_CAROUSEL_ITEMS);
+        setLooks(limitedLooks);
+        setSelectedLook(limitedLooks[0] || null);
+      }
       setThreadId(data.threadId);
       setAiMessage(data.message || '');
       setIsLoading(false);
@@ -162,7 +175,12 @@ const FindTheLookPage = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get fitting room items from context
-  const queueItems = [];
+  const queueItems = queue
+    .filter(slot => slot.product)
+    .map(slot => ({
+      ...slot.product,
+      slotIndex: slot.slot - 1,
+    }));
 
   const handleSelectLook = (look) => {
     setSelectedLook(look);
@@ -174,14 +192,22 @@ const FindTheLookPage = () => {
   };
 
   const handleAddToQueue = (item) => {
-    addToQueue(item);
-    setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
-    setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+    const wasAdded = addToQueue(item);
+    if (wasAdded) {
+      setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
+      setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+      return true;
+    }
+
+    setGrowl({ show: true, message: 'Fitting room is full', type: 'error' });
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'error' }), 3000);
+    return false;
   };
 
-  const handleRemoveFromQueue = (itemId) => {
-    console.log('Removed from queue:', itemId);
+  const handleRemoveFromQueue = (slotIndex) => {
+    removeFromQueue(slotIndex);
   };
+
 
   const handleToggleFeedback = () => {
     setShowFeedbackInput(prev => !prev);
@@ -203,7 +229,7 @@ const FindTheLookPage = () => {
       makeCallbacks(() => {
         setGrowl({ show: true, message: 'Matches refined!', type: 'success' });
         setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
-      })
+      }, true)
     );
 
     setFeedbackText('');
@@ -285,7 +311,7 @@ const FindTheLookPage = () => {
     gridTemplateRows: 'auto auto 1fr auto',
     gap: '32px', // Increased from 12px for better "luxury" spacing
     height: '100%',
-    padding: '30px 50px', // Slightly more padding on the sides
+    padding: '24px 50px', // Slightly more padding on the sides
     overflow: 'hidden',
   };
 
@@ -302,13 +328,14 @@ const FindTheLookPage = () => {
     fontWeight: '700',
     color: '#1A202C',
     margin: 0,
+    marginTop: '4px',
   };
 
   const chatAreaStyle = {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-    overflow: 'hidden',
+    overflow: 'visible',
     padding: '0',
     minHeight: 0,
   };
@@ -319,6 +346,7 @@ const FindTheLookPage = () => {
     justifyContent: 'flex-end',
     marginTop: 'auto',
     width: '100%',
+    boxSizing: 'border-box',
   };
 
   const chatInputStyle = {
@@ -356,7 +384,7 @@ const FindTheLookPage = () => {
     gap: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
-    zindex: 1000
+    zIndex: 1000
   };
 
   const refineTextStyle = {
@@ -488,6 +516,20 @@ const FindTheLookPage = () => {
           animation: shimmer 1.5s infinite;
         }
 
+        .ai-bubble-shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .ai-bubble-shimmer::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: shimmer 1.4s infinite;
+        }
+
         .thinking-content p { margin: 2px 0; }
         .thinking-content strong { font-weight: 700; color: #555; }
         .thinking-content em { font-style: italic; }
@@ -514,7 +556,11 @@ const FindTheLookPage = () => {
             {/* AI Recommendation */}
             {aiMessage && !isLoading && (
               <div style={{ overflow: 'visible', minHeight: 'fit-content', width: '100%' }}>
-                <AIChatBubble message={aiMessage} />
+                <AIChatBubble
+                  message={isRefining ? '' : aiMessage}
+                  isShimmering={isRefining}
+                  showSkeleton={isRefining}
+                />
               </div>
             )}
 

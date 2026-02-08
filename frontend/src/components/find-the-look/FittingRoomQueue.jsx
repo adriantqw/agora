@@ -41,6 +41,7 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     margin: 0,
   };
 
+
   return (
     <div style={containerStyle}>
       <h2 style={titleStyle}>Fitting Room Queue</h2>
@@ -56,7 +57,7 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
             <QueueItem
               key={item.id}
               item={item}
-              onRemove={() => onRemoveItem(item.id)}
+              onRemove={() => onRemoveItem(item.slotIndex)}
             />
           ))}
         </div>
