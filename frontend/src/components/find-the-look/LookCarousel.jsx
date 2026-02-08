@@ -39,6 +39,8 @@ const LookCarousel = ({ looks, onSelectLook }) => {
   const containerStyle = {
     position: 'relative',
     width: '100%',
+    height: '100%',
+    overflow: 'hidden',
     padding: '10px 36px', // Space for arrow buttons
   };
 
@@ -63,13 +65,14 @@ const LookCarousel = ({ looks, onSelectLook }) => {
 
   const carouselTrackStyle = {
     display: 'flex',
+    height: '100%',
     transition: 'transform 0.5s ease-out',
     transform: `translateX(calc(-${activeIndex * 25}% + 37.5%))`,
   };
 
   const carouselItemStyle = {
     width: 'calc(100% / 3)',
-    height: '20vh',
+    height: '100%',
     flexShrink: 0,
     padding: '0 8px',
   };

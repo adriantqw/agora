@@ -19,16 +19,17 @@ const ItemCard = ({ item, onAddToQueue, onClick }) => {
     position: 'relative',
     flex: '1',
     minHeight: '0',
-    backgroundColor: '#F7FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: '10px',
     overflow: 'hidden',
     marginBottom: '8px',
+    border: '1px solid #E2E8F0',
   };
 
   const imageStyle = {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
     transition: 'transform 0.3s ease',
     ...(isHovered && {
       transform: 'scale(1.05)',
