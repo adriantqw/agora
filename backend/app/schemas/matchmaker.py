@@ -4,8 +4,9 @@ from datetime import datetime
 
 
 class MatchRequest(BaseModel):
-    journeyId: str = Field(..., description="Journey ID to match products for")
-    threadId: Optional[str] = Field(None, description="Optional thread ID for multi-turn refinement")
+    journeyId: Optional[str] = Field(None, description="Journey ID to match products for")
+    stylistThreadId: Optional[str] = Field(None, description="Stylist thread ID — used to reconstruct journey when journeyId is not yet available (quick match)")
+    threadId: Optional[str] = Field(None, description="Optional matchmaker thread ID for multi-turn refinement")
     message: Optional[str] = Field(None, description="Optional message to refine the match")
     personality: str = Field("friendly", description="Agent personality (default: 'friendly')")
 

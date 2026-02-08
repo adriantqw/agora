@@ -10,6 +10,7 @@ import ProductDetailModal from '../components/find-the-look/ProductDetailModal';
 import FittingRoomQueue from '../components/find-the-look/FittingRoomQueue';
 import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
 import Growl from '../components/common/Growl/Growl';
+import Markdown from 'react-markdown';
 import findTheLookService from '../services/findTheLookService';
 
 /**
@@ -24,7 +25,6 @@ import findTheLookService from '../services/findTheLookService';
  */
 function transformMatchesToLooks(matches) {
   const looks = [];
-  const standaloneItems = [];
   let lookCounter = 0;
 
   for (const match of matches) {
@@ -34,7 +34,7 @@ function transformMatchesToLooks(matches) {
       const items = match.productSet.map((p, i) => ({
         id: p.id || `item-${lookCounter}-${i}`,
         name: p.name || 'Unnamed Product',
-        brand: p.reason ? p.reason.split('.')[0] : '',
+        brand: p.brand || '',
         price: p.price ?? 0,
         image: p.imageUrl || '',
         description: p.reason || '',
@@ -44,6 +44,7 @@ function transformMatchesToLooks(matches) {
 
       looks.push({
         id: `look-${lookCounter}`,
+        type: 'set',
         name: match.title || `Look ${lookCounter}`,
         brand: match.description || '',
         price: totalPrice,
@@ -51,29 +52,25 @@ function transformMatchesToLooks(matches) {
         items,
       });
     } else {
-      // Standalone ProductMatch
-      standaloneItems.push({
-        id: match.id || `standalone-${standaloneItems.length}`,
+      // Standalone ProductMatch -> individual carousel entry
+      const item = {
+        id: match.id || `product-${looks.length}`,
         name: match.name || 'Unnamed Product',
-        brand: match.reason ? match.reason.split('.')[0] : '',
+        brand: match.brand || '',
         price: match.price ?? 0,
         image: match.imageUrl || '',
         description: match.reason || '',
+      };
+      looks.push({
+        id: item.id,
+        type: 'product',
+        name: item.name,
+        brand: item.brand,
+        price: item.price,
+        image: item.image,
+        items: [item],
       });
     }
-  }
-
-  // Group standalone items into a "Top Picks" look
-  if (standaloneItems.length > 0) {
-    const totalPrice = standaloneItems.reduce((sum, item) => sum + (item.price || 0), 0);
-    looks.push({
-      id: 'look-top-picks',
-      name: 'Top Picks',
-      brand: 'Curated for you',
-      price: totalPrice,
-      image: standaloneItems[0]?.image || '',
-      items: standaloneItems,
-    });
   }
 
   return looks;
@@ -85,9 +82,11 @@ const FindTheLookPage = () => {
 
   // Navigation state from CurateMyLookPage
   const journeyId = location.state?.journeyId;
+  const stylistThreadId = location.state?.threadId;
   const navJourneyTitle = location.state?.journeyTitle;
   const navFoundations = location.state?.foundations;
-  const navNarrative = location.state?.narrative;
+  const navNarrative = location.state?.narrative || location.state?.narrativeText;
+  const navMoodBoardUrl = location.state?.moodBoardUrl;
 
   // Streaming state
   const [isLoading, setIsLoading] = useState(true);
@@ -145,7 +144,7 @@ const FindTheLookPage = () => {
 
   // Start match stream on mount
   useEffect(() => {
-    if (!journeyId) {
+    if (!journeyId && !stylistThreadId) {
       setError('No journey found. Please complete the style quiz first.');
       setIsLoading(false);
       return;
@@ -153,6 +152,7 @@ const FindTheLookPage = () => {
 
     cleanupRef.current = findTheLookService.startMatchStream(
       journeyId,
+      stylistThreadId,
       makeCallbacks()
     );
 
@@ -189,7 +189,7 @@ const FindTheLookPage = () => {
   };
 
   const handleFeedbackSubmit = () => {
-    if (!feedbackText.trim() || !threadId || !journeyId) return;
+    if (!feedbackText.trim() || !threadId || (!journeyId && !stylistThreadId)) return;
 
     setIsRefining(true);
     setShowFeedbackInput(false);
@@ -197,6 +197,7 @@ const FindTheLookPage = () => {
     cleanupRef.current?.();
     cleanupRef.current = findTheLookService.refineMatchStream(
       journeyId,
+      stylistThreadId,
       threadId,
       feedbackText.trim(),
       makeCallbacks(() => {
@@ -280,11 +281,11 @@ const FindTheLookPage = () => {
   };
 
   const mainContentStyle = {
-    display: 'grid',
-    gridTemplateRows: 'auto 2.5fr 1.5fr 1fr',
-    gap: '24px',
+    display: 'flex',
+    gridTemplateRows: 'auto auto 1fr auto',
+    gap: '32px', // Increased from 12px for better "luxury" spacing
     height: '100%',
-    padding: '32px 64px',
+    padding: '30px 50px', // Slightly more padding on the sides
     overflow: 'hidden',
   };
 
@@ -297,17 +298,10 @@ const FindTheLookPage = () => {
   };
 
   const titleStyle = {
-    fontSize: '32px',
+    fontSize: '22px',
     fontWeight: '700',
     color: '#1A202C',
-    marginBottom: '16px',
     margin: 0,
-  };
-
-  const itemsGridContainerStyle = {
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
   };
 
   const chatAreaStyle = {
@@ -315,7 +309,8 @@ const FindTheLookPage = () => {
     flexDirection: 'column',
     gap: '12px',
     overflow: 'hidden',
-    padding: '0 24px',
+    padding: '0',
+    minHeight: 0,
   };
 
   const chatInputContainerStyle = {
@@ -352,12 +347,16 @@ const FindTheLookPage = () => {
   };
 
   const refineSectionStyle = {
+    position: 'fixed',
+    bottom: '32px',
+    right: 'calc(30vw + 40px)',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    zindex: 1000
   };
 
   const refineTextStyle = {
@@ -416,17 +415,17 @@ const FindTheLookPage = () => {
         </span>
       </div>
       {thinkingText && (
-        <div style={{
+        <div className="thinking-content" style={{
           maxWidth: '500px',
           maxHeight: '150px',
           overflowY: 'auto',
           fontSize: '12px',
           lineHeight: '1.6',
           color: '#666',
-          textAlign: 'center',
+          textAlign: 'left',
           padding: '0 16px',
         }}>
-          {thinkingText}
+          <Markdown>{thinkingText}</Markdown>
         </div>
       )}
       {/* Shimmer placeholders */}
@@ -489,6 +488,15 @@ const FindTheLookPage = () => {
           animation: shimmer 1.5s infinite;
         }
 
+        .thinking-content p { margin: 2px 0; }
+        .thinking-content strong { font-weight: 700; color: #555; }
+        .thinking-content em { font-style: italic; }
+        .thinking-content ul, .thinking-content ol { margin: 2px 0; padding-left: 18px; }
+        .thinking-content li { margin: 1px 0; }
+        .thinking-content h1, .thinking-content h2, .thinking-content h3 {
+          font-size: 12px; font-weight: 700; color: #555; margin: 6px 0 2px;
+        }
+
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -501,10 +509,19 @@ const FindTheLookPage = () => {
           {/* Page Title - Journey Name */}
           <h1 style={titleStyle}>{journeyTitle}</h1>
 
+          {/* Chat Area - AI Message + User Input + Refine Search */}
+          <section style={chatAreaStyle}>
+            {/* AI Recommendation */}
+            {aiMessage && !isLoading && (
+              <div style={{ overflow: 'visible', minHeight: 'fit-content', width: '100%' }}>
+                <AIChatBubble message={aiMessage} />
+              </div>
+            )}
+
           {(isLoading || isRefining) ? renderLoadingState() : (
             <>
               {/* Look Carousel */}
-              <section style={{ overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
+              <section style={{ overflow: 'hidden' }}>
                 {looks.length > 0 && (
                   <LookCarousel
                     looks={looks}
@@ -514,36 +531,17 @@ const FindTheLookPage = () => {
               </section>
 
               {/* Items Grid */}
-              <section style={itemsGridContainerStyle}>
-                <div
-                  className="items-scroll-container"
-                  style={{
-                    overflowX: 'auto',
-                    overflowY: 'hidden',
-                    height: '100%',
-                    WebkitOverflowScrolling: 'touch',
-                  }}
-                >
-                  {selectedLook?.items && (
-                    <ItemGrid
-                      items={selectedLook.items}
-                      onItemClick={handleItemClick}
-                      onAddToQueue={handleAddToQueue}
-                    />
-                  )}
-                </div>
+              <section style={{ overflow: 'hidden', minHeight: 0, maxHeight: '30vh' }}>
+                {selectedLook?.items && (
+                  <ItemGrid
+                    items={selectedLook.items}
+                    onItemClick={handleItemClick}
+                    onAddToQueue={handleAddToQueue}
+                  />
+                )}
               </section>
             </>
           )}
-
-          {/* Chat Area - AI Message + User Input + Refine Search */}
-          <section style={chatAreaStyle}>
-            {/* AI Recommendation */}
-            {aiMessage && !isLoading && (
-              <div style={{ flex: '1', overflowY: 'auto' }}>
-                <AIChatBubble message={aiMessage} />
-              </div>
-            )}
 
             {/* Feedback Input (replaces Refine Search when active) */}
             {showFeedbackInput ? (
@@ -747,6 +745,7 @@ const FindTheLookPage = () => {
             onTitleChange={setJourneyTitle}
             isExpanded={isJourneySidebarExpanded}
             onToggle={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+            moodBoardUrl={navMoodBoardUrl}
           />
         </div>
       </div>

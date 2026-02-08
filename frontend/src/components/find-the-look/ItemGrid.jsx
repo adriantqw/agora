@@ -3,53 +3,37 @@ import { Plus } from 'lucide-react';
 import ItemCard from './ItemCard';
 
 const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
+  const containerStyle = {
+    background: 'rgba(255, 255, 255, 0.4)', // Semi-transparent
+    backdropFilter: 'blur(12px)',           // The "Frosted" effect
+    WebkitBackdropFilter: 'blur(12px)',     // Safari support
+    borderRadius: '24px',                   // Softer, rounder corners
+    padding: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.3)', // Subtle highlight edge
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',  // Very soft, large shadow
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  };
+
   const headerStyle = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '24px',
-  };
-
-  const titleStyle = {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#1A202C',
-    margin: 0,
-  };
-
-  const fitAllButtonStyle = {
-    background: 'transparent',
-    padding: '12px 24px',
-    borderRadius: '8px',
-    color: '#793DB0',
-    fontWeight: '600',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '14px',
-  };
-
-  const containerStyle = {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '12px',
-    padding: '24px',
-    paddingRight: '24px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
+    marginBottom: '12px',
+    flexShrink: 0,
   };
 
   const gridStyle = {
     display: 'flex',
     flexDirection: 'row',
-    gap: '16px',
+    gap: '12px',
     flexWrap: 'nowrap',
     alignItems: 'stretch',
-    height: '100%',
+    flex: 1,
+    minHeight: 0,
+    overflowX: 'auto',
   };
 
   const handleFitAll = () => {
@@ -59,20 +43,27 @@ const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h2 style={titleStyle}>Items</h2>
-
+        <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#1A202C', margin: 0 }}>
+          Items ({items.length})
+        </h3>
         <button
-          style={fitAllButtonStyle}
           onClick={handleFitAll}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '0.7';
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: '600',
+            color: '#793DB0',
           }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '1';
-          }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.7'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
-          <Plus size={18} strokeWidth={2.5} />
-          <span>Fit all</span>
+          <Plus size={14} strokeWidth={2.5} />
+          Fit all
         </button>
       </div>
 

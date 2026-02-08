@@ -85,7 +85,7 @@ class MatchMakerAgent:
             "personality": personality
         }, config=config)
     
-    def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
+    async def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences in streaming mode.
 
@@ -105,7 +105,7 @@ class MatchMakerAgent:
         # Compile user message
         message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
         if message:
-            message_list.append([("user", message)])
+            message_list.append(("user", message))
 
         # Compile the config
         config = {

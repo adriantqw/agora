@@ -6,12 +6,12 @@ const AIChatBubble = ({ message }) => {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '0',
-    maxWidth: '800px',
+    maxWidth: '700px',
   };
 
   const avatarStyle = {
-    width: '48px',
-    height: '48px',
+    width: '36px',
+    height: '36px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -19,17 +19,21 @@ const AIChatBubble = ({ message }) => {
   };
 
   const bubbleStyle = {
-    flex: '1',
-    backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
-    borderTopLeftRadius: '4px',
-    padding: '16px 24px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+    background: 'rgba(255, 255, 255, 0.6)', // Slightly more opaque than the grid for readability
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
+    borderRadius: '20px 20px 20px 4px',    // Sharp corner on bottom-left for "tail" effect
+    padding: '16px 20px',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.02)',
+    color: '#2D3748',                      // Darker slate for better contrast on glass
+    fontSize: '14px',
+    lineHeight: '1.6',
   };
 
   const messageStyle = {
-    fontSize: '15px',
-    lineHeight: '1.6',
+    fontSize: '13px',
+    lineHeight: '1.5',
     color: '#1A202C',
     margin: 0,
   };
@@ -37,7 +41,7 @@ const AIChatBubble = ({ message }) => {
   return (
     <div style={containerStyle}>
       <div style={avatarStyle}>
-        <Mascot variant="avatar" size={48} />
+        <Mascot variant="avatar" size={36} />
       </div>
 
       <div style={bubbleStyle}>

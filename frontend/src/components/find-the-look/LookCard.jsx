@@ -1,81 +1,56 @@
 import React, { useState } from 'react';
+import { Package, ShoppingBag } from 'lucide-react';
 
 const LookCard = ({ look, isActive, onClick }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const isSet = look.type === 'set';
 
   const cardStyle = {
-    borderRadius: '12px',
+    borderRadius: '10px',
     overflow: 'hidden',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     height: '100%',
     boxSizing: 'border-box',
     ...(isActive ? {
       transform: 'scale(1)',
       opacity: '1',
       backgroundColor: '#FFFFFF',
-      border: '3px solid #793DB0',
-      boxShadow: '0 10px 25px rgba(121, 61, 176, 0.2)',
+      border: '2px solid #793DB0',
+      boxShadow: '0 4px 12px rgba(121, 61, 176, 0.2)',
     } : {
-      transform: 'scale(0.9)',
+      transform: 'scale(0.95)',
       opacity: '0.7',
       backgroundColor: '#F7FAFC',
-      border: '2px solid #E2E8F0',
+      border: '1px solid #E2E8F0',
       boxShadow: 'none',
     }),
     ...(isHovered && !isActive ? {
-      transform: 'scale(0.92)',
-      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.1)',
+      transform: 'scale(0.97)',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
     } : {}),
   };
 
-  const titleContainerStyle = {
-    padding: '20px 16px 12px 16px',
-  };
-
-  const titleStyle = {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1A202C',
-    margin: 0,
-    textAlign: 'center',
-  };
-
-  const imageContainerStyle = {
-    flex: '1',
-    minHeight: '0',
-    padding: '0 12px 12px 12px',
-    position: 'relative',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
   const imageStyle = {
-    width: '100%',
+    width: '40%',
     height: '100%',
     objectFit: 'cover',
-    borderRadius: '12px',
-    aspectRatio: '2/3',
+    flexShrink: 0,
+    borderRadius: '8px 0 0 8px',
+    margin: '0',
   };
 
-  const bottomContainerStyle = {
+  const infoStyle = {
+    flex: 1,
+    padding: '8px 10px',
     display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: '12px 16px 16px 16px',
-  };
-
-  const brandStyle = {
-    fontSize: '14px',
-    color: '#718096',
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    textAlign: 'center',
+    gap: '2px',
+    minWidth: 0,
+    overflow: 'hidden',
   };
 
   return (
@@ -85,20 +60,36 @@ const LookCard = ({ look, isActive, onClick }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div style={titleContainerStyle}>
-        <h3 style={titleStyle}>{look.name}</h3>
-      </div>
-
-      <div style={imageContainerStyle}>
-        <img
-          src={look.image}
-          alt={look.name}
-          style={imageStyle}
-        />
-      </div>
-
-      <div style={bottomContainerStyle}>
-        <span style={brandStyle}>{look.brand}</span>
+      <img
+        src={look.image}
+        alt={look.name}
+        style={imageStyle}
+      />
+      <div style={infoStyle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          {isSet ? <Package size={11} color="#793DB0" /> : <ShoppingBag size={11} color="#793DB0" />}
+          <span style={{ fontSize: '9px', color: '#793DB0', fontWeight: '600', textTransform: 'uppercase' }}>
+            {isSet ? `${look.items.length} items` : 'Product'}
+          </span>
+        </div>
+        <p style={{
+          fontSize: '11px',
+          fontWeight: '700',
+          color: '#1A202C',
+          margin: 0,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          lineHeight: '1.3',
+        }}>
+          {look.name}
+        </p>
+        {look.price > 0 && (
+          <p style={{ fontSize: '11px', fontWeight: '600', color: '#793DB0', margin: 0 }}>
+            ${look.price.toFixed(2)}
+          </p>
+        )}
       </div>
     </div>
   );
