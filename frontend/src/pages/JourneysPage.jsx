@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
+import { Plus, Compass, Archive, CheckCircle, ChevronLeft, ChevronRight, LogIn, Trash2 } from 'lucide-react';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/common/Header/Header';
 import CollapsibleJourneySection from '../components/consumer/JourneySection/CollapsibleJourneySection';
 import { mockJourneys } from '../data/mockJourneys';
+import journeyService from '../services/journeyService';
+import { getIconByName } from '../utils/iconMapper';
 
 const ITEMS_PER_PAGE = 3;
 
@@ -20,12 +22,125 @@ const JourneysPage = () => {
   // State
   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'completed'
   const [currentPage, setCurrentPage] = useState(1);
-  const [journeys] = useState(mockJourneys); // In real app, fetch from API
+  const [journeys, setJourneys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Data transformation functions
+  const mapDatabaseJourneyToFrontend = (dbJourney) => {
+    const statusMap = {
+      'ideation': 'in_progress',
+      'in-progress': 'in_progress',
+      'active': 'completed'
+    };
+    
+    const generateSummaryContext = (journey) => {
+      const title = journey.title || '';
+      const searchQuery = journey.search_query || '';
+      
+      const getOccasion = () => {
+        const keywords = {
+          'wedding': 'Wedding Guest',
+          'gala': 'Gala Dinner',
+          'office': 'Work Event',
+          'night out': 'Night Out',
+          'summer': 'Beach Day',
+          'beach': 'Beach Day',
+          'date': 'Date Night',
+          'club': 'Clubbing',
+          'dinner': 'Dinner Event'
+        };
+        const text = (title + ' ' + searchQuery).toLowerCase();
+        for (const [key, value] of Object.entries(keywords)) {
+          if (text.includes(key)) return value;
+        }
+        return 'General Shopping';
+      };
+      
+      const getStyle = () => {
+        const keywords = {
+          'chic': 'Chic',
+          'professional': 'Professional',
+          'formal': 'Formal',
+          'casual': 'Casual',
+          'edgy': 'Edgy',
+          'romantic': 'Romantic',
+          'bold': 'Bold'
+        };
+        const text = title.toLowerCase();
+        for (const [key, value] of Object.entries(keywords)) {
+          if (text.includes(key)) return value;
+        }
+        return 'Personal Style';
+      };
+      
+      return {
+        occasion: getOccasion(),
+        style: getStyle(),
+        budget: 'Flexible',
+        weather: 'TBD'
+      };
+    };
+    
+    const mapDatabaseOutfitToFrontend = (dbOutfit) => ({
+      id: dbOutfit.id,
+      label: dbOutfit.label,
+      subtext: dbOutfit.subtext,
+      price: dbOutfit.price,
+      imageUrl: dbOutfit.image_url,
+      icon: getIconByName(dbOutfit.icon_name) || getIconByName('Shirt'),
+      iconColor: dbOutfit.icon_color,
+      backgroundColor: dbOutfit.background_color,
+      isAIPick: dbOutfit.is_ai_pick
+    });
+    
+    return {
+      id: dbJourney.id,
+      title: dbJourney.title,
+      status: statusMap[dbJourney.status] || 'in_progress',
+      statusColor: dbJourney.status_color || '#4299e1',
+      statusLabel: dbJourney.status_label || 'Active',
+      closetUrl: dbJourney.closet_url || `/curate-my-fit?journey=${dbJourney.id}`,
+      summaryContext: generateSummaryContext(dbJourney),
+      outfits: (dbJourney.outfits || []).map(mapDatabaseOutfitToFrontend)
+    };
+  };
+
+  // Fetch journeys from API or use mock data
+  useEffect(() => {
+    const fetchJourneys = async () => {
+      setLoading(true);
+      setError(null);
+      
+      if (isAuthenticated) {
+        try {
+          const data = await journeyService.getJourneys();
+          if (data && Array.isArray(data)) {
+            const transformedJourneys = data.map(mapDatabaseJourneyToFrontend);
+            setJourneys(transformedJourneys);
+          } else {
+            setJourneys([]);
+          }
+        } catch (err) {
+          console.error('Failed to fetch journeys:', err);
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Fallback to mock data for unauthenticated users
+        setJourneys(mockJourneys);
+        setLoading(false);
+      }
+    };
+    
+    fetchJourneys();
+  }, [isAuthenticated]);
 
   // Filter journeys based on active tab
   const filteredJourneys = journeys.filter(j => 
     activeTab === 'active' 
-      ? j.status !== 'completed'
+      ? j.status === 'in_progress'
       : j.status === 'completed'
   );
 
@@ -44,6 +159,32 @@ const JourneysPage = () => {
     console.log(`Added ${outfit.label} from ${journey.title}`);
   };
 
+  const handleDeleteJourney = async (journeyId, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this journey?')) {
+      return;
+    }
+    
+    try {
+      const success = await journeyService.deleteJourney(journeyId);
+      if (success) {
+        setJourneys(prev => prev.filter(j => j.id !== journeyId));
+        // Reset page if needed
+        const newFiltered = journeys.filter(j => j.id !== journeyId && 
+          (activeTab === 'active' ? j.status === 'in_progress' : j.status === 'completed'));
+        const newTotalPages = Math.ceil(newFiltered.length / ITEMS_PER_PAGE);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+      } else {
+        alert('Failed to delete journey');
+      }
+    } catch (err) {
+      console.error('Error deleting journey:', err);
+      alert('Error deleting journey: ' + err.message);
+    }
+  };
+
   const handleStartNewJourney = () => {
     navigate('/curate-my-fit');
   };
@@ -54,6 +195,62 @@ const JourneysPage = () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header variant="full" showNav={true} />
+        <main style={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: '40px 20px'
+        }}>
+          <div style={{ textAlign: 'center', color: colors.text.secondary }}>
+            <p>Loading your journeys...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div style={{ background: colors.page.background, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header variant="full" showNav={true} />
+        <main style={{ 
+          flexGrow: 1, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: '40px 20px'
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '500px' }}>
+            <h2 style={{ color: colors.text.primary, marginBottom: '16px' }}>Failed to Load Journeys</h2>
+            <p style={{ color: colors.text.secondary, marginBottom: '24px' }}>{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              style={{
+                padding: '12px 24px',
+                background: colors.primary.eggPink,
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                fontSize: '16px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -262,7 +459,7 @@ const JourneysPage = () => {
                     fontSize: '12px',
                     opacity: 0.8
                 }}>
-                    {journeys.filter(j => j.status !== 'completed').length}
+                    {journeys.filter(j => j.status === 'in_progress').length}
                 </span>
             </button>
 
@@ -302,10 +499,39 @@ const JourneysPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {currentJourneys.map((journey, index) => (
             <React.Fragment key={journey.id}>
-              <CollapsibleJourneySection
-                journey={journey}
-                onOutfitAdd={handleOutfitAdd}
-              />
+              <div style={{ position: 'relative' }}>
+                <CollapsibleJourneySection
+                  journey={journey}
+                  onOutfitAdd={handleOutfitAdd}
+                />
+                <button
+                  onClick={(e) => handleDeleteJourney(journey.id, e)}
+                  style={{
+                    position: 'absolute',
+                    top: '24px',
+                    right: '16px',
+                    padding: '8px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: colors.text.tertiary,
+                    cursor: 'pointer',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s',
+                    zIndex: 10
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = `${colors.status.error.text}15`;
+                    e.currentTarget.style.color = colors.status.error.text;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = colors.text.tertiary;
+                  }}
+                  title="Delete journey"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
               {index < currentJourneys.length - 1 && (
                 <div style={{
                   height: '2px',
