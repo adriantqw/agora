@@ -336,6 +336,7 @@ export default function CurateMyLookPage() {
 
   // API state
   const [threadId, setThreadId] = useState(null);
+  const [journeyId, setJourneyId] = useState(null);
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -630,12 +631,15 @@ export default function CurateMyLookPage() {
             }, 100);
           } else {
             setHasMore(false);
+            if (data.journeyId) setJourneyId(data.journeyId);
+            // Auto-navigate to matchmaking when journey is complete
             navigate('/find-the-look', {
               state: {
                 journeyId: data.journeyId,
                 journeyTitle,
                 foundations,
-                narrative: narrativeText,
+                narrativeText,
+                moodBoardUrl,
               }
             });
           }
@@ -656,6 +660,7 @@ export default function CurateMyLookPage() {
   const handleQuickMatch = () => {
     navigate('/find-the-look', {
       state: {
+        journeyId,
         threadId,
         journeyTitle,
         foundations,
@@ -669,6 +674,7 @@ export default function CurateMyLookPage() {
   const handleLetsGo = () => {
     navigate('/find-the-look', {
       state: {
+        journeyId,
         threadId,
         journeyTitle,
         foundations,

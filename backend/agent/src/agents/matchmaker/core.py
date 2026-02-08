@@ -85,7 +85,7 @@ class MatchMakerAgent:
             "personality": personality
         }, config=config)
     
-    def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
+    async def match_stream(self, journey: JourneySchema, thread_id: str, message: str = None, personality: str = 'friendly') -> dict:
         """
         Find products matching journey preferences in streaming mode.
 

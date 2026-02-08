@@ -10,6 +10,7 @@ import ProductDetailModal from '../components/find-the-look/ProductDetailModal';
 import FittingRoomQueue from '../components/find-the-look/FittingRoomQueue';
 import JourneyBuilderSidebar from '../components/consumer/JourneyBuilder/JourneyBuilderSidebar';
 import Growl from '../components/common/Growl/Growl';
+import Markdown from 'react-markdown';
 import findTheLookService from '../services/findTheLookService';
 
 /**
@@ -85,9 +86,11 @@ const FindTheLookPage = () => {
 
   // Navigation state from CurateMyLookPage
   const journeyId = location.state?.journeyId;
+  const stylistThreadId = location.state?.threadId;
   const navJourneyTitle = location.state?.journeyTitle;
   const navFoundations = location.state?.foundations;
-  const navNarrative = location.state?.narrative;
+  const navNarrative = location.state?.narrative || location.state?.narrativeText;
+  const navMoodBoardUrl = location.state?.moodBoardUrl;
 
   // Streaming state
   const [isLoading, setIsLoading] = useState(true);
@@ -145,7 +148,7 @@ const FindTheLookPage = () => {
 
   // Start match stream on mount
   useEffect(() => {
-    if (!journeyId) {
+    if (!journeyId && !stylistThreadId) {
       setError('No journey found. Please complete the style quiz first.');
       setIsLoading(false);
       return;
@@ -153,6 +156,7 @@ const FindTheLookPage = () => {
 
     cleanupRef.current = findTheLookService.startMatchStream(
       journeyId,
+      stylistThreadId,
       makeCallbacks()
     );
 
@@ -189,7 +193,7 @@ const FindTheLookPage = () => {
   };
 
   const handleFeedbackSubmit = () => {
-    if (!feedbackText.trim() || !threadId || !journeyId) return;
+    if (!feedbackText.trim() || !threadId || (!journeyId && !stylistThreadId)) return;
 
     setIsRefining(true);
     setShowFeedbackInput(false);
@@ -197,6 +201,7 @@ const FindTheLookPage = () => {
     cleanupRef.current?.();
     cleanupRef.current = findTheLookService.refineMatchStream(
       journeyId,
+      stylistThreadId,
       threadId,
       feedbackText.trim(),
       makeCallbacks(() => {
@@ -416,17 +421,17 @@ const FindTheLookPage = () => {
         </span>
       </div>
       {thinkingText && (
-        <div style={{
+        <div className="thinking-content" style={{
           maxWidth: '500px',
           maxHeight: '150px',
           overflowY: 'auto',
           fontSize: '12px',
           lineHeight: '1.6',
           color: '#666',
-          textAlign: 'center',
+          textAlign: 'left',
           padding: '0 16px',
         }}>
-          {thinkingText}
+          <Markdown>{thinkingText}</Markdown>
         </div>
       )}
       {/* Shimmer placeholders */}
@@ -487,6 +492,15 @@ const FindTheLookPage = () => {
           background: linear-gradient(90deg, #f0e6f6 25%, #e8d5f5 50%, #f0e6f6 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
+        }
+
+        .thinking-content p { margin: 2px 0; }
+        .thinking-content strong { font-weight: 700; color: #555; }
+        .thinking-content em { font-style: italic; }
+        .thinking-content ul, .thinking-content ol { margin: 2px 0; padding-left: 18px; }
+        .thinking-content li { margin: 1px 0; }
+        .thinking-content h1, .thinking-content h2, .thinking-content h3 {
+          font-size: 12px; font-weight: 700; color: #555; margin: 6px 0 2px;
         }
 
         @keyframes fadeIn {
@@ -747,6 +761,7 @@ const FindTheLookPage = () => {
             onTitleChange={setJourneyTitle}
             isExpanded={isJourneySidebarExpanded}
             onToggle={() => setIsJourneySidebarExpanded(!isJourneySidebarExpanded)}
+            moodBoardUrl={navMoodBoardUrl}
           />
         </div>
       </div>

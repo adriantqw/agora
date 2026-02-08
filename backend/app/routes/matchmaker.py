@@ -26,6 +26,7 @@ def match(
     try:
         result = matchmaker_service.match(
             journey_id=request.journeyId,
+            stylist_thread_id=request.stylistThreadId,
             thread_id=request.threadId,
             message=request.message,
             personality=request.personality,
@@ -63,6 +64,7 @@ async def match_stream(
         try:
             async for event in matchmaker_service.match_stream(
                 journey_id=request.journeyId,
+                stylist_thread_id=request.stylistThreadId,
                 thread_id=request.threadId,
                 message=request.message,
                 personality=request.personality,

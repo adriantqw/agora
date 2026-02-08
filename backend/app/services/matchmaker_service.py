@@ -15,7 +15,8 @@ matchmaker_agent = MatchMakerAgent()
 
 
 def match(
-    journey_id: str,
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
     thread_id: Optional[str],
     message: Optional[str],
     personality: str,
@@ -23,11 +24,8 @@ def match(
     consumer_id: str
 ) -> dict:
     """Synchronous matching - returns final state with enriched products."""
-    # Get journey and verify ownership
-    journey = _get_journey_with_ownership(journey_id, consumer_id, db)
-    
-    # Convert Journey to JourneySchema
-    journey_schema = _convert_journey_to_schema(journey, db)
+    # Get JourneySchema from DB journey or directly from stylist agent state
+    journey_schema = _resolve_journey_schema(journey_id, stylist_thread_id, consumer_id, db)
     
     # Generate thread_id if not provided
     if not thread_id:
@@ -50,7 +48,8 @@ def match(
 
 
 async def match_stream(
-    journey_id: str,
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
     thread_id: Optional[str],
     message: Optional[str],
     personality: str,
@@ -58,11 +57,8 @@ async def match_stream(
     consumer_id: str
 ) -> AsyncIterator[dict]:
     """Async streaming matching - yields rich SSE events using AgentEventParser."""
-    # Get journey and verify ownership
-    journey = _get_journey_with_ownership(journey_id, consumer_id, db)
-
-    # Convert Journey to JourneySchema
-    journey_schema = _convert_journey_to_schema(journey, db)
+    # Get JourneySchema from DB journey or directly from stylist agent state
+    journey_schema = _resolve_journey_schema(journey_id, stylist_thread_id, consumer_id, db)
 
     # Generate thread_id if not provided
     if not thread_id:
@@ -124,6 +120,37 @@ def get_state(thread_id: str, db: Session) -> dict:
         "journey": state.get("journey").model_dump() if state.get("journey") else None,
         "iterationCount": state.get("iteration_count", 1)
     }
+
+
+def _resolve_journey_schema(
+    journey_id: Optional[str],
+    stylist_thread_id: Optional[str],
+    consumer_id: str,
+    db: Session,
+) -> JourneySchema:
+    """
+    Resolve a JourneySchema from either a DB journey ID or a stylist thread ID.
+
+    - If journeyId is provided, load the Journey record and reconstruct the schema.
+    - If only stylistThreadId is provided (quick match before journey is saved),
+      fetch the journey directly from the PersonalStylist agent state.
+    """
+    if journey_id:
+        journey = _get_journey_with_ownership(journey_id, consumer_id, db)
+        return _convert_journey_to_schema(journey, db)
+
+    if stylist_thread_id:
+        from app.services.curate_my_fit_service import stylist_agent
+        stylist_state = stylist_agent.get_state(stylist_thread_id)
+        if stylist_state:
+            values = stylist_state.values if hasattr(stylist_state, 'values') else stylist_state
+            journey_schema = values.get("journey")
+            if journey_schema:
+                return journey_schema
+
+        raise ValueError("Could not retrieve journey from stylist thread")
+
+    raise ValueError("Either journeyId or stylistThreadId must be provided")
 
 
 def _get_journey_with_ownership(journey_id: str, consumer_id: str, db: Session) -> Journey:

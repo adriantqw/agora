@@ -75,11 +75,12 @@ const consumeSSEStream = async (response, callbacks, controller) => {
 /**
  * Start a match stream for a journey.
  *
- * @param {string} journeyId - Journey ID from curate-my-fit
+ * @param {string} journeyId - Journey ID from curate-my-fit (DB record)
+ * @param {string} stylistThreadId - Stylist thread ID (fallback for quick match before journey is saved)
  * @param {object} callbacks - {onThinkingStart, onThinking, onThinkingEnd, onProcessing, onComplete, onError}
  * @returns {() => void} Cleanup function to abort the stream
  */
-export const startMatchStream = (journeyId, callbacks) => {
+export const startMatchStream = (journeyId, stylistThreadId, callbacks) => {
   const controller = new AbortController();
   const token = consumerAuthService.getToken();
 
@@ -92,7 +93,7 @@ export const startMatchStream = (journeyId, callbacks) => {
   fetch(`${API_BASE_URL}/api/matchmaker/match/stream`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ journeyId }),
+    body: JSON.stringify({ journeyId: journeyId || undefined, stylistThreadId: stylistThreadId || undefined }),
     signal: controller.signal,
   })
     .then((response) => {
@@ -116,13 +117,14 @@ export const startMatchStream = (journeyId, callbacks) => {
 /**
  * Refine matches with user feedback (multi-turn).
  *
- * @param {string} journeyId - Journey ID
- * @param {string} threadId - Thread ID from previous match stream
+ * @param {string} journeyId - Journey ID (DB record)
+ * @param {string} stylistThreadId - Stylist thread ID (fallback)
+ * @param {string} threadId - Matchmaker thread ID from previous match stream
  * @param {string} message - User's refinement message
  * @param {object} callbacks - Same callbacks as startMatchStream
  * @returns {() => void} Cleanup function to abort the stream
  */
-export const refineMatchStream = (journeyId, threadId, message, callbacks) => {
+export const refineMatchStream = (journeyId, stylistThreadId, threadId, message, callbacks) => {
   const controller = new AbortController();
   const token = consumerAuthService.getToken();
 
@@ -135,7 +137,7 @@ export const refineMatchStream = (journeyId, threadId, message, callbacks) => {
   fetch(`${API_BASE_URL}/api/matchmaker/match/stream`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({ journeyId, threadId, message }),
+    body: JSON.stringify({ journeyId: journeyId || undefined, stylistThreadId: stylistThreadId || undefined, threadId, message }),
     signal: controller.signal,
   })
     .then((response) => {
