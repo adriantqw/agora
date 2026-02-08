@@ -105,7 +105,7 @@ class MatchMakerAgent:
         # Compile user message
         message_list = [("user", f"Find products matching: {journey.model_dump_json()}")]
         if message:
-            message_list.append([("user", message)])
+            message_list.append(("user", message))
 
         # Compile the config
         config = {
