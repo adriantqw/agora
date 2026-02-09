@@ -1,7 +1,7 @@
 import React from 'react';
 
 const TryOnSlot = ({
-  product,
+  fittingSet,
   position,
   onMoveUp,
   onMoveDown,
@@ -55,12 +55,12 @@ const TryOnSlot = ({
     padding: '12px',
     height: '80px',
     backgroundColor: isDragOver ? '#FFF0F3' : '#FFFFFF',
-    border: product ? '1px solid #EEEEEE' : '2px dashed #CCCCCC',
+    border: fittingSet ? '1px solid #EEEEEE' : '2px dashed #CCCCCC',
     borderRadius: '8px',
     marginBottom: '8px',
     transition: 'all 0.2s ease',
     opacity: isDragging ? 0.5 : 1,
-    cursor: product ? 'move' : 'default',
+    cursor: fittingSet ? 'move' : 'default',
     boxShadow: isDragOver ? '0 4px 8px rgba(245, 165, 184, 0.2)' : 'none',
   };
 
@@ -128,15 +128,7 @@ const TryOnSlot = ({
     fontSize: '14px',
   };
 
-  const categoryIcons = {
-    dress: '👗',
-    top: '👕',
-    bottom: '👖',
-    accessories: '👜',
-    shoes: '👞',
-  };
-
-  if (!product) {
+  if (!fittingSet) {
     return (
       <div
         style={slotStyle}
@@ -149,6 +141,11 @@ const TryOnSlot = ({
     );
   }
 
+  // Display first image if available
+  const imageUrl = fittingSet.imagePaths && fittingSet.imagePaths.length > 0
+    ? fittingSet.imagePaths[0]
+    : null;
+
   return (
     <div
       style={slotStyle}
@@ -160,11 +157,27 @@ const TryOnSlot = ({
       onDrop={handleDrop}
     >
       <div style={thumbnailStyle}>
-        {categoryIcons[product.category] || '👕'}
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={fittingSet.title}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '6px'
+            }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : (
+          '👕'
+        )}
       </div>
       <div style={contentStyle}>
-        <div style={nameStyle}>{product.name}</div>
-        <div style={priceStyle}>${product.price}</div>
+        <div style={nameStyle}>{fittingSet.title}</div>
+        <div style={priceStyle}>
+          {fittingSet.productIds?.length || 0} item{fittingSet.productIds?.length !== 1 ? 's' : ''}
+        </div>
       </div>
       <div style={actionsStyle}>
         <div style={{ display: 'flex', gap: '4px' }}>

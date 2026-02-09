@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useFittingRoom } from '../contexts/FittingRoomContext';
 import { MessageCircle, ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import Mascot from '../components/common/Mascot/Mascot';
@@ -79,8 +78,12 @@ function transformMatchesToLooks(matches) {
 
 const FindTheLookPage = () => {
   const MAX_CAROUSEL_ITEMS = 12;
+  const QUEUE_LIMIT = 7;
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Local queue state for items added from this page
+  const [queueItems, setQueueItems] = useState([]);
 
   // Navigation state from CurateMyLookPage
   const journeyId = location.state?.journeyId;
@@ -115,8 +118,12 @@ const FindTheLookPage = () => {
     type: 'success'
   });
 
-  const { queue, addToQueue, addMultipleToQueue, removeFromQueue } = useFittingRoom();
   const cleanupRef = useRef(null);
+
+  // Queue helper functions
+  const isItemInQueue = (productId) => queueItems.some(item => item.id === productId);
+
+  const getRemainingSlots = () => QUEUE_LIMIT - queueItems.length;
 
   // Stream callbacks shared between initial load and refinement
   const makeCallbacks = (onDone, isRefinement = false) => ({
@@ -175,11 +182,6 @@ const FindTheLookPage = () => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Get fitting room items from context
-  const queueItems = queue
-    .filter(slot => slot.product !== null)
-    .map(slot => slot.product);
-
   const handleSelectLook = (look) => {
     setSelectedLook(look);
   };
@@ -190,32 +192,49 @@ const FindTheLookPage = () => {
   };
 
   const handleAddToQueue = (item) => {
-    const wasAdded = addToQueue(item);
-    if (wasAdded) {
-      setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
-      setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
-      return true;
+    if (isItemInQueue(item.id)) {
+      setGrowl({ show: true, message: `${item.name} is already in your queue`, type: 'warning' });
+      setTimeout(() => setGrowl({ show: false, message: '', type: 'warning' }), 3000);
+      return false;
     }
-
-    setGrowl({ show: true, message: 'Fitting room is full', type: 'error' });
-    setTimeout(() => setGrowl({ show: false, message: '', type: 'error' }), 3000);
-    return false;
+    if (queueItems.length >= QUEUE_LIMIT) {
+      setGrowl({ show: true, message: 'Queue is full (max 7 items)', type: 'error' });
+      setTimeout(() => setGrowl({ show: false, message: '', type: 'error' }), 3000);
+      return false;
+    }
+    setQueueItems(prev => [...prev, item]);
+    setGrowl({ show: true, message: `Added ${item.name} to queue`, type: 'success' });
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+    return true;
   };
 
   const handleAddAllToQueue = (items) => {
-    const addedCount = addMultipleToQueue(items);
-    if (addedCount > 0) {
-      setGrowl({ show: true, message: `Added ${addedCount} items to fitting room`, type: 'success' });
-      setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+    const remaining = getRemainingSlots();
+    const toAdd = items.slice(0, remaining).filter(i => !isItemInQueue(i.id));
+    const duplicateCount = items.length - toAdd.length - Math.max(0, items.length - remaining);
+
+    setQueueItems(prev => [...prev, ...toAdd]);
+
+    if (toAdd.length > 0) {
+      setGrowl({ show: true, message: `Added ${toAdd.length} items to queue`, type: 'success' });
+      if (duplicateCount > 0) {
+        setTimeout(() => setGrowl({
+          show: true,
+          message: `${duplicateCount} items were duplicates and not added`,
+          type: 'warning'
+        }), 2000);
+      }
+    } else if (remaining === 0) {
+      setGrowl({ show: true, message: 'Queue is full (max 7 items)', type: 'error' });
+    } else {
+      setGrowl({ show: true, message: 'All items are already in your queue', type: 'warning' });
     }
-    return addedCount;
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'warning' }), 3000);
+    return toAdd.length;
   };
 
   const handleRemoveFromQueue = (itemId) => {
-    const slotIndex = queue.findIndex(slot => slot.product?.id === itemId);
-    if (slotIndex !== -1) {
-      removeFromQueue(slotIndex);
-    }
+    setQueueItems(prev => prev.filter(i => i.id !== itemId));
   };
 
 
@@ -818,7 +837,13 @@ const FindTheLookPage = () => {
       <Mascot
         variant="default"
         message={queueItems.length > 0 ? "Let's fit!" : ''}
-        onClick={queueItems.length > 0 ? () => navigate('/fitting-room') : undefined}
+        onClick={queueItems.length > 0 ? () => navigate('/fitting-room', {
+          state: {
+            queueItems,
+            journeyId,
+            stylistThreadId
+          }
+        }) : undefined}
         isSearching={queueItems.length > 0}
         position="bottom-right"
       />

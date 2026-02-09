@@ -1,4 +1,5 @@
 import React from 'react';
+import { Shirt } from 'lucide-react';
 import TryOnSlot from '../TryOnSlot/TryOnSlot';
 
 const TryOnQueue = ({ slots, onReorder, onRemove, onToggleFavorite }) => {
@@ -27,8 +28,11 @@ const TryOnQueue = ({ slots, onReorder, onRemove, onToggleFavorite }) => {
   const titleStyle = {
     fontSize: '16px',
     fontWeight: '700',
-    color: '#333333',
+    color: '#793DB0',
     marginBottom: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   };
 
   const queueStyle = {
@@ -50,12 +54,15 @@ const TryOnQueue = ({ slots, onReorder, onRemove, onToggleFavorite }) => {
 
   return (
     <div style={containerStyle}>
-      <div style={titleStyle}>Try-On Queue</div>
+      <div style={titleStyle}>
+        <Shirt size={20} />
+        Try-On Queue
+      </div>
       <div style={queueStyle}>
         {slots.map((slot, index) => (
           <TryOnSlot
             key={slot.slot}
-            product={slot.product}
+            fittingSet={slot.fittingSet}
             position={index}
             isFavorite={slot.isFavorite}
             isFirst={index === 0}

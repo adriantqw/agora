@@ -1,6 +1,7 @@
 // Fitting Room Service — backend integration with mock fallback
 import { post, get } from './api';
 import consumerAuthService from './consumerAuthService';
+import { transformFittingSets } from '../utils/fittingRoomHelpers';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -135,7 +136,12 @@ export const generateLookbook = async ({
     message,
     personality,
   });
-  return response.data;
+
+  // Transform backend response (fix field name mismatch)
+  return {
+    ...response.data,
+    fittingSets: transformFittingSets(response.data.fittingSets || []),
+  };
 };
 
 /**
@@ -212,7 +218,11 @@ export const generateLookbookStream = ({
                 onThinking(event.content);
                 break;
               case 'complete':
-                onComplete(event.data);
+                // Transform backend sets before passing to callback
+                onComplete({
+                  ...event.data,
+                  fittingSets: transformFittingSets(event.data.fittingSets || []),
+                });
                 break;
               case 'error':
                 onError(event.message);

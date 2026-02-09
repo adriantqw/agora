@@ -18,7 +18,7 @@ const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
   const titleStyle = {
     fontSize: '18px',
     fontWeight: '700',
-    color: '#1a202c',
+    color: '#793DB0',
     marginBottom: '20px',
     display: 'flex',
     alignItems: 'center',
@@ -145,7 +145,7 @@ const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
   return (
     <div style={containerStyle}>
       <div style={titleStyle}>
-        <ShoppingCartIcon size={20} color="#7B3FA0" />
+        <ShoppingCartIcon size={20} color="#793DB0" />
         Shopping Cart
       </div>
 

@@ -13,17 +13,18 @@ const FittingRoomPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract journey context from route state
+  // Extract journey context and queue items from route state
+  const routeQueueItems = location.state?.queueItems || [];
   const routeJourneyId = location.state?.journeyId;
   const routeStylistThreadId = location.state?.stylistThreadId;
 
   const {
     queue,
-    addToQueue,
+    addProductToQueue,
+    addProductsToQueue,
     removeFromQueue,
     buyOutfit,
     generateLookbook,
-    fittingSets,
     isGenerating,
     thinkingText,
     chatMessages,
@@ -40,6 +41,13 @@ const FittingRoomPage = () => {
     if (routeJourneyId) setJourneyId(routeJourneyId);
     if (routeStylistThreadId) setStylistThreadId(routeStylistThreadId);
   }, [routeJourneyId, routeStylistThreadId, setJourneyId, setStylistThreadId]);
+
+  // Add queue items from route state to fitting room queue (run once on mount)
+  useEffect(() => {
+    if (routeQueueItems.length > 0) {
+      addProductsToQueue(routeQueueItems);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load all products on mount
   useEffect(() => {
@@ -60,40 +68,56 @@ const FittingRoomPage = () => {
   // Trigger backend fitting assistant on mount when queue has items
   // This runs AFTER journey IDs are set in the context
   useEffect(() => {
-    const items = queue.filter(s => s.product);
-    if (items.length > 0 && fittingSets.length === 0 && !isGenerating) {
+    const filledSlots = queue.filter(s => s.fittingSet);
+    if (filledSlots.length > 0 && !isGenerating) {
       generateLookbook();
     }
   }, [routeJourneyId, routeStylistThreadId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Derive outfit items from queue
+  // Derive outfit items from queue (flatten sets to individual products)
+  // Lookup full product details from products state for cart/model rendering
   const outfitItems = queue
-    .filter(s => s.product)
-    .map(s => s.product);
+    .filter(s => s.fittingSet)
+    .flatMap(s => s.fittingSet.productIds.map(id => {
+      // Try to find full product details from products state
+      const fullProduct = products.find(p => p.id === id);
+      return fullProduct || {
+        id,
+        name: 'Unknown Product',
+        brand: '',
+        price: 0,
+        image: '',
+      };
+    }));
 
-  const selectedProductIds = outfitItems.map(p => p.id);
+  const selectedProductIds = queue
+    .filter(slot => slot.fittingSet !== null)
+    .flatMap(slot => slot.fittingSet.productIds);
 
   // Derive mascot message from the latest AI chat message
   const lastAiMessage = [...chatMessages].reverse().find(m => m.role === 'ai');
   const mascotMessage = lastAiMessage ? lastAiMessage.content : 'Add items to start styling!';
 
   const handleToggleProduct = (product) => {
-    const slotIndex = queue.findIndex(s => s.product && s.product.id === product.id);
+    // Check if product is in any set
+    const slotIndex = queue.findIndex(slot =>
+      slot.fittingSet && slot.fittingSet.productIds.includes(product.id)
+    );
+
     if (slotIndex !== -1) {
+      // Product exists in a set - remove entire set
       removeFromQueue(slotIndex);
     } else {
-      const success = addToQueue(product);
+      // Add as temporary single-item set
+      const success = addProductToQueue(product);
       if (!success) {
-        alert('Outfit is full! Remove an item to add a new one.');
+        alert('Outfit queue is full! Remove a set to add more.');
       }
     }
   };
 
-  const handleRemoveFromOutfit = (productId) => {
-    const slotIndex = queue.findIndex(s => s.product && s.product.id === productId);
-    if (slotIndex !== -1) {
-      removeFromQueue(slotIndex);
-    }
+  const handleRemoveFromOutfit = (slotIndex) => {
+    removeFromQueue(slotIndex);
   };
 
   const handleCheckout = () => {
@@ -183,9 +207,8 @@ const FittingRoomPage = () => {
         {/* Left column: Try On Queue */}
         <div className="outfit-gallery-column">
           <OutfitGallery
-            items={outfitItems}
-            onRemoveItem={handleRemoveFromOutfit}
-            fittingSets={fittingSets}
+            queue={queue}  // Changed from items + fittingSets
+            onRemoveSet={handleRemoveFromOutfit}
             isGenerating={isGenerating}
             thinkingText={thinkingText}
           />
