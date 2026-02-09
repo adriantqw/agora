@@ -27,6 +27,8 @@ from app.models.merchant import Merchant
 from app.models.consumer import Consumer
 from app.models.product import Product
 from app.models.journey import Journey, Outfit
+from app.models.catalogue import CatalogueItem
+from app.models.wishlist import WishlistItem
 from app.utils.security import hash_password
 
 
@@ -124,11 +126,26 @@ def seed_sample_products(dataset: str = None, limit: int = None):
     }
 
     try:
-        # Check if products already exist
-        existing_count = db.query(Product).filter(Product.merchant_id == merchant_id).count()
-        if existing_count > 0:
-            print(f"Products already exist ({existing_count} items). Skipping seed.")
-            return
+        # Delete existing products for this merchant before reseeding
+        existing_products = db.query(Product.id).filter(Product.merchant_id == merchant_id).all()
+        existing_ids = [row[0] for row in existing_products]
+        if existing_ids:
+            print(f"Found {len(existing_ids)} existing products. Deleting before re-seed...")
+            wishlist_deleted = db.query(WishlistItem).filter(
+                WishlistItem.product_id.in_(existing_ids)
+            ).delete(synchronize_session=False)
+            catalogue_updated = db.query(CatalogueItem).filter(
+                CatalogueItem.product_id.in_(existing_ids)
+            ).update({CatalogueItem.product_id: None}, synchronize_session=False)
+            products_deleted = db.query(Product).filter(
+                Product.merchant_id == merchant_id,
+                Product.id.in_(existing_ids)
+            ).delete(synchronize_session=False)
+            print(
+                f"  Removed {wishlist_deleted} wishlist items, "
+                f"cleared {catalogue_updated} catalogue items, "
+                f"deleted {products_deleted} products."
+            )
 
         csv_files_to_process = []
 
