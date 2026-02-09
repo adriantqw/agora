@@ -9,6 +9,7 @@ const QueueItem = ({ item, onRemove }) => {
     borderRadius: '8px',
     padding: '12px',
     marginBottom: '12px',
+    border: '1px solid var(--border-color)',
     transition: 'all 0.2s ease',
   };
 

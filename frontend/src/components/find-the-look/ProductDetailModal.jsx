@@ -333,7 +333,7 @@ const ProductDetailModal = ({ item, isOpen, onClose, onAddToQueue }) => {
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              Add to Fitting Room
+              Add to Basket
             </button>
           </div>
         </div>

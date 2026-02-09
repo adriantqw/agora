@@ -257,7 +257,14 @@ const FindTheLookPage = () => {
     return (
       <div style={{
         height: '100vh',
-        backgroundColor: '#FFE4E9',
+        backgroundColor: '#fff9f5',
+        backgroundImage: `
+          radial-gradient(circle at 0% 50%, #ffecd9 0%, transparent 60%),
+          radial-gradient(circle at 50% 50%, #9dcaff 0%, transparent 65%),
+          radial-gradient(circle at 100% 0%, #ffb6e6 0%, transparent 60%)
+        `,
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
         fontFamily: '"Readex Pro", -apple-system, sans-serif',
       }}>
         <Header variant="full" />
@@ -305,9 +312,17 @@ const FindTheLookPage = () => {
 
   const pageStyle = {
     height: '100vh',
-    backgroundColor: '#FFE4E9',
+    backgroundColor: '#fff9f5',
+    backgroundImage: `
+      radial-gradient(circle at 0% 50%, #ffecd9 0%, transparent 60%),
+      radial-gradient(circle at 50% 50%, #9dcaff 0%, transparent 65%),
+      radial-gradient(circle at 100% 0%, #ffb6e6 0%, transparent 60%)
+    `,
+    backgroundRepeat: 'no-repeat',
+    backgroundAttachment: 'fixed',
     fontFamily: '"Readex Pro", -apple-system, sans-serif',
     overflow: 'hidden',
+    position: 'relative',
   };
 
   const gridContainerStyle = {

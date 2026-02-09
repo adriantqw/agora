@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ShoppingBasket } from 'lucide-react';
 import QueueItem from './QueueItem';
 
 const FittingRoomQueue = ({ items, onRemoveItem }) => {
@@ -8,7 +8,7 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     width: '450px',
     height: '100%',
     padding: '24px',
-    background: 'linear-gradient(135deg, #E6E6FA 0%, #FFB6C1 100%)',
+    background: '#FFFFFF',
     borderRadius: '16px',
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
     display: 'flex',
@@ -22,6 +22,9 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     color: '#793DB0',
     marginBottom: '24px',
     flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   };
 
   const itemsContainerStyle = {
@@ -69,7 +72,10 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
           background: rgba(121, 61, 176, 0.6);
         }
       `}</style>
-      <h2 style={titleStyle}>Fitting Room Queue</h2>
+      <h2 style={titleStyle}>
+        <ShoppingBasket size={20} />
+        Fitting Room Basket
+      </h2>
 
       {items.length === 0 ? (
         <div style={emptyStateStyle}>

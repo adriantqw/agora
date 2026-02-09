@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
-import { fetchFittingRoomProducts, getRandomAIResponse, getAIStylingAdvice } from '../services/fittingRoomService';
+import { fetchFittingRoomProducts } from '../services/fittingRoomService';
 import Header from '../components/common/Header/Header';
 import OutfitGallery from '../components/fitting-room/OutfitGallery/OutfitGallery';
 import VirtualModel from '../components/fitting-room/VirtualModel/VirtualModel';
 import ProductStrip from '../components/fitting-room/ProductStrip/ProductStrip';
 import ShoppingCart from '../components/fitting-room/ShoppingCart/ShoppingCart';
 import Mascot from '../components/common/Mascot/Mascot';
+import AIChat from '../components/fitting-room/AIChat/AIChat';
 
 const FittingRoomPage = () => {
   const navigate = useNavigate();
@@ -16,11 +17,16 @@ const FittingRoomPage = () => {
     addToQueue,
     removeFromQueue,
     buyOutfit,
+    generateLookbook,
+    fittingSets,
+    isGenerating,
+    sendChatMessage,
+    chatMessages,
+    isTyping,
   } = useFittingRoom();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mascotMessage, setMascotMessage] = useState('Add items to start styling!');
 
   // Load all products on mount
   useEffect(() => {
@@ -38,6 +44,14 @@ const FittingRoomPage = () => {
     loadProducts();
   }, []);
 
+  // Trigger backend fitting assistant on mount when queue has items
+  useEffect(() => {
+    const items = queue.filter(s => s.product);
+    if (items.length > 0 && fittingSets.length === 0 && !isGenerating) {
+      generateLookbook();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Derive outfit items from queue
   const outfitItems = queue
     .filter(s => s.product)
@@ -45,14 +59,9 @@ const FittingRoomPage = () => {
 
   const selectedProductIds = outfitItems.map(p => p.id);
 
-  // Update mascot message when outfit changes
-  useEffect(() => {
-    if (outfitItems.length === 0) {
-      setMascotMessage('Add items to start styling!');
-    } else {
-      setMascotMessage(getRandomAIResponse());
-    }
-  }, [outfitItems.length]);
+  // Derive mascot message from the latest AI chat message
+  const lastAiMessage = [...chatMessages].reverse().find(m => m.role === 'ai');
+  const mascotMessage = lastAiMessage ? lastAiMessage.content : 'Add items to start styling!';
 
   const handleToggleProduct = (product) => {
     const slotIndex = queue.findIndex(s => s.product && s.product.id === product.id);
@@ -164,11 +173,13 @@ const FittingRoomPage = () => {
       <Header compact={true} />
 
       <div style={mainLayoutStyle} className="fitting-room-layout">
-        {/* Left column: Outfit Gallery */}
+        {/* Left column: Try On Queue */}
         <div className="outfit-gallery-column">
           <OutfitGallery
             items={outfitItems}
             onRemoveItem={handleRemoveFromOutfit}
+            fittingSets={fittingSets}
+            isGenerating={isGenerating}
           />
         </div>
 
@@ -200,11 +211,16 @@ const FittingRoomPage = () => {
           </div>
         </div>
 
-        {/* Right column: Shopping Cart */}
-        <div className="shopping-cart-column">
+        {/* Right column: Shopping Cart + AI Chat */}
+        <div className="shopping-cart-column" style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflow: 'hidden' }}>
           <ShoppingCart
             items={outfitItems}
             onCheckout={handleCheckout}
+          />
+          <AIChat
+            messages={chatMessages}
+            onSendMessage={sendChatMessage}
+            isTyping={isTyping}
           />
         </div>
       </div>

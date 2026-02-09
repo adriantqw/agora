@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, Shirt } from 'lucide-react';
+import { X, Shirt, Loader } from 'lucide-react';
 
-const OutfitGallery = ({ items = [], onRemoveItem }) => {
+const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGenerating = false }) => {
   const containerStyle = {
     background: 'linear-gradient(180deg, #E8B4CB 0%, #C9A0DC 100%)',
     borderRadius: '16px',
@@ -12,6 +12,14 @@ const OutfitGallery = ({ items = [], onRemoveItem }) => {
     gap: '16px',
     height: '100%',
     overflowY: 'auto',
+  };
+
+  const titleStyle = {
+    fontSize: '16px',
+    fontWeight: '700',
+    color: '#7B3FA0',
+    textAlign: 'center',
+    margin: 0,
   };
 
   const hangerStyle = {
@@ -88,10 +96,96 @@ const OutfitGallery = ({ items = [], onRemoveItem }) => {
     objectFit: 'cover',
   };
 
+  const fittingSetCardStyle = {
+    width: '280px',
+    borderRadius: '12px',
+    border: '3px solid #7B3FA0',
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    flexShrink: 0,
+  };
+
+  const fittingSetImageStyle = {
+    width: '100%',
+    height: '240px',
+    objectFit: 'cover',
+  };
+
+  const fittingSetInfoStyle = {
+    padding: '12px',
+  };
+
+  const fittingSetTitleStyle = {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#7B3FA0',
+    margin: '0 0 4px 0',
+  };
+
+  const fittingSetDescStyle = {
+    fontSize: '12px',
+    color: '#666',
+    margin: 0,
+    lineHeight: '1.4',
+  };
+
+  const loadingContainerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    padding: '40px 20px',
+    color: '#7B3FA0',
+  };
+
+  // Loading state
+  if (isGenerating) {
+    return (
+      <div style={containerStyle}>
+        <Shirt size={32} style={hangerStyle} />
+        <h3 style={titleStyle}>Try On Queue</h3>
+        <div style={loadingContainerStyle}>
+          <Loader size={32} style={{ animation: 'spin 1s linear infinite' }} />
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>Generating outfit sets...</span>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  // Display fitting sets from backend if available
+  if (fittingSets.length > 0) {
+    return (
+      <div style={containerStyle}>
+        <Shirt size={32} style={hangerStyle} />
+        <h3 style={titleStyle}>Try On Queue</h3>
+        {fittingSets.map((set, index) => (
+          <div key={index} style={fittingSetCardStyle}>
+            {set.imagePaths && set.imagePaths.length > 0 && (
+              <img
+                src={set.imagePaths[0]}
+                alt={set.title || `Outfit Set ${index + 1}`}
+                style={fittingSetImageStyle}
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            )}
+            <div style={fittingSetInfoStyle}>
+              <p style={fittingSetTitleStyle}>{set.title || `Outfit Set ${index + 1}`}</p>
+              {set.description && <p style={fittingSetDescStyle}>{set.description}</p>}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Fallback: show product thumbnails from queue
   if (items.length === 0) {
     return (
       <div style={containerStyle}>
         <Shirt size={32} style={hangerStyle} />
+        <h3 style={titleStyle}>Try On Queue</h3>
         <div style={emptyPlaceholderStyle}>
           Add items to your outfit to see them here
         </div>
@@ -104,6 +198,7 @@ const OutfitGallery = ({ items = [], onRemoveItem }) => {
   return (
     <div style={containerStyle}>
       <Shirt size={32} style={hangerStyle} />
+      <h3 style={titleStyle}>Try On Queue</h3>
 
       {/* Main large image */}
       <div style={mainImageStyle}>
