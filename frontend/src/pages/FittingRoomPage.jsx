@@ -4,6 +4,7 @@ import { Sparkles, ChevronDown, MessageCircle, ArrowRight, X, Plus } from 'lucid
 import Markdown from 'react-markdown';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import Header from '../components/common/Header/Header';
+import Growl from '../components/common/Growl/Growl';
 import OutfitGallery from '../components/fitting-room/OutfitGallery/OutfitGallery';
 import ShoppingCart from '../components/fitting-room/ShoppingCart/ShoppingCart';
 import Mascot from '../components/common/Mascot/Mascot';
@@ -133,6 +134,11 @@ const FittingRoomPage = () => {
   const [selectedItems, setSelectedItems] = useState(() => new Set());
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [hoveredItemId, setHoveredItemId] = useState(null);
+  const [growl, setGrowl] = useState({
+    show: false,
+    message: '',
+    type: 'success',
+  });
 
   const navQueueItems = location.state?.queueItems || [];
 
@@ -271,7 +277,8 @@ const FittingRoomPage = () => {
   };
 
   const handleCheckout = () => {
-    buyOutfit();
+    setGrowl({ show: true, message: 'Checkout successful', type: 'success' });
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
   };
 
   const designTokens = {
@@ -811,6 +818,19 @@ const FittingRoomPage = () => {
           />
         </div>
       </div>
+
+      {/* Growl Notification */}
+      <Growl
+        message={growl.message}
+        type={growl.type}
+        show={growl.show}
+        onClose={() => setGrowl({ show: false, message: '', type: 'success' })}
+        customStyle={{
+          background: '#FFFFFF',
+          textColor: '#1A202C',
+          border: '#E2E8F0',
+        }}
+      />
     </div>
   );
 };
