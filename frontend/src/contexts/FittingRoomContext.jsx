@@ -34,6 +34,10 @@ export const FittingRoomProvider = ({ children }) => {
   const [thinkingText, setThinkingText] = useState('');
   const abortStreamRef = useRef(null);
 
+  // Journey context from Find The Look
+  const [journeyId, setJourneyId] = useState(null);
+  const [stylistThreadId, setStylistThreadId] = useState(null);
+
   const addToQueue = (product) => {
     let wasAdded = false;
     setQueue(prev => {
@@ -144,6 +148,8 @@ export const FittingRoomProvider = ({ children }) => {
     if (token) {
       const abort = generateLookbookStream({
         productSelections: outfitItems,
+        journeyId: journeyId,
+        stylistThreadId: stylistThreadId,
         threadId: fittingThreadId,
         onThinking: (content) => {
           setThinkingText(prev => prev + content);
@@ -185,7 +191,7 @@ export const FittingRoomProvider = ({ children }) => {
     } finally {
       setIsGenerating(false);
     }
-  }, [queue, fittingThreadId]);
+  }, [queue, fittingThreadId, journeyId, stylistThreadId]);
 
   const resetOutfit = () => {
     if (abortStreamRef.current) {
@@ -217,6 +223,10 @@ export const FittingRoomProvider = ({ children }) => {
     fittingSets,
     isGenerating,
     thinkingText,
+    journeyId,
+    stylistThreadId,
+    setJourneyId,
+    setStylistThreadId,
     addToQueue,
     addMultipleToQueue,
     removeFromQueue,

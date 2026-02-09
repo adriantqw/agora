@@ -9,6 +9,8 @@ export default function Mascot({
   onClick,
   size,
   disabled = false,
+  bubbleSize = 'medium',
+  alwaysFloat = false,
 }) {
   const [showSpeechBubble, setShowSpeechBubble] = useState(false);
 
@@ -19,6 +21,29 @@ export default function Mascot({
       setShowSpeechBubble(false);
     }
   }, [message]);
+
+  const bubbleStyles = {
+    small: {
+      fontSize: '14px',
+      padding: '12px 16px',
+      maxWidth: '200px',
+      whiteSpace: 'nowrap',
+    },
+    medium: {
+      fontSize: '17px',
+      padding: '16px 24px',
+      maxWidth: '250px',
+      whiteSpace: 'nowrap',
+    },
+    large: {
+      fontSize: '20px',
+      padding: '24px 32px',
+      maxWidth: '400px',
+      whiteSpace: 'normal',
+    },
+  };
+
+  const currentBubbleStyle = bubbleStyles[bubbleSize] || bubbleStyles.medium;
 
   const containerStyle = position === 'bottom-right'
     ? {
@@ -134,11 +159,12 @@ export default function Mascot({
             background: disabled ? '#e2e8f0' : isLetsGo ? 'var(--gradient-user-answer)' : 'white',
             border: disabled ? '2px solid #cbd5e1' : isLetsGo ? 'none' : '2px solid #F5A5B8',
             borderRadius: '16px 16px 4px 16px',
-            padding: '16px 24px',
-            fontSize: '17px',
+            padding: currentBubbleStyle.padding,
+            fontSize: currentBubbleStyle.fontSize,
             fontWeight: '600',
             color: disabled ? '#94a3b8' : isLetsGo ? '#ffffff' : '#1a202c',
-            whiteSpace: 'nowrap',
+            whiteSpace: currentBubbleStyle.whiteSpace,
+            maxWidth: currentBubbleStyle.maxWidth,
             boxShadow: disabled
               ? '0 2px 8px rgba(0, 0, 0, 0.06)'
               : isLetsGo
@@ -158,7 +184,7 @@ export default function Mascot({
         width: '80px',
         height: '96px',
         position: 'relative',
-        animation: isSearching ? 'mascot-bounce 1s infinite ease-in-out' : 'none',
+        animation: isSearching || alwaysFloat ? 'mascot-bounce 1s infinite ease-in-out' : 'none',
       }}>
         <img 
           src="/egg-chan.svg" 

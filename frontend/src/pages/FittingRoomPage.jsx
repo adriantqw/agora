@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import { fetchFittingRoomProducts } from '../services/fittingRoomService';
 import Header from '../components/common/Header/Header';
@@ -11,6 +11,12 @@ import Mascot from '../components/common/Mascot/Mascot';
 
 const FittingRoomPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Extract journey context from route state
+  const routeJourneyId = location.state?.journeyId;
+  const routeStylistThreadId = location.state?.stylistThreadId;
+
   const {
     queue,
     addToQueue,
@@ -21,11 +27,19 @@ const FittingRoomPage = () => {
     isGenerating,
     thinkingText,
     chatMessages,
+    setJourneyId,
+    setStylistThreadId,
   } = useFittingRoom();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fitDescription, setFitDescription] = useState('Your outfit looks amazing! This combination brings out your personal style perfectly.');
+
+  // Set journey context from route state
+  useEffect(() => {
+    if (routeJourneyId) setJourneyId(routeJourneyId);
+    if (routeStylistThreadId) setStylistThreadId(routeStylistThreadId);
+  }, [routeJourneyId, routeStylistThreadId, setJourneyId, setStylistThreadId]);
 
   // Load all products on mount
   useEffect(() => {
@@ -44,12 +58,13 @@ const FittingRoomPage = () => {
   }, []);
 
   // Trigger backend fitting assistant on mount when queue has items
+  // This runs AFTER journey IDs are set in the context
   useEffect(() => {
     const items = queue.filter(s => s.product);
     if (items.length > 0 && fittingSets.length === 0 && !isGenerating) {
       generateLookbook();
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [routeJourneyId, routeStylistThreadId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derive outfit items from queue
   const outfitItems = queue
@@ -83,10 +98,6 @@ const FittingRoomPage = () => {
 
   const handleCheckout = () => {
     buyOutfit();
-  };
-
-  const handleRefineSearch = () => {
-    navigate('/curate-my-fit');
   };
 
   const pageStyle = {
@@ -197,14 +208,10 @@ const FittingRoomPage = () => {
             <Mascot
               variant="default"
               position="relative"
-              message={mascotMessage}
+              message={fitDescription}
+              bubbleSize="large"
+              alwaysFloat={true}
             />
-            <button
-              style={refineSearchStyle}
-              onClick={handleRefineSearch}
-            >
-              Refine your search
-            </button>
           </div>
         </div>
 
