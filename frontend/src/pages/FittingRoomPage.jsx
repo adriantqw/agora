@@ -106,7 +106,7 @@ const FittingRoomPage = () => {
   const location = useLocation();
   const {
     queue,
-    addMultipleToQueue,
+    initializeFromNavigation,
     buyOutfit,
     generateLookbook,
     refineLookbook,
@@ -125,6 +125,7 @@ const FittingRoomPage = () => {
   const [refineText, setRefineText] = useState('');
   const [isRefining, setIsRefining] = useState(false);
   const [cartItems, setCartItems] = useState([]);
+  const [selectedItems, setSelectedItems] = useState(() => new Set());
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const navQueueItems = location.state?.queueItems || [];
@@ -156,11 +157,11 @@ const FittingRoomPage = () => {
 
     const navItems = location.state?.queueItems;
     if (navItems && navItems.length > 0) {
-      addMultipleToQueue(navItems);
+      initializeFromNavigation(navItems);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Trigger backend once queue is populated (waits for addMultipleToQueue to flush)
+  // Trigger backend once queue is populated (waits for navigation init to flush)
   const hasTriggeredGenerate = useRef(false);
   useEffect(() => {
     if (hasTriggeredGenerate.current) return;
@@ -181,12 +182,26 @@ const FittingRoomPage = () => {
     setSelectedImageIndex(0);
   }, [selectedSetIndex, fittingSets]);
 
+  useEffect(() => {
+    setSelectedItems(new Set());
+  }, [selectedSetIndex, fittingSets]);
+
   const selectedSet = fittingSets[selectedSetIndex] || null;
   const imagePaths = selectedSet?.imagePaths || (selectedSet?.imagePath ? [selectedSet.imagePath] : []);
 
   const resolvedProducts = (selectedSet?.productIds || [])
     .map(id => productMap.get(id))
     .filter(Boolean);
+
+  useEffect(() => {
+    if (selectedSet) {
+      console.log('[FittingRoom] productIds:', selectedSet.productIds);
+      console.log('[FittingRoom] productMap keys:', [...productMap.keys()]);
+      (selectedSet.productIds || []).forEach(id => {
+        console.log(`[FittingRoom] ID "${id}" -> ${productMap.get(id) ? 'FOUND' : 'NOT FOUND'}`);
+      });
+    }
+  }, [selectedSet, productMap]);
 
   const mascotMessage = [...chatMessages].reverse().find(m => m.role === 'ai')?.content
     || 'Ready to refine your fit?';
@@ -199,11 +214,50 @@ const FittingRoomPage = () => {
     setRefineText('');
   };
 
+  const handleToggleRefine = () => {
+    setShowRefineInput(prev => !prev);
+    setRefineText('');
+  };
+
+  const handleRefineKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleRefineSubmit();
+    }
+  };
+
   const handleAddToCart = (product) => {
     setCartItems(prev => {
       if (prev.some(p => p.id === product.id)) return prev;
       return [...prev, product];
     });
+  };
+
+  const handleToggleItemSelection = (productId) => {
+    setSelectedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  const handleAddSelectedToCart = () => {
+    if (selectedItems.size === 0) return;
+    setCartItems(prev => {
+      const next = [...prev];
+      selectedItems.forEach((id) => {
+        const product = resolvedProducts.find(p => p.id === id);
+        if (product && !next.some(p => p.id === product.id)) {
+          next.push(product);
+        }
+      });
+      return next;
+    });
+    setSelectedItems(new Set());
   };
 
   const handleRemoveFromCart = (productId) => {
@@ -212,15 +266,6 @@ const FittingRoomPage = () => {
 
   const handleCheckout = () => {
     buyOutfit();
-  };
-
-  const handleRefineSearch = () => {
-    setShowRefineInput(true);
-  };
-
-  const handleCloseRefine = () => {
-    setShowRefineInput(false);
-    setRefineText('');
   };
 
   const pageStyle = {
@@ -258,7 +303,7 @@ const FittingRoomPage = () => {
   const titleStyle = {
     fontSize: '28px',
     fontWeight: '700',
-    background: 'linear-gradient(135deg, #E8B4CB, #7B3FA0)',
+    background: 'linear-gradient(135deg, #7B3FA0, #4A1D6A)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
@@ -310,7 +355,7 @@ const FittingRoomPage = () => {
   const imageStyle = {
     width: '100%',
     height: '360px',
-    objectFit: 'cover',
+    objectFit: 'contain',
     display: 'block',
   };
 
@@ -347,6 +392,8 @@ const FittingRoomPage = () => {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    cursor: 'pointer',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   };
 
   const addButtonStyle = {
@@ -361,55 +408,70 @@ const FittingRoomPage = () => {
     cursor: 'pointer',
   };
 
-  const refineInputStyle = {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center',
-    marginTop: '8px',
+  const addAllButtonStyle = {
+    marginTop: '10px',
+    padding: '8px 16px',
+    borderRadius: '999px',
+    border: 'none',
+    background: 'linear-gradient(135deg, #7B3FA0 0%, #9F6AD6 100%)',
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: '12px',
+    cursor: 'pointer',
   };
 
-  const refineTextStyle = {
-    flex: 1,
-    padding: '10px 14px',
-    borderRadius: '999px',
+  const chatInputStyle = {
+    flex: '1',
+    padding: '0 20px',
+    borderRadius: '24px',
     border: '1px solid #E8B4CB',
     fontSize: '13px',
     outline: 'none',
+    height: '44px',
+    boxSizing: 'border-box',
+  };
+
+  const sendButtonStyle = {
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    border: 'none',
+    backgroundColor: '#793DB0',
+    color: 'white',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'background-color 0.2s',
+  };
+
+  const refineTextStyle = {
+    fontSize: '14px',
+    color: '#4A5568',
+    margin: 0,
   };
 
   const refineButtonStyle = {
     width: '40px',
     height: '40px',
     borderRadius: '50%',
-    border: 'none',
-    background: 'linear-gradient(135deg, #7B3FA0 0%, #9F6AD6 100%)',
-    color: '#fff',
+    border: '2px solid transparent',
+    background: 'white',
+    backgroundClip: 'padding-box',
+    cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    position: 'relative',
   };
 
-  const refineCtaStyle = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '8px',
-    background: 'rgba(123, 63, 160, 0.08)',
-    color: '#7B3FA0',
-    padding: '8px 14px',
-    borderRadius: '999px',
-    fontWeight: '600',
-    fontSize: '13px',
-    border: '1px solid rgba(123, 63, 160, 0.2)',
-    cursor: 'pointer',
-  };
-
-  const mascotAreaStyle = {
+  const bottomMascotAreaStyle = {
     display: 'flex',
     gap: '14px',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: '4px',
+    marginTop: 'auto',
     flexWrap: 'wrap',
   };
 
@@ -476,115 +538,200 @@ const FittingRoomPage = () => {
               ))}
             </div>
           ) : (
-            <div style={setCardStyle}>
-              <div>
-                <h2 style={setTitleStyle}>{selectedSet?.title || 'Your Lookbook Set'}</h2>
-                {selectedSet?.description && <p style={setDescStyle}>{selectedSet.description}</p>}
-              </div>
+            <>
+              <div style={setCardStyle}>
+                <div>
+                  <h2 style={setTitleStyle}>{selectedSet?.title || 'Your Lookbook Set'}</h2>
+                  {selectedSet?.description && <p style={setDescStyle}>{selectedSet.description}</p>}
+                </div>
 
-              <div style={imageContainerStyle}>
-                {imagePaths.length > 0 ? (
-                  <>
-                    <img
-                      src={imagePaths[selectedImageIndex]}
-                      alt={selectedSet?.title || 'Fitting set'}
-                      style={imageStyle}
-                    />
-                    {imagePaths.length > 1 && (
-                      <>
-                        <button
-                          style={{ ...arrowButtonStyle, left: '12px' }}
-                          onClick={() => setSelectedImageIndex((prev) => Math.max(0, prev - 1))}
-                          disabled={selectedImageIndex === 0}
-                        >
-                          <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
-                        </button>
-                        <button
-                          style={{ ...arrowButtonStyle, right: '12px' }}
-                          onClick={() => setSelectedImageIndex((prev) => Math.min(imagePaths.length - 1, prev + 1))}
-                          disabled={selectedImageIndex === imagePaths.length - 1}
-                        >
-                          <ArrowRight size={16} />
-                        </button>
-                      </>
+                <div style={imageContainerStyle}>
+                  {imagePaths.length > 0 ? (
+                    <>
+                      <img
+                        src={imagePaths[selectedImageIndex]}
+                        alt={selectedSet?.title || 'Fitting set'}
+                        style={imageStyle}
+                      />
+                      {imagePaths.length > 1 && (
+                        <>
+                          <button
+                            style={{ ...arrowButtonStyle, left: '12px' }}
+                            onClick={() => setSelectedImageIndex((prev) => Math.max(0, prev - 1))}
+                            disabled={selectedImageIndex === 0}
+                          >
+                            <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
+                          </button>
+                          <button
+                            style={{ ...arrowButtonStyle, right: '12px' }}
+                            onClick={() => setSelectedImageIndex((prev) => Math.min(imagePaths.length - 1, prev + 1))}
+                            disabled={selectedImageIndex === imagePaths.length - 1}
+                          >
+                            <ArrowRight size={16} />
+                          </button>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ ...imageStyle, height: '280px' }} />
+                  )}
+                </div>
+
+                {resolvedProducts.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#6b5b7a', marginBottom: '8px' }}>
+                      Items in this set
+                    </div>
+                    <div style={itemsStripStyle}>
+                      {resolvedProducts.map((product) => {
+                        const isSelected = selectedItems.has(product.id);
+                        return (
+                          <div
+                            key={product.id}
+                            style={{
+                              ...itemCardStyle,
+                              border: isSelected ? '2px solid #7B3FA0' : itemCardStyle.border,
+                              boxShadow: isSelected ? '0 8px 18px rgba(123, 63, 160, 0.18)' : 'none',
+                            }}
+                            onClick={() => handleToggleItemSelection(product.id)}
+                          >
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
+                            />
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#2d1a3a' }}>{product.name}</div>
+                            <div style={{ fontSize: '11px', color: '#6b5b7a' }}>{product.brand}</div>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#7B3FA0' }}>
+                              {product.price != null ? `$${Number(product.price).toFixed(2)}` : 'Price on request'}
+                            </div>
+                            <button
+                              style={addButtonStyle}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleAddToCart(product);
+                                setSelectedItems(prev => {
+                                  const next = new Set(prev);
+                                  next.delete(product.id);
+                                  return next;
+                                });
+                              }}
+                            >
+                              + Add to Cart
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {selectedItems.size > 0 && (
+                      <button style={addAllButtonStyle} onClick={handleAddSelectedToCart}>
+                        Add {selectedItems.size} items to Cart
+                      </button>
                     )}
-                  </>
-                ) : (
-                  <div style={{ ...imageStyle, height: '280px' }} />
+                  </div>
                 )}
               </div>
 
-              {resolvedProducts.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: '700', color: '#6b5b7a', marginBottom: '8px' }}>
-                    Items in this set
-                  </div>
-                  <div style={itemsStripStyle}>
-                    {resolvedProducts.map((product) => (
-                      <div key={product.id} style={itemCardStyle}>
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
-                        />
-                        <div style={{ fontSize: '12px', fontWeight: '700', color: '#2d1a3a' }}>{product.name}</div>
-                        <div style={{ fontSize: '11px', color: '#6b5b7a' }}>{product.brand}</div>
-                        <div style={{ fontSize: '12px', fontWeight: '700', color: '#7B3FA0' }}>
-                          {product.price != null ? `$${Number(product.price).toFixed(2)}` : 'Price on request'}
-                        </div>
-                        <button style={addButtonStyle} onClick={() => handleAddToCart(product)}>
-                          + Add to Cart
-                        </button>
-                      </div>
-                    ))}
+              <div style={bottomMascotAreaStyle}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+                  <Mascot variant="avatar" size={60} />
+                  <div style={{
+                    background: 'white',
+                    border: '2px solid #F5A5B8',
+                    borderRadius: '16px 16px 16px 4px',
+                    padding: '12px 16px',
+                    maxWidth: '300px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#1a202c',
+                    boxShadow: '0 4px 12px rgba(245, 165, 184, 0.25)',
+                    lineHeight: '1.5',
+                  }}>
+                    {mascotMessage}
                   </div>
                 </div>
-              )}
 
-              <div style={mascotAreaStyle}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <Mascot variant="default" position="relative" message={mascotMessage} />
-                </div>
-
-                <div>
-                  {!showRefineInput ? (
-                    <button style={refineCtaStyle} onClick={handleRefineSearch}>
-                      <MessageCircle size={14} />
-                      Refine Fit
-                    </button>
-                  ) : (
-                    <div style={refineInputStyle}>
+                {!isGenerating && !isRefining && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    justifyContent: 'flex-end',
+                    marginTop: 'auto',
+                    height: '44px',
+                  }}>
+                    {showRefineInput && (
                       <input
                         type="text"
                         value={refineText}
                         onChange={(e) => setRefineText(e.target.value)}
-                        placeholder="Tell me what to adjust..."
-                        style={refineTextStyle}
+                        onKeyDown={handleRefineKeyDown}
+                        placeholder="Tell me what you'd like..."
+                        style={chatInputStyle}
+                        autoFocus
                       />
-                      <button style={refineButtonStyle} onClick={handleRefineSubmit} disabled={isRefining}>
-                        <ArrowRight size={16} />
-                      </button>
+                    )}
+
+                    {!showRefineInput && (
+                      <p style={{ ...refineTextStyle, cursor: 'pointer' }} onClick={handleToggleRefine}>
+                        Not quite right? Refine your search
+                      </p>
+                    )}
+
+                    {showRefineInput && (
                       <button
-                        onClick={handleCloseRefine}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          border: '1px solid #E8B4CB',
-                          background: '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: 'pointer',
-                        }}
+                        onClick={handleRefineSubmit}
+                        style={sendButtonStyle}
+                        disabled={!refineText.trim() || isRefining}
+                        aria-label="Send refine request"
                       >
-                        <X size={14} color="#7B3FA0" />
+                        <ArrowRight size={20} />
+                      </button>
+                    )}
+
+                    <div
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                        padding: '2px',
+                        flexShrink: 0,
+                        cursor: 'pointer',
+                      }}
+                      onClick={handleToggleRefine}
+                    >
+                      <button
+                        style={{
+                          ...refineButtonStyle,
+                          width: '100%',
+                          height: '100%',
+                          background: 'white',
+                          border: 'none',
+                        }}
+                        aria-label={showRefineInput ? 'Close refine' : 'Refine fit'}
+                        onMouseEnter={(event) => { event.currentTarget.style.background = '#F7FAFC'; }}
+                        onMouseLeave={(event) => { event.currentTarget.style.background = 'white'; }}
+                      >
+                        {showRefineInput ? (
+                          <X size={18} color="#793DB0" />
+                        ) : (
+                          <MessageCircle
+                            size={20}
+                            style={{
+                              background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
+                              WebkitBackgroundClip: 'text',
+                              WebkitTextFillColor: 'transparent',
+                              backgroundClip: 'text',
+                            }}
+                          />
+                        )}
                       </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            </div>
+            </>
           )}
         </div>
 

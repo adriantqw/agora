@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field, FilePath, FileUrl
+from pydantic import BaseModel, Field, FilePath
 
 # User input schemas
 class ProductSelected(BaseModel):
@@ -30,7 +30,7 @@ class FittingSetObject(BaseModel):
     title: str = Field(description="User-facing fitted image title")
     description: str = Field(description="User-facing fitted image set description")
     product_ids: list[str] = Field(description="List of product or catalogue ids of the products used to generate the image")
-    image_path: list[FilePath | FileUrl] = Field(description="Path to the image files from image generation")
+    image_path: list[str] = Field(description="Path to the image files (local path or HTTP/HTTPS URL)")
 
 class FittingSets(BaseModel):
     message: str = Field(description="Message in response to the user, accompanying the fitting room images")

@@ -818,7 +818,13 @@ const FindTheLookPageV2 = () => {
       <Mascot
         variant="default"
         message={queueItems.length > 0 ? "Let's fit!" : ''}
-        onClick={queueItems.length > 0 ? () => navigate('/fitting-room') : undefined}
+        onClick={queueItems.length > 0 ? () => navigate('/fitting-room', {
+          state: {
+            queueItems,
+            journeyId,
+            stylistThreadId
+          }
+        }) : undefined}
         isSearching={queueItems.length > 0}
         position="bottom-right"
       />

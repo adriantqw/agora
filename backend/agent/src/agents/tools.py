@@ -3,9 +3,8 @@ import base64
 import requests
 import os
 import uuid
-import tempfile
 import asyncio
-from pydantic import FilePath
+import mimetypes
 from pathlib import Path
 
 from langchain_core.tools import tool, StructuredTool
@@ -87,7 +86,30 @@ class Txt2ImgGenerator:
         model = load_model_from_config(model_config)
         return model
     
-    def _compile_model_messages(self, prompt: str, example_img_paths: list[FilePath] | None = None):
+    def _load_reference_image(self, image_source: str) -> tuple[bytes, str]:
+        """
+        Load reference image bytes from a local file path or remote URL.
+
+        Returns:
+            (image_bytes, content_type)
+        """
+        path = Path(image_source)
+        if path.exists():
+            image_bytes = path.read_bytes()
+            content_type = mimetypes.guess_type(str(path))[0] or "image/jpeg"
+            return image_bytes, content_type
+
+        if image_source.startswith("http://") or image_source.startswith("https://"):
+            response = requests.get(image_source, timeout=20)
+            response.raise_for_status()
+            content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
+            if not content_type:
+                content_type = mimetypes.guess_type(image_source)[0] or "image/jpeg"
+            return response.content, content_type
+
+        raise FileNotFoundError(f"Reference image not found: {image_source}")
+
+    def _compile_model_messages(self, prompt: str, example_img_paths: list[str] | None = None):
         """Compile the model messages including prompt and example images."""
         image_examples = []
         image_content = []
@@ -95,11 +117,17 @@ class Txt2ImgGenerator:
             example_img_paths = []
         if example_img_paths:
             for image_path in example_img_paths:
-                with open(image_path, "rb") as image_file:
-                    image_examples.append(image_file.read())   
+                image_bytes, content_type = self._load_reference_image(image_path)
+                image_examples.append((image_bytes, content_type))
 
-            image_examples = [base64.b64encode(image_data).decode('utf-8') for image_data in image_examples]
-            image_content = [{"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img}"}} for img in image_examples]
+            image_examples = [
+                (base64.b64encode(image_data).decode('utf-8'), content_type)
+                for image_data, content_type in image_examples
+            ]
+            image_content = [
+                {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{img}"}}
+                for img, content_type in image_examples
+            ]
 
         messages = [HumanMessage(
             content=[
@@ -241,7 +269,7 @@ class Txt2ImgGenerator:
 
         return {"status": "failed", "image_path": None, "error": last_error}
 
-    async def generate(self, prompt: str, aspect_ratio: str = None, reference_img_paths: list[FilePath] | None = None):
+    async def generate(self, prompt: str, aspect_ratio: str = None, reference_img_paths: list[str] | None = None):
         """
         Generate an image from a text prompt with retry logic. Use this to generate 1 image at a time.
         Has the benefit of being able to use reference images to generate the image.
@@ -249,7 +277,7 @@ class Txt2ImgGenerator:
         Args:
             prompt (str): The detailed and rich text prompt to generate the image from.
             aspect_ratio (str, optional): Desired aspect ratio for the image, e.g., "16:9". Defaults to None.
-            reference_img_paths (list[str], optional): List of reference image paths to guide the generation. Defaults to [].
+            reference_img_paths (list[str], optional): List of reference image paths or URLs to guide the generation. Defaults to [].
 
         Returns:
             dict: A dictionary containing the status, path to the generated image, and optional error.
@@ -285,7 +313,7 @@ class Txt2ImgGenerator:
             prompts (list[str]): List of detailed and rich text prompts to generate images from.
             aspect_ratio (str, optional): Desired aspect ratio for the images, e.g., "16:9". Defaults to None.
             reference_img_paths_list (list[list[str]], optional): A list where each element is a 
-                list of image paths corresponding to the prompt at the same index.
+                list of image paths or URLs corresponding to the prompt at the same index.
 
         Returns:
             dict: Contains 'results' list
