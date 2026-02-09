@@ -1,29 +1,14 @@
 import React from 'react';
-import { X, Shirt, Loader } from 'lucide-react';
+import { Shirt } from 'lucide-react';
 
-/**
- * OutfitGallery - Displays FittingSetObjects from queue
- *
- * Queue structure:
- * [
- *   { slot: 1, fittingSet: FittingSetObject | null, isFavorite: false },
- *   ...
- * ]
- *
- * FittingSetObject structure:
- * {
- *   title: string,
- *   description: string,
- *   productIds: string[],
- *   imagePath: string,  // Single string, not array
- *   isTemporary: boolean
- * }
- */
-const OutfitGallery = ({ queue, onRemoveSet, isGenerating = false, thinkingText = '' }) => {
+const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }) => {
   const containerStyle = {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid var(--border-color)',
-    borderRadius: '16px',
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '24px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',
     padding: '24px 16px',
     display: 'flex',
     flexDirection: 'column',
@@ -41,188 +26,106 @@ const OutfitGallery = ({ queue, onRemoveSet, isGenerating = false, thinkingText 
   const titleStyle = {
     fontSize: '16px',
     fontWeight: '700',
-    color: '#7B3FA0',
+    color: '#793DB0',
     textAlign: 'left',
     margin: 0,
   };
 
-  const hangerStyle = {
-    color: '#7B3FA0',
-    opacity: 0.7,
-  };
-
-  const loadingContainerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '12px',
-    padding: '40px 20px',
-    color: '#7B3FA0',
-  };
-
-  const thinkingStyle = {
-    fontSize: '12px',
-    color: '#7B3FA0',
-    opacity: 0.7,
-    margin: '8px 0 0',
-    lineHeight: '1.5',
-    maxHeight: '120px',
-    overflowY: 'auto',
-    textAlign: 'left',
-    width: '100%',
-  };
-
-  // Loading state
-  if (isGenerating) {
-    return (
-      <div style={containerStyle}>
-        <div style={titleRowStyle}>
-          <Shirt size={24} style={hangerStyle} />
-          <h3 style={titleStyle}>Try On Queue</h3>
-        </div>
-        <div style={loadingContainerStyle}>
-          <Loader size={32} style={{ animation: 'spin 1s linear infinite' }} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>Generating outfit sets...</span>
-          {thinkingText && <p style={thinkingStyle}>{thinkingText}</p>}
-          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-        </div>
-      </div>
-    );
-  }
-
-  // Extract filled slots
-  const filledSlots = queue.filter(slot => slot.fittingSet !== null);
-
-  // Empty state
-  if (filledSlots.length === 0) {
-    return (
-      <div style={containerStyle}>
-        <div style={titleRowStyle}>
-          <Shirt size={24} style={hangerStyle} />
-          <h3 style={titleStyle}>Try On Queue</h3>
-        </div>
-      </div>
-    );
-  }
-
-  // Render sets
-  return (
-    <div style={containerStyle}>
-      <div style={titleRowStyle}>
-        <Shirt size={24} style={hangerStyle} />
-        <h3 style={titleStyle}>Try On Queue ({filledSlots.length})</h3>
-      </div>
-
-      {filledSlots.slice(0, 3).map((slot) => (
-        <FittingSetCard
-          key={slot.slot}
-          fittingSet={slot.fittingSet}
-          isFavorite={slot.isFavorite}
-          slotIndex={slot.slot - 1}
-          onRemove={() => onRemoveSet(slot.slot - 1)}
-        />
-      ))}
-    </div>
-  );
-};
-
-/**
- * FittingSetCard - Individual set card component
- */
-const FittingSetCard = ({ fittingSet, isFavorite, slotIndex, onRemove }) => {
-  const cardStyle = {
-    width: '100%',
-    maxWidth: '350px',
+  const shimmerCardStyle = {
+    height: '64px',
     borderRadius: '12px',
-    border: '3px solid #7B3FA0',
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255,255,255,0.95)',
-    flexShrink: 0,
-    marginBottom: '16px',
-    position: 'relative',
+    background: 'linear-gradient(90deg, #f3e9f7 25%, #ead7f1 50%, #f3e9f7 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.4s infinite',
+  };
+
+  const cardStyle = (isActive) => ({
     display: 'flex',
-    flexDirection: 'row',
-    gap: '0',
-  };
+    alignItems: 'center',
+    gap: '12px',
+    padding: '10px 12px',
+    borderRadius: '12px',
+    border: isActive ? '2px solid #793DB0' : '1px solid #E2E8F0',
+    backgroundColor: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+    boxShadow: isActive ? '0 4px 12px rgba(121, 61, 176, 0.2)' : 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  });
 
-  const imageStyle = {
-    width: '140px',
-    height: '160px',
-    objectFit: 'cover',
+  const thumbStyle = {
+    width: '52px',
+    height: '52px',
+    borderRadius: '10px',
+    objectFit: 'contain',
     flexShrink: 0,
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
   };
 
-  const infoStyle = {
-    flex: '1',
-    padding: '16px',
+  const textWrapStyle = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    justifyContent: 'flex-start',
+    gap: '4px',
+    minWidth: 0,
   };
 
-  const titleStyle = {
-    fontSize: '15px',
-    fontWeight: '700',
-    color: '#7B3FA0',
-    margin: '0 0 4px 0',
-    lineHeight: '1.3',
-  };
-
-  const descStyle = {
+  const setTitleStyle = {
     fontSize: '12px',
-    color: '#666',
-    margin: 0,
-    lineHeight: '1.4',
-    display: '-webkit-box',
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: 'vertical',
+    fontWeight: '700',
+    color: '#1A202C',
+    whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   };
 
-  const removeButtonStyle = {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
-    width: '28px',
-    height: '28px',
-    borderRadius: '50%',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    color: '#fff',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-    transition: 'background-color 0.2s',
+  const setSubtitleStyle = {
+    fontSize: '11px',
+    color: '#6b5b7a',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   };
 
   return (
-    <div style={cardStyle}>
-      {fittingSet.imagePath && (
-        <img
-          src={fittingSet.imagePath}
-          alt={fittingSet.title}
-          style={imageStyle}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-      )}
-      <div style={infoStyle}>
-        <p style={titleStyle}>{fittingSet.title}</p>
-        {fittingSet.description && <p style={descStyle}>{fittingSet.description}</p>}
+    <div style={containerStyle}>
+      <div style={titleRowStyle}>
+        <Shirt size={18} color="#7B3FA0" />
+        <h3 style={titleStyle}>Lookbook Sets</h3>
       </div>
-      <button
-        style={removeButtonStyle}
-        onClick={onRemove}
-        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.8)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.6)'; }}
-        title="Remove set"
-      >
-        <X size={16} />
-      </button>
+
+      {isGenerating && (!fittingSets || fittingSets.length === 0) ? (
+        <>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={shimmerCardStyle} />
+          ))}
+          <style>{`@keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }`}</style>
+        </>
+      ) : (
+        (fittingSets || []).map((set, index) => {
+          const imagePath = Array.isArray(set.imagePaths) ? set.imagePaths[0] : set.imagePath;
+          return (
+            <div
+              key={`${set.title || 'set'}-${index}`}
+              style={cardStyle(index === selectedIndex)}
+              onClick={() => onSelectSet(index)}
+            >
+              {imagePath ? (
+                <img
+                  src={imagePath}
+                  alt={set.title || `Set ${index + 1}`}
+                  style={thumbStyle}
+                />
+              ) : (
+                <div style={thumbStyle} />
+              )}
+              <div style={textWrapStyle}>
+                <div style={setTitleStyle}>{set.title || `Set ${index + 1}`}</div>
+                <div style={setSubtitleStyle}>{set.description || 'Generated lookbook set'}</div>
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
   );
 };
