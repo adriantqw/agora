@@ -81,7 +81,7 @@ class JourneySchema(BaseModel):
     colour_palette: Optional[list[str]] = Field(default_factory=list, description="Colour palette in hex (e.g., '#FF5733')", max_length=5)
     mood_board_path: Optional[str] = Field(default=None, description="Path or URL to a mood board image. Can be a local file path during processing or an R2 URL after upload.")
     budget_rating: Optional[int] = Field(description="Budget rating for the outfit between 1-5", default=None, ge=1, le=5)
-    other: Optional[str] = Field(default=None, description="Use this field for any other uncaptured preferences")
+    other: Optional[str] = Field(default=None, description="Use this field for any other uncaptured preferences or details relevant for product matching")
 
 # Define style dna schema
 class StyleDna(BaseModel):

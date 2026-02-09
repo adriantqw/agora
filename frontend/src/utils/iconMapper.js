@@ -40,7 +40,8 @@ import {
   HelpCircle,
   DollarSign,
   Clock,
-  Cloud
+  Cloud,
+  Palette
 } from 'lucide-react';
 
 const iconMap = {
@@ -85,7 +86,8 @@ const iconMap = {
   HelpCircle,
   DollarSign,
   Clock,
-  Cloud
+  Cloud,
+  Palette
 };
 
 export const getIconByName = (name) => {

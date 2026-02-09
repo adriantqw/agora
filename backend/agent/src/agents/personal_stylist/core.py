@@ -271,8 +271,6 @@ class PersonalStylistAgent:
 
     def _invoke_model(self, state: PersonalStylistState):
         """Invoke the model to generate UI components."""
-        import logging
-        logger = logging.getLogger(__name__)
 
         messages = []
         journey: JourneySchema = state.get("journey")

@@ -161,7 +161,7 @@ class Txt2ImgGenerator:
                     # Return local temp file path
                     writer({"info": f"Image generated: {temp_image_path}"})
                     return {"status": "completed", "image_path": temp_image_path}
-                    
+
                 last_error = "No image found in model response"
             except Exception as e:
                 last_error = str(e)

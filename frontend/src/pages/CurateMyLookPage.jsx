@@ -17,7 +17,8 @@ function isQuestionAnswered(question, answer) {
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
         (typeof answer.value === 'string' && answer.value.trim() !== '');
     case 'scale-rating':
-      return answer.value !== undefined && answer.value !== null;
+      return answer.value !== undefined && answer.value !== null
+        && !isNaN(Number(answer.value)) && Number(answer.value) >= 0;
     case 'free-text':
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
@@ -55,7 +56,8 @@ function resolveAnswerLabel(question, answer) {
     }
     case 'scale-rating': {
       if (answer.value === undefined || answer.value === null) return null;
-      return '$'.repeat(Number(answer.value));
+      const max = question.max ?? 5;
+      return `${answer.value}/${max}`;
     }
     case 'free-text': {
       const val = typeof answer.value === 'string' ? answer.value.trim() : '';
@@ -129,6 +131,8 @@ function transformQuestion(backendQuestion) {
     max: backendQuestion.maxValue,
     step: 1,
     minGap: backendQuestion.minValue !== undefined ? Math.max(1, (backendQuestion.maxValue - backendQuestion.minValue) / 20) : 50,
+    minLabel: backendQuestion.min_label || backendQuestion.minLabel,
+    maxLabel: backendQuestion.max_label || backendQuestion.maxLabel,
     multiSelect: backendQuestion.multiSelect,
   };
 }
@@ -163,9 +167,11 @@ function extractFoundationsFromJourney(journey) {
   if (journey.location) rows.push({ label: 'Location', values: [journey.location] });
   if (journey.style_preferences?.length) rows.push({ label: 'Style', values: journey.style_preferences.slice(0, 2) });
   if (journey.occasion) rows.push({ label: 'Occasion', values: [journey.occasion] });
+  if (journey.time_of_day) rows.push({ label: 'Time of Day', values: [journey.time_of_day] });
   if (journey.fit_preference) rows.push({ label: 'Sizing', values: [journey.fit_preference] });
   if (journey.season) rows.push({ label: 'Season', values: [journey.season] });
   if (journey.budget_rating != null) rows.push({ label: 'Budget', values: [`${journey.budget_rating}/5`] });
+  if (journey.colour_palette?.length) rows.push({ label: 'Colour Palette', values: journey.colour_palette });
   return rows;
 }
 
@@ -331,11 +337,16 @@ function QuestionShimmer() {
 export default function CurateMyLookPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const initialQuery = location.state?.searchQuery || '';
+  const rawQuery = location.state?.searchQuery || '';
   const initialImages = location.state?.images || [];
+  const initialQuery = rawQuery || (() => {
+    console.log('[CurateMyLookPage] No user query provided, using default');
+    return 'help my select a fit';
+  })();
 
   // API state
   const [threadId, setThreadId] = useState(null);
+  const [journeyId, setJourneyId] = useState(null);
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -563,13 +574,12 @@ export default function CurateMyLookPage() {
         maxValue: answer.maxValue || undefined,
         timestamp: answer.timestamp || Date.now(),
       };
-      // scale-rating stores answer in value field — send as selectedOptions
-      if (question?.type === 'scale-rating' && answer.value != null && !entry.selectedOptions) {
-        entry.selectedOptions = [String(answer.value)];
-      }
       // free-text stores answer in value field — send as freeText
       if (question?.type === 'free-text' && answer.value && !entry.freeText) {
         entry.freeText = answer.value;
+      }
+      if (question?.type === 'scale-rating' && answer.value !== undefined) {
+        entry.selectedOptions = [String(answer.value)];
       }
       backendAnswers[questionId] = entry;
     });
@@ -630,7 +640,17 @@ export default function CurateMyLookPage() {
             }, 100);
           } else {
             setHasMore(false);
-            // Journey complete — frontend decides what to do with data.journeyId
+            if (data.journeyId) setJourneyId(data.journeyId);
+            // Auto-navigate to matchmaking when journey is complete
+            navigate('/find-the-look', {
+              state: {
+                journeyId: data.journeyId,
+                journeyTitle,
+                foundations,
+                narrativeText,
+                moodBoardUrl,
+              }
+            });
           }
         },
         onError: (msg) => {
@@ -646,9 +666,28 @@ export default function CurateMyLookPage() {
 
   const isJourneyReady = !hasMore || !!moodBoardUrl;
 
+  const navigateToFindTheLook = async (extraState = {}) => {
+    try {
+      const result = await curateMyFitService.createJourney(threadId);
+      navigate('/find-the-look', {
+        state: {
+          journeyId: result.journeyId,
+          journeyTitle,
+          foundations,
+          narrative: narrativeText,
+          ...extraState,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to create journey:', err);
+      setError('Failed to start matching. Please try again.');
+    }
+  };
+
   const handleQuickMatch = () => {
-    navigate('/search', {
+    navigate('/find-the-look', {
       state: {
+        journeyId,
         threadId,
         journeyTitle,
         foundations,
@@ -660,8 +699,9 @@ export default function CurateMyLookPage() {
   };
 
   const handleLetsGo = () => {
-    navigate('/search', {
+    navigate('/find-the-look', {
       state: {
+        journeyId,
         threadId,
         journeyTitle,
         foundations,

@@ -17,6 +17,7 @@ This is the **Agora MerchantHub Backend API** - a FastAPI-based platform for mer
 - ✅ **Catalogue ingestion system (PDF extraction with AI agent)**
 - ✅ **Personal Stylist AI Agent** (interactive style preference gathering)
 - ✅ **MatchMaker AI Agent** (product matching via vector search)
+- ✅ **MatchMaker API endpoints** (product matching with consumer authentication)
 - ✅ **Journey & Outfit models** for consumer shopping experience
 - ✅ ChromaDB vector database with Gemini embeddings
 - ✅ SSE streaming for real-time agent responses
@@ -77,6 +78,7 @@ This is the **Agora MerchantHub Backend API** - a FastAPI-based platform for mer
 - Journey creation and management (shopping preferences + outfits)
 - Personal Stylist AI Agent for interactive style gathering
 - MatchMaker AI Agent for product recommendations via vector search
+- MatchMaker API endpoints for product matching with enrichment
 - SSE streaming for real-time chat responses
 - Journey status tracking (active, in-progress, ideation)
 
@@ -124,7 +126,7 @@ backend/
 │   │   ├── catalogue.py     # Catalogue, CatalogueItem
 │   │   ├── consumer.py      # Consumer, ConsumerRefreshToken
 │   │   └── journey.py       # Journey, Outfit
-│   ├── schemas/             # Pydantic models for request/response (8 schemas)
+│   ├── schemas/             # Pydantic models for request/response (9 schemas)
 │   │   ├── __init__.py
 │   │   ├── auth.py          # Merchant authentication schemas
 │   │   ├── merchant.py      # Merchant profile schemas
@@ -132,16 +134,18 @@ backend/
 │   │   ├── catalogue.py     # Catalogue schemas (upload, items, conversion)
 │   │   ├── consumer.py      # Consumer auth schemas
 │   │   ├── stylist.py       # Stylist chat schemas
+│   │   ├── matchmaker.py    # Matchmaker matching schemas
 │   │   └── journey.py       # Journey and outfit schemas
-│   ├── routes/              # API route handlers (6 routers)
+│   ├── routes/              # API route handlers (7 routers)
 │   │   ├── __init__.py
 │   │   ├── auth.py          # Merchant authentication
 │   │   ├── products.py      # Product CRUD + AI tagging
 │   │   ├── catalogues.py    # Catalogue ingestion workflow
 │   │   ├── consumer_auth.py # Consumer registration/login/refresh
 │   │   ├── stylist.py       # Personal stylist chat interface
+│   │   ├── matchmaker.py    # Matchmaker product matching
 │   │   └── journeys.py      # Journey listing (minimal)
-│   ├── services/            # Business logic layer (7 services)
+│   ├── services/            # Business logic layer (8 services)
 │   │   ├── __init__.py
 │   │   ├── auth_service.py
 │   │   ├── product_service.py
@@ -149,6 +153,7 @@ backend/
 │   │   ├── storage_service.py
 │   │   ├── consumer_auth_service.py
 │   │   ├── stylist_service.py
+│   │   ├── matchmaker_service.py
 │   │   └── journey_service.py
 │   └── utils/               # Utility functions
 │       ├── __init__.py
@@ -338,6 +343,16 @@ Pydantic models for API request/response validation and serialization.
 - `CreateProductsRequest` - Item IDs, default price/quantity, SKU options
 - `CreateProductsResponse` - Created count and errors
 
+**MatchMaker Schemas:**
+- `MatchRequest` - Journey ID, optional thread_id/message/personality
+- `MatchResponse` - Thread ID, enriched matches, message, iteration count
+- `ProductMatchData` - Product with name, description, image, price, score, reason
+- `ProductSetData` - Product set with title, description, products
+- `StreamProgressEvent` - SSE progress event with thinking message
+- `StreamCompleteEvent` - SSE complete event with final matches
+- `StreamErrorEvent` - SSE error event with error message
+- `StateResponse` - Thread state with matches, journey, iteration count
+
 ### Routes (`app/routes/`)
 
 API endpoint handlers using FastAPI router pattern.
@@ -371,6 +386,11 @@ API endpoint handlers using FastAPI router pattern.
 **Journey Routes (`/api/journeys`):**
 - `GET /api/journeys` - List journeys for current consumer (protected)
 
+**MatchMaker Routes (`/api/matchmaker`):**
+- `POST /api/matchmaker/match` - Synchronous product matching
+- `POST /api/matchmaker/match/stream` - SSE streaming with progress events
+- `GET /api/matchmaker/state/{thread_id}` - Retrieve session state
+
 ### Services (`app/services/`)
 
 Business logic layer separating route handlers from implementation.
@@ -396,6 +416,17 @@ Business logic layer separating route handlers from implementation.
 - `ingest_catalogue()` - Synchronous PDF ingestion
 - `ingest_catalogue_stream()` - Async streaming ingestion (future use)
 - `parse_final_agent_state()` - Extract items with cropped images
+
+**MatchMakerService:**
+- `match()` - Synchronous product matching with enrichment
+- `match_stream()` - Async streaming matching with events
+- `get_state()` - Retrieve session state for a thread
+- `_get_journey_with_ownership()` - Fetch journey and verify consumer owns it
+- `_convert_journey_to_schema()` - Reconstruct JourneySchema from PersonalStylist state
+- `_extract_and_enrich_matches()` - Enrich agent matches with product details
+- `_enrich_product_match()` - Fetch product details from Product/CatalogueItem tables
+- `_extract_message()` - Extract message from agent state
+- `_format_stream_event()` - Format LangGraph events for SSE
 
 ### AI Agent Module (`agent/`)
 
@@ -857,6 +888,84 @@ Response: {
 }
 ```
 
+### MatchMaker Endpoints
+
+**Get Product Matches:**
+```
+POST /api/matchmaker/match
+Headers: Authorization: Bearer <access_token>
+Body: {
+  "journeyId": "string",
+  "threadId": "string (optional)",
+  "message": "string (optional)",
+  "personality": "friendly"
+}
+Response: {
+  "success": true,
+  "data": {
+    "threadId": "matchmaker_uuid",
+    "matches": [
+      {
+        "id": "product_abc123",
+        "name": "Navy Evening Dress",
+        "description": "Elegant midi dress...",
+        "imageUrl": "https://r2.../product.jpg",
+        "price": 89.99,
+        "score": 0.95,
+        "reason": "Perfect for your romantic date night"
+      }
+    ],
+    "message": "I found these amazing pieces for your Valentine's date!",
+    "iterationCount": 1
+  }
+}
+```
+
+**Stream Product Matches:**
+```
+POST /api/matchmaker/match/stream
+Headers: Authorization: Bearer <access_token>
+Body: {same as /match}
+Response: Server-Sent Events with JSON chunks
+```
+
+Event types:
+- `progress` - Thinking message during processing
+- `complete` - Final enriched matches with thread ID
+- `error` - Error message with status code prefix (e.g., "404: Journey not found")
+
+**Get Thread State:**
+```
+GET /api/matchmaker/state/{thread_id}
+Headers: Authorization: Bearer <access_token>
+Response: {
+  "success": true,
+  "data": {
+    "threadId": "matchmaker_uuid",
+    "matches": [...],
+    "journey": {...},
+    "iterationCount": 1
+  }
+}
+```
+
+**Error Handling:**
+- 401: Authentication required (no or invalid JWT)
+- 403: Journey doesn't belong to consumer
+- 404: Journey or thread not found
+- 500: Agent or vector search error
+
+**Multi-turn Refinement:**
+Reuse `threadId` from initial response to continue conversation:
+```
+POST /api/matchmaker/match
+Body: {
+  "journeyId": "journey_uuid",
+  "threadId": "previous_thread_id",
+  "message": "Show me something with more red"
+}
+```
+
 ### Catalogue Ingestion Endpoints
 
 **Upload Catalogue:**
@@ -1240,6 +1349,30 @@ curl -X POST http://localhost:8000/api/auth/refresh \
 - ✅ Added MLflow-skinny for experiment tracking
 - ✅ Configuration in app/config.py
 - ✅ Optional feature for development/debugging
+
+### February 6, 2026
+
+**MatchMaker API Integration**
+- ✅ Implemented MatchMaker API REST endpoints
+- ✅ Created matchmaker.py schemas (MatchRequest, MatchResponse, SSE events)
+- ✅ Implemented matchmaker_service.py with agent wrapper
+- ✅ Added product detail enrichment from Product and CatalogueItem tables
+- ✅ Created matchmaker.py routes (3 endpoints: match, stream, state)
+- ✅ Consumer JWT authentication for all MatchMaker endpoints
+- ✅ Journey ownership verification (403 if not owned)
+- ✅ SSE streaming support with progress/complete/error events
+- ✅ Multi-turn refinement support via thread ID management
+- ✅ Auto-generated thread IDs for new sessions
+- ✅ JourneySchema reconstruction from PersonalStylist agent state
+- ✅ Proper error handling (401, 403, 404, 500 status codes)
+
+**MatchMaker Features:**
+- Synchronous product matching with enriched results
+- Server-Sent Events streaming for real-time updates
+- Thread-based session management for conversation history
+- Product matches include name, description, image, price, score, reason
+- Support for individual products and product sets (outfits)
+- Personality configuration support (friendly, professional, etc.)
 
 ### January 9, 2026
 

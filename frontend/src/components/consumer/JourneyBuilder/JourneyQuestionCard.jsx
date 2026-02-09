@@ -117,9 +117,15 @@ function Chip({ iconName, label, selected, onClick, readOnly }) {
 
 /* ── Dual Range Slider component ── */
 function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
-  const minValue = question.min ?? 0;
-  const maxValue = question.max ?? 100;
-  const step = question.step ?? 1;
+  // For pricing/budget questions, default to 0-500 range
+  const isPricing = question.id?.toLowerCase().includes('budget') || 
+                    question.id?.toLowerCase().includes('price') ||
+                    question.rowLabel?.toLowerCase().includes('budget') ||
+                    question.rowLabel?.toLowerCase().includes('price');
+  
+  const minValue = question.min ?? (isPricing ? 0 : 0);
+  const maxValue = question.max ?? (isPricing ? 500 : 100);
+  const step = question.step ?? (isPricing ? 10 : 1);
   const minGap = question.minGap ?? step;
 
   const currentMin = answer?.minValue ?? minValue;
@@ -165,20 +171,21 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
     const rect = trackRef.current.getBoundingClientRect();
     const clientX = e.clientX || (e.touches && e.touches[0].clientX);
     let percent = (clientX - rect.left) / rect.width;
+    // Clamp to [0, 1] for full range, then convert to value
     percent = Math.max(0, Math.min(1, percent));
 
     const value = getValueFromPercent(percent);
 
     if (draggingHandleRef.current === 'min') {
-      if (value <= currentMax - minGap) {
-        updateValues(value, currentMax);
-      }
+      // Min handle: clamp to [minValue, currentMax - minGap]
+      const newMin = Math.max(minValue, Math.min(value, currentMax - minGap));
+      updateValues(newMin, currentMax);
     } else {
-      if (value >= currentMin + minGap) {
-        updateValues(currentMin, value);
-      }
+      // Max handle: clamp to [currentMin + minGap, maxValue]
+      const newMax = Math.max(currentMin + minGap, Math.min(value, maxValue));
+      updateValues(currentMin, newMax);
     }
-  }, [currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
+  }, [minValue, maxValue, currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
 
   const handleMouseUp = React.useCallback(() => {
     isDraggingRef.current = false;
@@ -207,31 +214,48 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
     if (readOnly || e.target.closest('.slider-handle')) return;
 
     const rect = trackRef.current.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
+    // Clamp percent to [0, 1] to ensure full range accessibility
+    let percent = (e.clientX - rect.left) / rect.width;
+    percent = Math.max(0, Math.min(1, percent));
     const value = getValueFromPercent(percent);
 
     const distToMin = Math.abs(value - currentMin);
     const distToMax = Math.abs(value - currentMax);
 
     if (distToMin < distToMax) {
-      if (value <= currentMax - minGap) {
-        updateValues(value, currentMax);
-      }
+      // Move min handle - ensure it can reach absolute min
+      const newMin = Math.max(minValue, Math.min(value, currentMax - minGap));
+      updateValues(newMin, currentMax);
     } else {
-      if (value >= currentMin + minGap) {
-        updateValues(currentMin, value);
-      }
+      // Move max handle - ensure it can reach absolute max
+      const newMax = Math.max(currentMin + minGap, Math.min(value, maxValue));
+      updateValues(currentMin, newMax);
     }
-  }, [readOnly, currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
+  }, [readOnly, minValue, maxValue, currentMin, currentMax, minGap, getValueFromPercent, updateValues]);
 
   const handleInputChange = React.useCallback((handle, inputValue) => {
-    let val = parseInt(inputValue.replace(/[^0-9-]/g, ''), 10);
-    if (isNaN(val)) val = handle === 'min' ? minValue : maxValue;
+    // Remove any non-numeric characters except minus sign at start
+    let cleanedValue = inputValue.replace(/[^0-9-]/g, '');
+    // Ensure minus only appears at the start
+    if (cleanedValue.lastIndexOf('-') > 0) {
+      cleanedValue = cleanedValue.replace(/-/g, '');
+    }
+    
+    let val = parseInt(cleanedValue, 10);
+    if (isNaN(val)) {
+      // Don't update if invalid, keep current value
+      return;
+    }
+    
+    // Clamp to absolute min/max bounds first
+    val = Math.max(minValue, Math.min(val, maxValue));
 
     if (handle === 'min') {
+      // Min handle: must be >= minValue and <= (max handle - minGap)
       val = Math.max(minValue, Math.min(val, currentMax - minGap));
       updateValues(val, currentMax);
     } else {
+      // Max handle: must be >= (min handle + minGap) and <= maxValue
       val = Math.max(currentMin + minGap, Math.min(val, maxValue));
       updateValues(currentMin, val);
     }
@@ -447,6 +471,61 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
   );
 }
 
+/* ── Scale Rating Slider component ── */
+function ScaleRatingSlider({ question, answer, onAnswer, readOnly }) {
+  const min = question.min ?? 1;
+  const max = question.max ?? 5;
+  const step = question.step ?? 1;
+  const currentValue = answer?.value ?? Math.ceil((min + max) / 2);
+
+  const handleChange = (e) => {
+    if (readOnly) return;
+    onAnswer({
+      questionId: question.id,
+      value: Number(e.target.value),
+      timestamp: Date.now(),
+    });
+  };
+
+  return (
+    <div style={{ width: '100%', padding: '4px 0' }}>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={currentValue}
+        onChange={handleChange}
+        disabled={readOnly}
+        style={{ width: '100%', accentColor: 'var(--consumer-purple)' }}
+      />
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: '6px',
+      }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+          {question.minLabel || min}
+        </span>
+        <span style={{
+          fontSize: '13px',
+          fontWeight: '700',
+          color: 'var(--consumer-purple)',
+          background: 'rgba(139, 92, 246, 0.1)',
+          padding: '2px 12px',
+          borderRadius: '12px',
+        }}>
+          {currentValue}/{max}
+        </span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+          {question.maxLabel || max}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* ── Unified chip-row for every question type ── */
 function ChipRow({ question, answer, onAnswer, readOnly }) {
   const selected = getSelectedOptions(question, answer);
@@ -465,158 +544,24 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     }, [question.id, answer, selected]);
   }
 
-  /* --- scale-rating: chips[] override or $-repeat fallback --- */
+  /* --- scale-rating: single value slider --- */
   if (question.type === 'scale-rating') {
-    // Local state for smooth slider interaction
-    const [localValue, setLocalValue] = React.useState(
-      (answer?.value != null && answer.value !== '') ? Number(answer.value) : (question.min ?? 0)
-    );
-
-    // Sync local state with answer prop changes
-    React.useEffect(() => {
-      const newValue = (answer?.value != null && answer.value !== '') ? Number(answer.value) : (question.min ?? 0);
-      console.log('[ChipRow] Scale-rating state update:', {
-        questionId: question.id,
-        answerProp: answer,
-        localValue: localValue,
-        newValue: newValue
-      });
-      setLocalValue(newValue);
-    }, [answer?.value, question.min]);
-
-    const handleSliderChange = (newValue) => {
-      setLocalValue(newValue);
-      onAnswer({
-        questionId: question.id,
-        value: newValue,
-        timestamp: Date.now(),
-      });
-    };
-
-    const pct = localValue != null
-      ? ((localValue - question.min) / (question.max - question.min)) * 100
-      : 0;
-
-    const gradientBackground = localValue != null
-      ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${pct}%, var(--border-color) ${pct}%, var(--border-color) 100%)`
-      : 'var(--border-color)';
-
-    if (question.chips) {
-      // Discrete chip override from backend
-      return (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '10px 0',
-          borderBottom: '1px solid var(--color-border-subtle)',
-          gap: '12px',
-        }}>
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', minWidth: '120px' }}>
-            {label}
-          </span>
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {question.chips.map(chip => (
-              <Chip
-                key={chip.value}
-                label={chip.label}
-                selected={localValue === chip.value}
-                onClick={() => {
-                  console.log('[ChipRow] Scale-rating chip clicked:', {
-                    questionId: question.id,
-                    chipValue: chip.value,
-                    chipLabel: chip.label,
-                    answerObject: {
-                      questionId: question.id,
-                      value: chip.value,
-                      timestamp: Date.now()
-                    }
-                  });
-                  onAnswer({
-                    questionId: question.id,
-                    value: chip.value,
-                    timestamp: Date.now(),
-                  });
-                }}
-                readOnly={readOnly}
-              />
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    // Fallback: discrete slider (1-5 style)
-    const min = question.min ?? 1;
-    const max = question.max ?? 5;
-    const step = 1;
-
-    // Calculate background gradient for "filled" look
-    const sliderPct = localValue != null
-      ? ((localValue - min) / (max - min)) * 100
-      : 0;
-
-    const sliderBackground = localValue != null
-      ? `linear-gradient(to right, var(--consumer-purple) 0%, var(--consumer-purple) ${sliderPct}%, var(--border-color) ${sliderPct}%, var(--border-color) 100%)`
-      : 'var(--border-color)';
-
     return (
       <div style={{
         padding: '10px 0',
         borderBottom: '1px solid var(--color-border-subtle)',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-              {label}
-            </div>
-            {localValue != null && (
-              <div style={{
-                fontSize: '14px',
-                fontWeight: '700',
-                color: 'var(--consumer-purple)',
-                background: 'var(--consumer-purple-light)',
-                padding: '2px 8px',
-                borderRadius: '4px'
-              }}>
-                {localValue} / {max}
-              </div>
-            )}
-          </div>
-
-          <div style={{ position: 'relative', padding: '0 4px' }}>
-            <input
-              type="range"
-              min={min}
-              max={max}
-              step={step}
-              value={localValue ?? min}
-              onChange={(e) => handleSliderChange(Number(e.target.value))}
-              disabled={readOnly}
-              style={{
-                width: '100%',
-                height: '6px',
-                background: sliderBackground,
-                borderRadius: '3px',
-                outline: 'none',
-                appearance: 'none',
-                cursor: readOnly ? 'default' : 'grab',
-                accentColor: 'var(--consumer-purple)',
-              }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', minWidth: '120px' }}>
+            {label}
+          </span>
+          <div style={{ flex: 1 }}>
+            <ScaleRatingSlider
+              question={question}
+              answer={answer}
+              onAnswer={onAnswer}
+              readOnly={readOnly}
             />
-
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginTop: '8px',
-              padding: '0 2px'
-            }}>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'left', maxWidth: '40%' }}>
-                {question.minLabel || question.min_label || min}
-              </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'right', maxWidth: '40%' }}>
-                {question.maxLabel || question.max_label || max}
-              </span>
-            </div>
           </div>
         </div>
       </div>
