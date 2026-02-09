@@ -234,6 +234,7 @@ export default function Header({
               iconColor={textColor}
               hoverBackground={isLanding ? 'rgba(0,0,0,0.05)' : colors.card.backgroundAlt}
               hoverIconColor={isLanding ? '#2D3748' : colors.text.primary}
+              style={{ display: 'none' }}
             />
           )}
         </div>

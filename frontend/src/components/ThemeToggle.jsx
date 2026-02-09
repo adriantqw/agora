@@ -7,7 +7,8 @@ const ThemeToggle = ({
   hoverBackground = '#F9F9F9',
   hoverIconColor = '#F5A5B8',
   size = 40,
-  borderRadius = '8px'
+  borderRadius = '8px',
+  style
 }) => {
   const { theme, toggleTheme } = useTheme();
   const colors = useThemeColors();
@@ -38,6 +39,7 @@ const ThemeToggle = ({
         color: currentIconColor,
         flexShrink: 0,
         transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+        ...style,
       }}
     >
       {isDark ? (

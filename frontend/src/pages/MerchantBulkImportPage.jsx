@@ -400,7 +400,7 @@ export default function BulkImportPage() {
           <span style={{ fontWeight: '700', fontSize: '18px', color: colors.text.primary }}>Agora MerchantHub</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <ThemeToggle />
+          <ThemeToggle style={{ display: 'none' }} />
           <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: colors.gradient.ai, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '600', fontSize: '14px' }}>JS</div>

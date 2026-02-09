@@ -223,7 +223,7 @@ export default function MerchantDashboardPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <ThemeToggle />
+          <ThemeToggle style={{ display: 'none' }} />
           <div style={{ width: '1px', height: '32px', background: colors.border.color }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{
