@@ -633,14 +633,15 @@ const FittingRoomPage = () => {
               </div>
 
               <div style={bottomMascotAreaStyle}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flex: 1, minWidth: 0 }}>
                   <Mascot variant="avatar" size={60} />
                   <div style={{
                     background: 'white',
                     border: '2px solid #F5A5B8',
                     borderRadius: '16px 16px 16px 4px',
                     padding: '12px 16px',
-                    maxWidth: '300px',
+                    flex: 1,
+                    maxWidth: '100%',
                     fontSize: '14px',
                     fontWeight: '500',
                     color: '#1a202c',
