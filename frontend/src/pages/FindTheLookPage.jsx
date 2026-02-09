@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import { MessageCircle, ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
+import Mascot from '../components/common/Mascot/Mascot';
 import LookCarousel from '../components/find-the-look/LookCarousel';
 import ItemGrid from '../components/find-the-look/ItemGrid';
 import AIChatBubble from '../components/find-the-look/AIChatBubble';
@@ -796,6 +797,14 @@ const FindTheLookPage = () => {
           textColor: '#1A202C',
           border: '#E2E8F0'
         }}
+      />
+
+      {/* Floating Mascot Button - Navigate to Fitting Room */}
+      <Mascot
+        variant="default"
+        message="Let's fit!"
+        onClick={() => navigate('/fitting-room')}
+        position="bottom-right"
       />
     </div>
   );

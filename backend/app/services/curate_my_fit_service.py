@@ -322,23 +322,27 @@ async def _upload_generated_images(result: dict) -> dict:
                             local_path = processed_opt['image_path']
                             logger.info(f"Uploading generated image: {local_path}")
 
-                            upload_result = await storage_service.upload_file_from_path(
-                                local_path, folder="generated-images"
-                            )
-
-                            # Clean up temp file regardless of upload success
-                            try:
-                                os.remove(local_path)
-                                logger.info(f"Deleted temp file: {local_path}")
-                            except Exception as e:
-                                logger.warning(f"Failed to delete temp file {local_path}: {e}")
-
-                            if "error" in upload_result:
-                                logger.error(f"R2 upload failed for {local_path}: {upload_result['error']}")
+                            # Check if file exists before uploading
+                            if not os.path.exists(local_path):
+                                logger.error(f"Temp file does not exist for upload: {local_path}")
                             else:
-                                r2_url = upload_result["url"]
-                                logger.info(f"Uploaded to R2: {r2_url}")
-                                processed_opt['image_path'] = r2_url
+                                upload_result = await storage_service.upload_file_from_path(
+                                    local_path, folder="generated-images"
+                                )
+
+                                if "error" in upload_result:
+                                    logger.error(f"R2 upload failed for {local_path}: {upload_result['error']}")
+                                else:
+                                    r2_url = upload_result["url"]
+                                    logger.info(f"Uploaded to R2: {r2_url}")
+                                    processed_opt['image_path'] = r2_url
+
+                                    # Only delete temp file after successful upload
+                                    try:
+                                        os.remove(local_path)
+                                        logger.info(f"Deleted temp file: {local_path}")
+                                    except Exception as e:
+                                        logger.warning(f"Failed to delete temp file {local_path}: {e}")
 
                         processed_image_options.append(processed_opt)
                     else:
@@ -991,23 +995,27 @@ async def _agent_stream_async(agent_stream_coro):
                 if _is_local_file_path(mood_board_path):
                     logger.info(f"Uploading mood board to R2: {mood_board_path}")
                     
-                    upload_result = await storage_service.upload_file_from_path(
-                        mood_board_path, folder="generated-images"
-                    )
-                    
-                    # Clean up temp file regardless of upload success
-                    try:
-                        os.remove(mood_board_path)
-                        logger.info(f"Deleted temp file: {mood_board_path}")
-                    except Exception as e:
-                        logger.warning(f"Failed to delete temp file {mood_board_path}: {e}")
-                    
-                    if "error" in upload_result:
-                        logger.error(f"R2 upload failed for mood board {mood_board_path}: {upload_result['error']}")
+                    # Check if file exists before uploading
+                    if not os.path.exists(mood_board_path):
+                        logger.error(f"Moodboard temp file does not exist: {mood_board_path}")
                     else:
-                        r2_url = upload_result["url"]
-                        logger.info(f"Uploaded mood board to R2: {r2_url}")
-                        journey_delta["mood_board_path"] = r2_url
+                        upload_result = await storage_service.upload_file_from_path(
+                            mood_board_path, folder="generated-images"
+                        )
+                        
+                        if "error" in upload_result:
+                            logger.error(f"R2 upload failed for mood board {mood_board_path}: {upload_result['error']}")
+                        else:
+                            r2_url = upload_result["url"]
+                            logger.info(f"Uploaded mood board to R2: {r2_url}")
+                            journey_delta["mood_board_path"] = r2_url
+                            
+                            # Only delete temp file after successful upload
+                            try:
+                                os.remove(mood_board_path)
+                                logger.info(f"Deleted temp file: {mood_board_path}")
+                            except Exception as e:
+                                logger.warning(f"Failed to delete temp file {mood_board_path}: {e}")
             
             yield {"type": "journey_field", "data": journey_delta}
 

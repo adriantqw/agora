@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { getAIStylingAdvice, getRandomAIResponse } from '../services/fittingRoomService';
 
 const FittingRoomContext = createContext();
 
@@ -25,19 +26,10 @@ export const FittingRoomProvider = ({ children }) => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Mock AI responses
-  const mockAIResponses = [
-    "Great choice! This outfit works well together.",
-    "I love the color combination!",
-    "Have you considered adding a jacket?",
-    "This would be perfect for a garden wedding!",
-    "That top pairs beautifully with those bottoms!",
-    "Adding accessories would complete this look nicely.",
-    "Very elegant! This outfit has a sophisticated vibe.",
-    "Bold choice! I like your style.",
-    "This combination is very trendy right now!",
-    "Perfect for a casual day out!"
-  ];
+  // Fitting assistant state
+  const [fittingThreadId, setFittingThreadId] = useState(null);
+  const [fittingSets, setFittingSets] = useState([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const addToQueue = (product) => {
     let wasAdded = false;
@@ -92,7 +84,7 @@ export const FittingRoomProvider = ({ children }) => {
     const [movedItem] = newQueue.splice(fromIndex, 1);
     newQueue.splice(toIndex, 0, movedItem);
 
-    // Update slot numbers to maintain 1-5
+    // Update slot numbers to maintain 1-7
     newQueue.forEach((item, index) => {
       item.slot = index + 1;
     });
@@ -106,23 +98,64 @@ export const FittingRoomProvider = ({ children }) => {
     setQueue(newQueue);
   };
 
-  const sendChatMessage = (message) => {
+  const sendChatMessage = useCallback(async (message) => {
     // Add user message
     setChatMessages(prev => [...prev, { role: 'user', content: message }]);
-
-    // Show typing indicator
     setIsTyping(true);
 
-    // Simulate AI response delay
-    setTimeout(() => {
-      const randomResponse = mockAIResponses[Math.floor(Math.random() * mockAIResponses.length)];
-      setChatMessages(prev => [...prev, { role: 'ai', content: randomResponse }]);
+    // Get current outfit items for context
+    const outfitItems = queue.filter(s => s.product).map(s => s.product);
+
+    try {
+      const result = await getAIStylingAdvice(outfitItems, {
+        threadId: fittingThreadId,
+        message,
+      });
+
+      setChatMessages(prev => [...prev, { role: 'ai', content: result.message }]);
+
+      if (result.threadId) {
+        setFittingThreadId(result.threadId);
+      }
+      if (result.fittingSets && result.fittingSets.length > 0) {
+        setFittingSets(result.fittingSets);
+      }
+    } catch (err) {
+      // Fallback to local mock
+      const fallback = getRandomAIResponse();
+      setChatMessages(prev => [...prev, { role: 'ai', content: fallback }]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
-  };
+    }
+  }, [queue, fittingThreadId]);
+
+  const generateLookbook = useCallback(async () => {
+    const outfitItems = queue.filter(s => s.product).map(s => s.product);
+    if (outfitItems.length === 0) return;
+
+    setIsGenerating(true);
+    try {
+      const result = await getAIStylingAdvice(outfitItems, {
+        threadId: fittingThreadId,
+      });
+
+      if (result.threadId) {
+        setFittingThreadId(result.threadId);
+      }
+      if (result.fittingSets) {
+        setFittingSets(result.fittingSets);
+      }
+
+      return result;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [queue, fittingThreadId]);
 
   const resetOutfit = () => {
     setQueue(createEmptySlots(QUEUE_SIZE));
+    setFittingThreadId(null);
+    setFittingSets([]);
     setChatMessages([
       { role: 'ai', content: 'Outfit reset! Let\'s start fresh and create something amazing!' }
     ]);
@@ -132,7 +165,6 @@ export const FittingRoomProvider = ({ children }) => {
     const outfit = queue.filter(slot => slot.product !== null).map(slot => slot.product);
     console.log('Buy outfit:', outfit);
     alert(`Processing purchase for ${outfit.length} items!`);
-    // Future: Navigate to checkout with outfit items
   };
 
   const value = {
@@ -141,6 +173,9 @@ export const FittingRoomProvider = ({ children }) => {
     displayedProducts,
     chatMessages,
     isTyping,
+    fittingThreadId,
+    fittingSets,
+    isGenerating,
     addToQueue,
     addMultipleToQueue,
     removeFromQueue,
@@ -149,6 +184,7 @@ export const FittingRoomProvider = ({ children }) => {
     setActiveCategory,
     setDisplayedProducts,
     sendChatMessage,
+    generateLookbook,
     resetOutfit,
     buyOutfit
   };

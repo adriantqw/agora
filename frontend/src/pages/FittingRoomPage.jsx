@@ -1,41 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
-import { fetchFittingRoomProducts } from '../services/fittingRoomService';
+import { fetchFittingRoomProducts, getRandomAIResponse, getAIStylingAdvice } from '../services/fittingRoomService';
 import Header from '../components/common/Header/Header';
-import CategoryTabs from '../components/fitting-room/CategoryTabs/CategoryTabs';
-import ProductGrid from '../components/fitting-room/ProductGrid/ProductGrid';
-import TryOnQueue from '../components/fitting-room/TryOnQueue/TryOnQueue';
-import FittingRoomPanel from '../components/fitting-room/FittingRoomPanel/FittingRoomPanel';
+import OutfitGallery from '../components/fitting-room/OutfitGallery/OutfitGallery';
+import VirtualModel from '../components/fitting-room/VirtualModel/VirtualModel';
+import ProductStrip from '../components/fitting-room/ProductStrip/ProductStrip';
+import ShoppingCart from '../components/fitting-room/ShoppingCart/ShoppingCart';
 import Mascot from '../components/common/Mascot/Mascot';
 
 const FittingRoomPage = () => {
   const navigate = useNavigate();
   const {
     queue,
-    activeCategory,
-    chatMessages,
-    isTyping,
     addToQueue,
     removeFromQueue,
-    reorderQueue,
-    toggleFavorite,
-    setActiveCategory,
-    sendChatMessage,
-    resetOutfit,
     buyOutfit,
   } = useFittingRoom();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [favoriteProducts, setFavoriteProducts] = useState([]);
+  const [mascotMessage, setMascotMessage] = useState('Add items to start styling!');
 
-  // Load products when category changes
+  // Load all products on mount
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       try {
-        const data = await fetchFittingRoomProducts(activeCategory);
+        const data = await fetchFittingRoomProducts('current');
         setProducts(data);
       } catch (error) {
         console.error('Error loading products:', error);
@@ -43,106 +35,124 @@ const FittingRoomPage = () => {
         setLoading(false);
       }
     };
-
     loadProducts();
-  }, [activeCategory]);
+  }, []);
 
-  const handleCategoryChange = (category) => {
-    setActiveCategory(category);
-  };
+  // Derive outfit items from queue
+  const outfitItems = queue
+    .filter(s => s.product)
+    .map(s => s.product);
 
-  const handleAddToQueue = (product) => {
-    const success = addToQueue(product);
-    if (!success) {
-      alert('Queue is full! Remove an item to add a new one.');
+  const selectedProductIds = outfitItems.map(p => p.id);
+
+  // Update mascot message when outfit changes
+  useEffect(() => {
+    if (outfitItems.length === 0) {
+      setMascotMessage('Add items to start styling!');
+    } else {
+      setMascotMessage(getRandomAIResponse());
+    }
+  }, [outfitItems.length]);
+
+  const handleToggleProduct = (product) => {
+    const slotIndex = queue.findIndex(s => s.product && s.product.id === product.id);
+    if (slotIndex !== -1) {
+      removeFromQueue(slotIndex);
+    } else {
+      const success = addToQueue(product);
+      if (!success) {
+        alert('Outfit is full! Remove an item to add a new one.');
+      }
     }
   };
 
-  const handleToggleProductFavorite = (product) => {
-    setFavoriteProducts(prev => {
-      if (prev.includes(product.id)) {
-        return prev.filter(id => id !== product.id);
-      } else {
-        return [...prev, product.id];
-      }
-    });
+  const handleRemoveFromOutfit = (productId) => {
+    const slotIndex = queue.findIndex(s => s.product && s.product.id === productId);
+    if (slotIndex !== -1) {
+      removeFromQueue(slotIndex);
+    }
   };
 
-  const handleUpdateSearch = () => {
+  const handleCheckout = () => {
+    buyOutfit();
+  };
+
+  const handleRefineSearch = () => {
     navigate('/curate-my-fit');
   };
 
   const pageStyle = {
     minHeight: '100vh',
-    backgroundColor: '#FAFAFA',
+    background: 'linear-gradient(180deg, #FDE8EF 0%, #E8D5F0 50%, #F0E6F6 100%)',
     display: 'flex',
     flexDirection: 'column',
   };
 
   const mainLayoutStyle = {
     display: 'grid',
-    gridTemplateColumns: '1fr 200px 400px',
+    gridTemplateColumns: '350px 1fr 340px',
     flex: 1,
-    height: 'calc(100vh - 200px)', // Account for header and footer
+    padding: '20px',
+    gap: '20px',
+    overflow: 'hidden',
+    height: 'calc(100vh - 80px)',
+  };
+
+  const centerColumnStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     overflow: 'hidden',
   };
 
-  const productColumnStyle = {
-    overflowY: 'auto',
-    height: '100%',
+  const titleStyle = {
+    fontSize: '28px',
+    fontWeight: '700',
+    background: 'linear-gradient(135deg, #E8B4CB, #7B3FA0)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    marginBottom: '8px',
+    textAlign: 'center',
   };
 
-  const queueColumnStyle = {
-    overflowY: 'auto',
-    height: '100%',
-  };
-
-  const panelColumnStyle = {
-    overflowY: 'auto',
-    height: '100%',
-  };
-
-  const footerStyle = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px 40px',
-    backgroundColor: '#FFFFFF',
-    borderTop: '1px solid #EEEEEE',
-  };
-
-  const updateButtonStyle = {
-    padding: '12px 24px',
-    borderRadius: '8px',
-    border: '2px solid #F5A5B8',
-    backgroundColor: '#FFFFFF',
-    color: '#F5A5B8',
+  const refineSearchStyle = {
     fontSize: '14px',
-    fontWeight: '600',
+    color: '#7B3FA0',
+    textDecoration: 'underline',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    background: 'none',
+    border: 'none',
+    fontWeight: '500',
+    marginTop: '8px',
   };
 
-  // Responsive styles for mobile/tablet
+  const mascotAreaStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: 'auto',
+    paddingTop: '12px',
+  };
+
   const mediaQueryStyle = `
-    @media (max-width: 1024px) {
-      .main-layout {
-        grid-template-columns: 1fr 250px !important;
+    @media (max-width: 1200px) {
+      .fitting-room-layout {
+        grid-template-columns: 1fr 340px !important;
       }
-      .fitting-room-panel {
-        display: none;
+      .outfit-gallery-column {
+        display: none !important;
       }
     }
 
     @media (max-width: 768px) {
-      .main-layout {
+      .fitting-room-layout {
         grid-template-columns: 1fr !important;
+        height: auto !important;
+        overflow: visible !important;
       }
-      .try-on-queue {
-        display: none;
-      }
-      .fitting-room-panel {
-        display: none;
+      .shopping-cart-column {
+        max-height: 400px;
       }
     }
   `;
@@ -153,60 +163,50 @@ const FittingRoomPage = () => {
 
       <Header compact={true} />
 
-      <CategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-      />
+      <div style={mainLayoutStyle} className="fitting-room-layout">
+        {/* Left column: Outfit Gallery */}
+        <div className="outfit-gallery-column">
+          <OutfitGallery
+            items={outfitItems}
+            onRemoveItem={handleRemoveFromOutfit}
+          />
+        </div>
 
-      <div style={mainLayoutStyle} className="main-layout">
-        <div style={productColumnStyle}>
-          {loading ? (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              height: '400px',
-              fontSize: '16px',
-              color: '#666666',
-            }}>
-              Loading products...
-            </div>
-          ) : (
-            <ProductGrid
-              products={products}
-              onAddToQueue={handleAddToQueue}
-              onToggleFavorite={handleToggleProductFavorite}
-              favoriteProducts={favoriteProducts}
+        {/* Center column: Mannequin + Product Strip + Mascot */}
+        <div style={centerColumnStyle}>
+          <h1 style={titleStyle}>Fitting Room</h1>
+
+          <VirtualModel outfit={queue} />
+
+          <ProductStrip
+            products={products}
+            selectedProductIds={selectedProductIds}
+            onToggleProduct={handleToggleProduct}
+            loading={loading}
+          />
+
+          <div style={mascotAreaStyle}>
+            <Mascot
+              variant="default"
+              position="relative"
+              message={mascotMessage}
             />
-          )}
+            <button
+              style={refineSearchStyle}
+              onClick={handleRefineSearch}
+            >
+              Refine your search
+            </button>
+          </div>
         </div>
 
-        <div style={queueColumnStyle} className="try-on-queue">
-          <TryOnQueue
-            slots={queue}
-            onReorder={reorderQueue}
-            onRemove={removeFromQueue}
-            onToggleFavorite={toggleFavorite}
+        {/* Right column: Shopping Cart */}
+        <div className="shopping-cart-column">
+          <ShoppingCart
+            items={outfitItems}
+            onCheckout={handleCheckout}
           />
         </div>
-
-        <div style={panelColumnStyle} className="fitting-room-panel">
-          <FittingRoomPanel
-            outfit={queue}
-            onReset={resetOutfit}
-            onBuyOutfit={buyOutfit}
-            chatMessages={chatMessages}
-            onSendMessage={sendChatMessage}
-            isTyping={isTyping}
-          />
-        </div>
-      </div>
-
-      <div style={footerStyle}>
-        <button onClick={handleUpdateSearch} style={updateButtonStyle}>
-          Update Search Criteria
-        </button>
-        <Mascot size="small" />
       </div>
     </div>
   );

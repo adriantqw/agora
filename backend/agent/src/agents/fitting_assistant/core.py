@@ -172,6 +172,9 @@ class FittingAssistantAgent:
         product_details = fetch_product_details_batch(product_ids)
 
         # Load and encode product images (async with caching)
+        # Use nest_asyncio to handle nested event loops (we're in sync context called from async)
+        import nest_asyncio
+        nest_asyncio.apply()
         product_images = asyncio.run(load_product_images_batch_async(product_details))
 
         # Populate product details into selections

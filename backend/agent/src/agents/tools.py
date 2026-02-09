@@ -2,6 +2,7 @@
 import base64
 import requests
 import os
+import uuid
 import tempfile
 import asyncio
 from pydantic import FilePath
@@ -108,8 +109,69 @@ class Txt2ImgGenerator:
         )]
         return messages
     
+    def _upload_image_to_r2(self, image_bytes: bytes, folder: str = "generated-images") -> dict:
+        """
+        Upload image bytes directly to Cloudflare R2.
+        
+        Args:
+            image_bytes: Raw image bytes
+            folder: Folder path in R2 bucket
+            
+        Returns:
+            dict with 'url' on success, 'error' on failure
+        """
+        try:
+            import boto3
+            from botocore.config import Config
+            from botocore.exceptions import ClientError
+        except ImportError:
+            return {"error": "boto3 not installed"}
+        
+        # Get R2 credentials from environment
+        r2_account_id = os.environ.get('R2_ACCOUNT_ID')
+        r2_access_key = os.environ.get('R2_ACCESS_KEY_ID')
+        r2_secret_key = os.environ.get('R2_SECRET_ACCESS_KEY')
+        r2_bucket = os.environ.get('R2_BUCKET_NAME', 'agora-product-images')
+        r2_public_url = os.environ.get('R2_PUBLIC_URL')
+        
+        if not all([r2_account_id, r2_access_key, r2_secret_key, r2_public_url]):
+            return {"error": "R2 credentials not configured"}
+        
+        try:
+            # Create S3 client for R2
+            client = boto3.client(
+                "s3",
+                endpoint_url=f"https://{r2_account_id}.r2.cloudflarestorage.com",
+                aws_access_key_id=r2_access_key,
+                aws_secret_access_key=r2_secret_key,
+                config=Config(signature_version="s3v4"),
+                region_name="auto",
+            )
+            
+            # Generate unique filename
+            unique_filename = f"{uuid.uuid4()}.jpeg"
+            key = f"{folder.rstrip('/')}/{unique_filename}"
+            
+            # Upload to R2
+            client.put_object(
+                Bucket=r2_bucket,
+                Key=key,
+                Body=image_bytes,
+                ContentType="image/jpeg",
+            )
+            
+            # Construct public URL
+            public_url = f"{(r2_public_url or '').rstrip('/')}/{key}"
+            
+            return {"url": public_url}
+            
+        except ClientError as e:
+            return {"error": f"Upload failed: {str(e)}"}
+        except Exception as e:
+            return {"error": f"Unexpected error: {str(e)}"}
+
     def _extract_image_path_from_output(self, output) -> str | None:
-        """Extract the image path from the model output and save it to a tempfile."""
+        """Extract the image from model output and upload directly to R2."""
         content = output.content
         if isinstance(content, list) and len(content) > 0:
             for item in content:
@@ -121,12 +183,21 @@ class Txt2ImgGenerator:
                     base64_str = data_uri.split(",", 1)[1]
 
                     try:
-                        fd, path = tempfile.mkstemp(prefix='img-gen-', suffix='.jpeg')
-                        os.close(fd)
-                        with open(path, "wb") as f:
-                            f.write(base64.b64decode(base64_str))
-                        return path
-                    except Exception:
+                        # Decode image bytes
+                        image_bytes = base64.b64decode(base64_str)
+                        
+                        # Upload directly to R2
+                        upload_result = self._upload_image_to_r2(image_bytes)
+                        
+                        if "error" in upload_result:
+                            # Log error but still return None (generation failed)
+                            print(f"R2 upload failed: {upload_result['error']}")
+                            return None
+                        
+                        # Return R2 URL directly
+                        return upload_result["url"]
+                    except Exception as e:
+                        print(f"Error processing image: {e}")
                         return None
         return None
 

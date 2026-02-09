@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.routes import auth, products, catalogues, consumer_auth, journeys, stylist, wishlist, profile, style_profile, curate_my_fit, matchmaker
+from app.routes import auth, products, catalogues, consumer_auth, journeys, stylist, wishlist, profile, style_profile, curate_my_fit, matchmaker, fitting_assistant
 import app.models  # Import models to register them with SQLAlchemy
 import logging
 
@@ -43,6 +43,7 @@ app.include_router(profile.router)
 app.include_router(style_profile.router)
 app.include_router(curate_my_fit.router)
 app.include_router(matchmaker.router)
+app.include_router(fitting_assistant.router)
 
 
 @app.on_event("startup")

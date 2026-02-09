@@ -79,19 +79,10 @@ async def _upload_temp_images_async(ui_inputs: list) -> list:
 
 def _upload_temp_images(ui_inputs: list) -> list:
     """Synchronous wrapper for uploading temp images."""
-    try:
-        # Try to get the current event loop
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            # We're already in an async context, can't use asyncio.run()
-            # Return ui_inputs as-is and let the async path handle it
-            return ui_inputs
-        else:
-            # No running loop, safe to use asyncio.run()
-            return asyncio.run(_upload_temp_images_async(ui_inputs))
-    except RuntimeError:
-        # No event loop, create one
-        return asyncio.run(_upload_temp_images_async(ui_inputs))
+    # Use nest_asyncio to handle nested event loops properly
+    import nest_asyncio
+    nest_asyncio.apply()
+    return asyncio.run(_upload_temp_images_async(ui_inputs))
 
 
 def _format_response(thread_id: str, state: dict) -> dict:
