@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Shirt, Loader } from 'lucide-react';
 
-const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGenerating = false }) => {
+const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGenerating = false, thinkingText = '' }) => {
   const containerStyle = {
     background: 'linear-gradient(180deg, #E8B4CB 0%, #C9A0DC 100%)',
     borderRadius: '16px',
@@ -12,6 +12,12 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
     gap: '16px',
     height: '100%',
     overflowY: 'auto',
+  };
+
+  const titleRowStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   };
 
   const titleStyle = {
@@ -25,7 +31,6 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
   const hangerStyle = {
     color: '#7B3FA0',
     opacity: 0.7,
-    marginBottom: '4px',
   };
 
   const mainImageStyle = {
@@ -143,11 +148,18 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
   if (isGenerating) {
     return (
       <div style={containerStyle}>
-        <Shirt size={32} style={hangerStyle} />
-        <h3 style={titleStyle}>Try On Queue</h3>
+        <div style={titleRowStyle}>
+          <Shirt size={24} style={hangerStyle} />
+          <h3 style={titleStyle}>Try On Queue</h3>
+        </div>
         <div style={loadingContainerStyle}>
           <Loader size={32} style={{ animation: 'spin 1s linear infinite' }} />
           <span style={{ fontSize: '14px', fontWeight: '500' }}>Generating outfit sets...</span>
+          {thinkingText && (
+            <p style={{ fontSize: '12px', color: '#7B3FA0', opacity: 0.7, margin: '8px 0 0', lineHeight: '1.5', maxHeight: '120px', overflowY: 'auto', textAlign: 'left', width: '100%' }}>
+              {thinkingText}
+            </p>
+          )}
           <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </div>
       </div>
@@ -158,8 +170,10 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
   if (fittingSets.length > 0) {
     return (
       <div style={containerStyle}>
-        <Shirt size={32} style={hangerStyle} />
-        <h3 style={titleStyle}>Try On Queue</h3>
+        <div style={titleRowStyle}>
+          <Shirt size={24} style={hangerStyle} />
+          <h3 style={titleStyle}>Try On Queue</h3>
+        </div>
         {fittingSets.map((set, index) => (
           <div key={index} style={fittingSetCardStyle}>
             {set.imagePaths && set.imagePaths.length > 0 && (
@@ -184,8 +198,10 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
   if (items.length === 0) {
     return (
       <div style={containerStyle}>
-        <Shirt size={32} style={hangerStyle} />
-        <h3 style={titleStyle}>Try On Queue</h3>
+        <div style={titleRowStyle}>
+          <Shirt size={24} style={hangerStyle} />
+          <h3 style={titleStyle}>Try On Queue</h3>
+        </div>
         <div style={emptyPlaceholderStyle}>
           Add items to your outfit to see them here
         </div>

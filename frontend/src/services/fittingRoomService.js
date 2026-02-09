@@ -1,6 +1,6 @@
 // Fitting Room Service — backend integration with mock fallback
 import { post, get } from './api';
-import authService from './authService';
+import consumerAuthService from './consumerAuthService';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -162,8 +162,8 @@ export const generateLookbookStream = ({
 
   (async () => {
     try {
-      await authService.ensureValidToken();
-      const token = authService.getToken();
+      await consumerAuthService.ensureValidToken();
+      const token = consumerAuthService.getToken();
 
       const response = await fetch(`${API_BASE_URL}/api/fitting-assistant/fit/stream`, {
         method: 'POST',
@@ -256,7 +256,7 @@ export const getAIStylingAdvice = async (outfit, options = {}) => {
   }
 
   // Try backend if user is authenticated
-  const token = authService.getToken();
+  const token = consumerAuthService.getToken();
   if (token) {
     try {
       const result = await generateLookbook({

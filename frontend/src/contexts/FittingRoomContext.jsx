@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { getAIStylingAdvice, getRandomAIResponse } from '../services/fittingRoomService';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { getAIStylingAdvice, generateLookbookStream, getRandomAIResponse } from '../services/fittingRoomService';
+import consumerAuthService from '../services/consumerAuthService';
 
 const FittingRoomContext = createContext();
 
@@ -30,6 +31,8 @@ export const FittingRoomProvider = ({ children }) => {
   const [fittingThreadId, setFittingThreadId] = useState(null);
   const [fittingSets, setFittingSets] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [thinkingText, setThinkingText] = useState('');
+  const abortStreamRef = useRef(null);
 
   const addToQueue = (product) => {
     let wasAdded = false;
@@ -134,17 +137,49 @@ export const FittingRoomProvider = ({ children }) => {
     if (outfitItems.length === 0) return;
 
     setIsGenerating(true);
+    setThinkingText('');
+
+    // If user is authenticated, use streaming endpoint
+    const token = consumerAuthService.getToken();
+    if (token) {
+      const abort = generateLookbookStream({
+        productSelections: outfitItems,
+        threadId: fittingThreadId,
+        onThinking: (content) => {
+          setThinkingText(prev => prev + content);
+        },
+        onComplete: (data) => {
+          if (data.threadId) setFittingThreadId(data.threadId);
+          if (data.fittingSets) setFittingSets(data.fittingSets);
+          if (data.message) {
+            setChatMessages(prev => [...prev, { role: 'ai', content: data.message }]);
+          }
+          setIsGenerating(false);
+          setThinkingText('');
+          abortStreamRef.current = null;
+        },
+        onError: (msg) => {
+          console.error('Stream error:', msg);
+          // Fallback to mock
+          const fallback = getRandomAIResponse();
+          setChatMessages(prev => [...prev, { role: 'ai', content: fallback }]);
+          setIsGenerating(false);
+          setThinkingText('');
+          abortStreamRef.current = null;
+        },
+      });
+      abortStreamRef.current = abort;
+      return;
+    }
+
+    // Fallback: sync endpoint (unauthenticated / no token)
     try {
       const result = await getAIStylingAdvice(outfitItems, {
         threadId: fittingThreadId,
       });
 
-      if (result.threadId) {
-        setFittingThreadId(result.threadId);
-      }
-      if (result.fittingSets) {
-        setFittingSets(result.fittingSets);
-      }
+      if (result.threadId) setFittingThreadId(result.threadId);
+      if (result.fittingSets) setFittingSets(result.fittingSets);
 
       return result;
     } finally {
@@ -153,9 +188,14 @@ export const FittingRoomProvider = ({ children }) => {
   }, [queue, fittingThreadId]);
 
   const resetOutfit = () => {
+    if (abortStreamRef.current) {
+      abortStreamRef.current();
+      abortStreamRef.current = null;
+    }
     setQueue(createEmptySlots(QUEUE_SIZE));
     setFittingThreadId(null);
     setFittingSets([]);
+    setThinkingText('');
     setChatMessages([
       { role: 'ai', content: 'Outfit reset! Let\'s start fresh and create something amazing!' }
     ]);
@@ -176,6 +216,7 @@ export const FittingRoomProvider = ({ children }) => {
     fittingThreadId,
     fittingSets,
     isGenerating,
+    thinkingText,
     addToQueue,
     addMultipleToQueue,
     removeFromQueue,

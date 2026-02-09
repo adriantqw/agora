@@ -8,7 +8,6 @@ import VirtualModel from '../components/fitting-room/VirtualModel/VirtualModel';
 import ProductStrip from '../components/fitting-room/ProductStrip/ProductStrip';
 import ShoppingCart from '../components/fitting-room/ShoppingCart/ShoppingCart';
 import Mascot from '../components/common/Mascot/Mascot';
-import AIChat from '../components/fitting-room/AIChat/AIChat';
 
 const FittingRoomPage = () => {
   const navigate = useNavigate();
@@ -20,9 +19,8 @@ const FittingRoomPage = () => {
     generateLookbook,
     fittingSets,
     isGenerating,
-    sendChatMessage,
+    thinkingText,
     chatMessages,
-    isTyping,
   } = useFittingRoom();
 
   const [products, setProducts] = useState([]);
@@ -180,6 +178,7 @@ const FittingRoomPage = () => {
             onRemoveItem={handleRemoveFromOutfit}
             fittingSets={fittingSets}
             isGenerating={isGenerating}
+            thinkingText={thinkingText}
           />
         </div>
 
@@ -211,16 +210,11 @@ const FittingRoomPage = () => {
           </div>
         </div>
 
-        {/* Right column: Shopping Cart + AI Chat */}
-        <div className="shopping-cart-column" style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflow: 'hidden' }}>
+        {/* Right column: Shopping Cart */}
+        <div className="shopping-cart-column">
           <ShoppingCart
             items={outfitItems}
             onCheckout={handleCheckout}
-          />
-          <AIChat
-            messages={chatMessages}
-            onSendMessage={sendChatMessage}
-            isTyping={isTyping}
           />
         </div>
       </div>
