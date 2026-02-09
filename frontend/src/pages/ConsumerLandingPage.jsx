@@ -230,7 +230,7 @@ const ConsumerLandingPage = () => {
           }}>
              <img 
               src="/egg-chan.svg" 
-              alt="Eggora-chan" 
+              alt="Aura-chan" 
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           </div>
@@ -244,7 +244,7 @@ const ConsumerLandingPage = () => {
               margin: '0 0 16px 0',
               lineHeight: '1.1',
             }}>
-              Hi, I'm Eggora-chan!<br/>
+              Hi, I'm Aura-chan!<br/>
               <span style={{ color: '#793DB0' }}>Your personal shopping assistant...</span>
             </h1>
             
