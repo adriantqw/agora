@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
-import { MessageCircle, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { MessageCircle, ChevronLeft, ChevronRight, Sparkles, ArrowRight } from 'lucide-react';
 import Header from '../components/common/Header/Header';
 import LookCarousel from '../components/find-the-look/LookCarousel';
 import ItemGrid from '../components/find-the-look/ItemGrid';
@@ -579,7 +579,7 @@ const FindTheLookPage = () => {
             {/* AI Recommendation */}
             {aiMessage && !isLoading && (
               <div style={{ overflow: 'visible', minHeight: 'fit-content', width: '100%' }}>
-                <AIChatBubble message={aiMessage} />
+                <AIChatBubble message={aiMessage} isShimmering={isRefining} />
               </div>
             )}
 
@@ -624,10 +624,7 @@ const FindTheLookPage = () => {
                     disabled={!feedbackText.trim() || isRefining}
                     aria-label="Send feedback"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2 11" />
-                    </svg>
+                    <ArrowRight size={20} />
                   </button>
                 )}
 

@@ -37,7 +37,7 @@ const LookCard = ({ look, isActive, onClick }) => {
   const imageStyle = {
     width: '100%',
     height: '65%',
-    objectFit: 'cover',
+    objectFit: 'contain',
     flexShrink: 0,
     borderRadius: '4px',
     margin: '6px 6px 0 6px',
