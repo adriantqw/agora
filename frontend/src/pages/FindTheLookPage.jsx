@@ -802,8 +802,9 @@ const FindTheLookPage = () => {
       {/* Floating Mascot Button - Navigate to Fitting Room */}
       <Mascot
         variant="default"
-        message="Let's fit!"
-        onClick={() => navigate('/fitting-room')}
+        message={queueItems.length > 0 ? "Let's fit!" : ''}
+        onClick={queueItems.length > 0 ? () => navigate('/fitting-room') : undefined}
+        isSearching={queueItems.length > 0}
         position="bottom-right"
       />
     </div>
