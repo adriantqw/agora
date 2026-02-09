@@ -3,9 +3,12 @@ import { Shirt } from 'lucide-react';
 
 const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }) => {
   const containerStyle = {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid var(--border-color)',
-    borderRadius: '16px',
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '24px',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',
     padding: '24px 16px',
     display: 'flex',
     flexDirection: 'column',
@@ -23,7 +26,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
   const titleStyle = {
     fontSize: '16px',
     fontWeight: '700',
-    color: '#7B3FA0',
+    color: '#793DB0',
     textAlign: 'left',
     margin: 0,
   };
@@ -42,8 +45,9 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
     gap: '12px',
     padding: '10px 12px',
     borderRadius: '12px',
-    border: isActive ? '2px solid #7B3FA0' : '1px solid var(--border-color)',
-    backgroundColor: isActive ? 'rgba(123, 63, 160, 0.08)' : 'rgba(255, 255, 255, 0.7)',
+    border: isActive ? '2px solid #793DB0' : '1px solid #E2E8F0',
+    backgroundColor: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+    boxShadow: isActive ? '0 4px 12px rgba(121, 61, 176, 0.2)' : 'none',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   });
@@ -52,9 +56,10 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
     width: '52px',
     height: '52px',
     borderRadius: '10px',
-    objectFit: 'cover',
+    objectFit: 'contain',
     flexShrink: 0,
-    background: '#f7f2fa',
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
   };
 
   const textWrapStyle = {
@@ -67,7 +72,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
   const setTitleStyle = {
     fontSize: '12px',
     fontWeight: '700',
-    color: '#3d2352',
+    color: '#1A202C',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',

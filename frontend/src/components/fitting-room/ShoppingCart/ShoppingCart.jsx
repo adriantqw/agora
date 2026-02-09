@@ -5,9 +5,12 @@ const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
   const total = items.reduce((sum, item) => sum + item.price, 0);
 
   const containerStyle = {
-    backgroundColor: '#fff',
-    borderRadius: '16px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+    background: 'rgba(255, 255, 255, 0.7)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    borderRadius: '24px',
+    border: '1px solid rgba(255, 255, 255, 0.3)',
+    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.03)',
     padding: '24px',
     display: 'flex',
     flexDirection: 'column',
@@ -37,11 +40,11 @@ const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
   const lineItemStyle = {
     display: 'flex',
     gap: '12px',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: '8px',
     padding: '12px',
     marginBottom: '12px',
-    border: '1px solid #f0f0f0',
+    border: '1px solid #E2E8F0',
     transition: 'all 0.2s ease',
   };
 
@@ -100,7 +103,7 @@ const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '16px 0',
-    borderTop: '2px solid #eee',
+    borderTop: '1px solid #E2E8F0',
     marginBottom: '16px',
   };
 

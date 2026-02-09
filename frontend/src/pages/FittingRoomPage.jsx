@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, ChevronDown, MessageCircle, ArrowRight, X } from 'lucide-react';
+import { Sparkles, ChevronDown, MessageCircle, ArrowRight, X, Plus } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import Header from '../components/common/Header/Header';
@@ -33,9 +33,12 @@ function ThinkingDropdown({ text, isActive, startTime }) {
   return (
     <div style={{
       marginBottom: isExpanded ? '16px' : '8px',
-      borderRadius: isExpanded ? '12px' : '20px',
-      border: isExpanded ? '1px solid rgba(139, 92, 246, 0.15)' : 'none',
-      background: isExpanded ? 'rgba(139, 92, 246, 0.04)' : 'transparent',
+      borderRadius: isExpanded ? '16px' : '20px',
+      border: isExpanded ? '1px solid rgba(255, 255, 255, 0.3)' : 'none',
+      background: isExpanded ? 'rgba(255, 255, 255, 0.7)' : 'transparent',
+      boxShadow: isExpanded ? '0 10px 30px rgba(0, 0, 0, 0.03)' : 'none',
+      backdropFilter: isExpanded ? 'blur(12px)' : 'none',
+      WebkitBackdropFilter: isExpanded ? 'blur(12px)' : 'none',
       overflow: 'hidden',
       animation: 'fadeIn 0.3s ease-out',
       maxWidth: isExpanded ? '100%' : 'fit-content',
@@ -49,13 +52,14 @@ function ThinkingDropdown({ text, isActive, startTime }) {
           alignItems: 'center',
           gap: isExpanded ? '8px' : '5px',
           padding: isExpanded ? '10px 14px' : '5px 12px',
-          background: isExpanded ? 'none' : 'rgba(139, 92, 246, 0.08)',
-          border: isExpanded ? 'none' : '1px solid rgba(139, 92, 246, 0.12)',
+          background: isExpanded ? 'none' : 'rgba(121, 61, 176, 0.08)',
+          border: isExpanded ? 'none' : '1px solid rgba(121, 61, 176, 0.12)',
           borderRadius: isExpanded ? '0' : '20px',
           cursor: 'pointer',
           fontSize: isExpanded ? '13px' : '11px',
           fontWeight: '600',
           color: '#793DB0',
+          fontFamily: '"Readex Pro", -apple-system, sans-serif',
           transition: 'all 0.3s ease',
         }}
       >
@@ -91,7 +95,8 @@ function ThinkingDropdown({ text, isActive, startTime }) {
             overflowY: 'auto',
             fontSize: '12px',
             lineHeight: '1.6',
-            color: '#6B5B7A',
+            color: '#666',
+            fontFamily: '"Readex Pro", -apple-system, sans-serif',
           }}
         >
           <Markdown>{text}</Markdown>
@@ -127,6 +132,7 @@ const FittingRoomPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState(() => new Set());
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [hoveredItemId, setHoveredItemId] = useState(null);
 
   const navQueueItems = location.state?.queueItems || [];
 
@@ -268,6 +274,15 @@ const FittingRoomPage = () => {
     buyOutfit();
   };
 
+  const designTokens = {
+    fontFamily: '"Readex Pro", -apple-system, sans-serif',
+    primary: '#793DB0',
+    border: '#E2E8F0',
+    frostedBg: 'rgba(255, 255, 255, 0.7)',
+    frostedBorder: '1px solid rgba(255, 255, 255, 0.3)',
+    shadowSoft: '0 10px 30px rgba(0, 0, 0, 0.03)',
+  };
+
   const pageStyle = {
     minHeight: '100vh',
     backgroundColor: '#fff9f5',
@@ -279,6 +294,7 @@ const FittingRoomPage = () => {
     backgroundAttachment: 'fixed',
     display: 'flex',
     flexDirection: 'column',
+    fontFamily: designTokens.fontFamily,
   };
 
   const mainLayoutStyle = {
@@ -297,7 +313,7 @@ const FittingRoomPage = () => {
     alignItems: 'stretch',
     overflowY: 'auto',
     minHeight: 0,
-    gap: '16px',
+    gap: '12px',
   };
 
   const titleStyle = {
@@ -313,16 +329,21 @@ const FittingRoomPage = () => {
 
   const shimmerCardStyle = {
     height: '180px',
-    borderRadius: '16px',
-    background: 'linear-gradient(90deg, #f3e9f7 25%, #ead7f1 50%, #f3e9f7 75%)',
+    borderRadius: '24px',
+    background: 'linear-gradient(90deg, #f0e6f6 25%, #e8d5f5 50%, #f0e6f6 75%)',
     backgroundSize: '200% 100%',
     animation: 'shimmer 1.4s infinite',
+    border: designTokens.frostedBorder,
+    boxShadow: designTokens.shadowSoft,
   };
 
   const setCardStyle = {
-    background: 'rgba(255, 255, 255, 0.92)',
-    borderRadius: '16px',
-    border: '1px solid var(--border-color)',
+    background: designTokens.frostedBg,
+    borderRadius: '24px',
+    border: designTokens.frostedBorder,
+    boxShadow: designTokens.shadowSoft,
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
     padding: '18px',
     display: 'flex',
     flexDirection: 'column',
@@ -348,7 +369,8 @@ const FittingRoomPage = () => {
     width: '100%',
     borderRadius: '16px',
     overflow: 'hidden',
-    background: '#f7f2fa',
+    background: '#FFFFFF',
+    border: `1px solid ${designTokens.border}`,
     minHeight: '240px',
   };
 
@@ -363,17 +385,17 @@ const FittingRoomPage = () => {
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
-    width: '34px',
-    height: '34px',
+    width: '30px',
+    height: '30px',
     borderRadius: '50%',
     border: 'none',
-    background: 'rgba(255, 255, 255, 0.9)',
-    boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+    background: '#FFFFFF',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#7B3FA0',
+    color: '#4A5568',
   };
 
   const itemsStripStyle = {
@@ -384,29 +406,53 @@ const FittingRoomPage = () => {
   };
 
   const itemCardStyle = {
-    minWidth: '160px',
-    background: '#fff',
-    borderRadius: '12px',
-    border: '1px solid var(--border-color)',
-    padding: '10px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    cursor: 'pointer',
-    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+    minWidth: '140px',
+    maxWidth: '180px',
+    flex: '0 0 auto',
+    height: '100%',
   };
 
-  const addButtonStyle = {
-    marginTop: 'auto',
-    padding: '8px 10px',
-    borderRadius: '999px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #E8B4CB, #C9A0DC)',
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: '12px',
-    cursor: 'pointer',
+  const itemImageContainerStyle = {
+    position: 'relative',
+    flex: '1',
+    minHeight: '0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    marginBottom: '8px',
+    border: `1px solid ${designTokens.border}`,
+    transition: 'all 0.2s ease',
   };
+
+  const itemImageStyle = {
+    width: '100%',
+    height: '120px',
+    objectFit: 'contain',
+    transition: 'transform 0.3s ease',
+    background: '#FFFFFF',
+  };
+
+  const itemAddButtonStyle = (isHovered) => ({
+    position: 'absolute',
+    top: '6px',
+    right: '6px',
+    width: '28px',
+    height: '28px',
+    borderRadius: '50%',
+    backgroundColor: isHovered ? designTokens.primary : '#FFFFFF',
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    opacity: isHovered ? 1 : 0,
+  });
 
   const addAllButtonStyle = {
     marginTop: '10px',
@@ -424,11 +470,12 @@ const FittingRoomPage = () => {
     flex: '1',
     padding: '0 20px',
     borderRadius: '24px',
-    border: '1px solid #E8B4CB',
-    fontSize: '13px',
+    border: `1px solid ${designTokens.border}`,
+    fontSize: '14px',
     outline: 'none',
     height: '44px',
     boxSizing: 'border-box',
+    fontFamily: designTokens.fontFamily,
   };
 
   const sendButtonStyle = {
@@ -555,20 +602,20 @@ const FittingRoomPage = () => {
                       />
                       {imagePaths.length > 1 && (
                         <>
-                          <button
-                            style={{ ...arrowButtonStyle, left: '12px' }}
+                        <button
+                          style={{ ...arrowButtonStyle, left: '12px' }}
                             onClick={() => setSelectedImageIndex((prev) => Math.max(0, prev - 1))}
                             disabled={selectedImageIndex === 0}
                           >
-                            <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
-                          </button>
-                          <button
-                            style={{ ...arrowButtonStyle, right: '12px' }}
+                          <ArrowRight size={16} style={{ transform: 'rotate(180deg)' }} />
+                        </button>
+                        <button
+                          style={{ ...arrowButtonStyle, right: '12px' }}
                             onClick={() => setSelectedImageIndex((prev) => Math.min(imagePaths.length - 1, prev + 1))}
                             disabled={selectedImageIndex === imagePaths.length - 1}
                           >
-                            <ArrowRight size={16} />
-                          </button>
+                          <ArrowRight size={16} />
+                        </button>
                         </>
                       )}
                     </>
@@ -585,40 +632,58 @@ const FittingRoomPage = () => {
                     <div style={itemsStripStyle}>
                       {resolvedProducts.map((product) => {
                         const isSelected = selectedItems.has(product.id);
+                        const isHovered = hoveredItemId === product.id;
                         return (
                           <div
                             key={product.id}
                             style={{
                               ...itemCardStyle,
-                              border: isSelected ? '2px solid #7B3FA0' : itemCardStyle.border,
-                              boxShadow: isSelected ? '0 8px 18px rgba(123, 63, 160, 0.18)' : 'none',
+                              transform: isHovered && !isSelected ? 'scale(1.02)' : 'scale(1)',
                             }}
                             onClick={() => handleToggleItemSelection(product.id)}
+                            onMouseEnter={() => setHoveredItemId(product.id)}
+                            onMouseLeave={() => setHoveredItemId(null)}
                           >
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '10px' }}
-                            />
-                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#2d1a3a' }}>{product.name}</div>
-                            <div style={{ fontSize: '11px', color: '#6b5b7a' }}>{product.brand}</div>
-                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#7B3FA0' }}>
-                              {product.price != null ? `$${Number(product.price).toFixed(2)}` : 'Price on request'}
-                            </div>
-                            <button
-                              style={addButtonStyle}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleAddToCart(product);
-                                setSelectedItems(prev => {
-                                  const next = new Set(prev);
-                                  next.delete(product.id);
-                                  return next;
-                                });
+                            <div
+                              style={{
+                                ...itemImageContainerStyle,
+                                border: isSelected ? `2px solid ${designTokens.primary}` : itemImageContainerStyle.border,
+                                boxShadow: isSelected ? '0 4px 12px rgba(121, 61, 176, 0.2)' : 'none',
                               }}
                             >
-                              + Add to Cart
-                            </button>
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                style={{
+                                  ...itemImageStyle,
+                                  transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                                }}
+                              />
+                              <button
+                                style={itemAddButtonStyle(isHovered)}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleAddToCart(product);
+                                  setSelectedItems(prev => {
+                                    const next = new Set(prev);
+                                    next.delete(product.id);
+                                    return next;
+                                  });
+                                }}
+                                aria-label="Add to cart"
+                              >
+                                <Plus
+                                  size={14}
+                                  color={isHovered ? '#FFFFFF' : '#4A5568'}
+                                />
+                              </button>
+                            </div>
+                            <div style={{ fontSize: '11px', fontWeight: '600', color: '#1A202C', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {product.name}
+                            </div>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: '#793DB0' }}>
+                              {product.price != null ? `$${Number(product.price).toFixed(2)}` : 'Price on request'}
+                            </div>
                           </div>
                         );
                       })}
@@ -653,14 +718,15 @@ const FittingRoomPage = () => {
                 </div>
 
                 {!isGenerating && !isRefining && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    justifyContent: 'flex-end',
-                    marginTop: 'auto',
-                    height: '44px',
-                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: 'flex-end',
+                      marginTop: 'auto',
+                      height: '44px',
+                      fontFamily: designTokens.fontFamily,
+                    }}>
                     {showRefineInput && (
                       <input
                         type="text"
