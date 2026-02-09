@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import { fetchFittingRoomProducts } from '../services/fittingRoomService';
 import Header from '../components/common/Header/Header';
@@ -11,43 +11,21 @@ import Mascot from '../components/common/Mascot/Mascot';
 
 const FittingRoomPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Extract journey context and queue items from route state
-  const routeQueueItems = location.state?.queueItems || [];
-  const routeJourneyId = location.state?.journeyId;
-  const routeStylistThreadId = location.state?.stylistThreadId;
-
   const {
     queue,
-    addProductToQueue,
-    addProductsToQueue,
+    addToQueue,
     removeFromQueue,
     buyOutfit,
     generateLookbook,
+    fittingSets,
     isGenerating,
     thinkingText,
     chatMessages,
-    setJourneyId,
-    setStylistThreadId,
   } = useFittingRoom();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fitDescription, setFitDescription] = useState('Your outfit looks amazing! This combination brings out your personal style perfectly.');
-
-  // Set journey context from route state
-  useEffect(() => {
-    if (routeJourneyId) setJourneyId(routeJourneyId);
-    if (routeStylistThreadId) setStylistThreadId(routeStylistThreadId);
-  }, [routeJourneyId, routeStylistThreadId, setJourneyId, setStylistThreadId]);
-
-  // Add queue items from route state to fitting room queue (run once on mount)
-  useEffect(() => {
-    if (routeQueueItems.length > 0) {
-      addProductsToQueue(routeQueueItems);
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load all products on mount
   useEffect(() => {
@@ -66,62 +44,49 @@ const FittingRoomPage = () => {
   }, []);
 
   // Trigger backend fitting assistant on mount when queue has items
-  // This runs AFTER journey IDs are set in the context
   useEffect(() => {
-    const filledSlots = queue.filter(s => s.fittingSet);
-    if (filledSlots.length > 0 && !isGenerating) {
+    const items = queue.filter(s => s.product);
+    if (items.length > 0 && fittingSets.length === 0 && !isGenerating) {
       generateLookbook();
     }
-  }, [routeJourneyId, routeStylistThreadId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Derive outfit items from queue (flatten sets to individual products)
-  // Lookup full product details from products state for cart/model rendering
+  // Derive outfit items from queue
   const outfitItems = queue
-    .filter(s => s.fittingSet)
-    .flatMap(s => s.fittingSet.productIds.map(id => {
-      // Try to find full product details from products state
-      const fullProduct = products.find(p => p.id === id);
-      return fullProduct || {
-        id,
-        name: 'Unknown Product',
-        brand: '',
-        price: 0,
-        image: '',
-      };
-    }));
+    .filter(s => s.product)
+    .map(s => s.product);
 
-  const selectedProductIds = queue
-    .filter(slot => slot.fittingSet !== null)
-    .flatMap(slot => slot.fittingSet.productIds);
+  const selectedProductIds = outfitItems.map(p => p.id);
 
   // Derive mascot message from the latest AI chat message
   const lastAiMessage = [...chatMessages].reverse().find(m => m.role === 'ai');
   const mascotMessage = lastAiMessage ? lastAiMessage.content : 'Add items to start styling!';
 
   const handleToggleProduct = (product) => {
-    // Check if product is in any set
-    const slotIndex = queue.findIndex(slot =>
-      slot.fittingSet && slot.fittingSet.productIds.includes(product.id)
-    );
-
+    const slotIndex = queue.findIndex(s => s.product && s.product.id === product.id);
     if (slotIndex !== -1) {
-      // Product exists in a set - remove entire set
       removeFromQueue(slotIndex);
     } else {
-      // Add as temporary single-item set
-      const success = addProductToQueue(product);
+      const success = addToQueue(product);
       if (!success) {
-        alert('Outfit queue is full! Remove a set to add more.');
+        alert('Outfit is full! Remove an item to add a new one.');
       }
     }
   };
 
-  const handleRemoveFromOutfit = (slotIndex) => {
-    removeFromQueue(slotIndex);
+  const handleRemoveFromOutfit = (productId) => {
+    const slotIndex = queue.findIndex(s => s.product && s.product.id === productId);
+    if (slotIndex !== -1) {
+      removeFromQueue(slotIndex);
+    }
   };
 
   const handleCheckout = () => {
     buyOutfit();
+  };
+
+  const handleRefineSearch = () => {
+    navigate('/curate-my-fit');
   };
 
   const pageStyle = {
@@ -207,8 +172,9 @@ const FittingRoomPage = () => {
         {/* Left column: Try On Queue */}
         <div className="outfit-gallery-column">
           <OutfitGallery
-            queue={queue}  // Changed from items + fittingSets
-            onRemoveSet={handleRemoveFromOutfit}
+            items={outfitItems}
+            onRemoveItem={handleRemoveFromOutfit}
+            fittingSets={fittingSets}
             isGenerating={isGenerating}
             thinkingText={thinkingText}
           />
@@ -231,10 +197,14 @@ const FittingRoomPage = () => {
             <Mascot
               variant="default"
               position="relative"
-              message={fitDescription}
-              bubbleSize="large"
-              alwaysFloat={true}
+              message={mascotMessage}
             />
+            <button
+              style={refineSearchStyle}
+              onClick={handleRefineSearch}
+            >
+              Refine your search
+            </button>
           </div>
         </div>
 
@@ -243,7 +213,6 @@ const FittingRoomPage = () => {
           <ShoppingCart
             items={outfitItems}
             onCheckout={handleCheckout}
-            onRemoveItem={handleRemoveFromOutfit}
           />
         </div>
       </div>

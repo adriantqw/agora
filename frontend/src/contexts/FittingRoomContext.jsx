@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { getAIStylingAdvice, generateLookbookStream, getRandomAIResponse } from '../services/fittingRoomService';
 import consumerAuthService from '../services/consumerAuthService';
-import { transformFittingSets, wrapProductAsSet } from '../utils/fittingRoomHelpers';
 
 const FittingRoomContext = createContext();
 
@@ -13,10 +12,10 @@ export const useFittingRoom = () => {
   return context;
 };
 
-const QUEUE_SIZE = 5;  // Changed from 7 to 5 (sets take more visual space)
+const QUEUE_SIZE = 7;
 
 const createEmptySlots = (count) =>
-  Array.from({ length: count }, (_, i) => ({ slot: i + 1, fittingSet: null, isFavorite: false }));
+  Array.from({ length: count }, (_, i) => ({ slot: i + 1, product: null, isFavorite: false }));
 
 export const FittingRoomProvider = ({ children }) => {
   const [queue, setQueue] = useState(createEmptySlots(QUEUE_SIZE));
@@ -30,45 +29,20 @@ export const FittingRoomProvider = ({ children }) => {
 
   // Fitting assistant state
   const [fittingThreadId, setFittingThreadId] = useState(null);
-  // REMOVED: const [fittingSets, setFittingSets] = useState([]);
-  // Queue becomes single source of truth for fitting sets
+  const [fittingSets, setFittingSets] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [thinkingText, setThinkingText] = useState('');
   const abortStreamRef = useRef(null);
 
-  // Journey context from Find The Look
-  const [journeyId, setJourneyId] = useState(null);
-  const [stylistThreadId, setStylistThreadId] = useState(null);
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // Product-based operations (wrap products as temporary sets)
-  // ────────────────────────────────────────────────────────────────────────────
-
-  const addProductToQueue = (product) => {
-    const tempSet = wrapProductAsSet(product);
-    if (!tempSet) return false;
-    return addSetToQueue(tempSet);
-  };
-
-  const addProductsToQueue = (products) => {
-    const tempSets = products.map(wrapProductAsSet).filter(Boolean);
-    return addMultipleSetsToQueue(tempSets);
-  };
-
-  // ────────────────────────────────────────────────────────────────────────────
-  // Set-based operations (work with FittingSetObjects directly)
-  // ────────────────────────────────────────────────────────────────────────────
-
-  const addSetToQueue = (fittingSet) => {
+  const addToQueue = (product) => {
     let wasAdded = false;
     setQueue(prev => {
-      const emptySlotIndex = prev.findIndex(slot => slot.fittingSet === null);
+      const emptySlotIndex = prev.findIndex(slot => slot.product === null);
       if (emptySlotIndex === -1) return prev;
-
       const newQueue = [...prev];
       newQueue[emptySlotIndex] = {
         ...newQueue[emptySlotIndex],
-        fittingSet: fittingSet,
+        product: product,
         isFavorite: false
       };
       wasAdded = true;
@@ -77,17 +51,16 @@ export const FittingRoomProvider = ({ children }) => {
     return wasAdded;
   };
 
-  const addMultipleSetsToQueue = (fittingSets) => {
+  const addMultipleToQueue = (products) => {
     let addedCount = 0;
     setQueue(prev => {
       const newQueue = [...prev];
-      for (const set of fittingSets) {
-        const emptySlotIndex = newQueue.findIndex(slot => slot.fittingSet === null);
+      for (const product of products) {
+        const emptySlotIndex = newQueue.findIndex(slot => slot.product === null);
         if (emptySlotIndex === -1) break;
-
         newQueue[emptySlotIndex] = {
           ...newQueue[emptySlotIndex],
-          fittingSet: set,
+          product: product,
           isFavorite: false
         };
         addedCount++;
@@ -101,7 +74,7 @@ export const FittingRoomProvider = ({ children }) => {
     const newQueue = [...queue];
     newQueue[slotIndex] = {
       slot: slotIndex + 1,
-      fittingSet: null,  // Changed from product: null
+      product: null,
       isFavorite: false
     };
     setQueue(newQueue);
@@ -133,13 +106,11 @@ export const FittingRoomProvider = ({ children }) => {
     setChatMessages(prev => [...prev, { role: 'user', content: message }]);
     setIsTyping(true);
 
-    // Extract product selections from queue (supports sets and individuals)
-    const productSelections = queue
-      .filter(slot => slot.fittingSet !== null)
-      .flatMap(slot => slot.fittingSet.productIds.map(id => ({ id })));
+    // Get current outfit items for context
+    const outfitItems = queue.filter(s => s.product).map(s => s.product);
 
     try {
-      const result = await getAIStylingAdvice(productSelections, {
+      const result = await getAIStylingAdvice(outfitItems, {
         threadId: fittingThreadId,
         message,
       });
@@ -149,21 +120,8 @@ export const FittingRoomProvider = ({ children }) => {
       if (result.threadId) {
         setFittingThreadId(result.threadId);
       }
-
-      // Transform and replace queue with backend sets if provided
       if (result.fittingSets && result.fittingSets.length > 0) {
-        const transformedSets = transformFittingSets(result.fittingSets);
-        setQueue(prev => {
-          const newQueue = createEmptySlots(QUEUE_SIZE);
-          transformedSets.slice(0, QUEUE_SIZE).forEach((set, index) => {
-            newQueue[index] = {
-              slot: index + 1,
-              fittingSet: set,
-              isFavorite: false
-            };
-          });
-          return newQueue;
-        });
+        setFittingSets(result.fittingSets);
       }
     } catch (err) {
       // Fallback to local mock
@@ -175,25 +133,8 @@ export const FittingRoomProvider = ({ children }) => {
   }, [queue, fittingThreadId]);
 
   const generateLookbook = useCallback(async () => {
-    // Extract product selections from queue (supports sets and individuals)
-    const productSelections = queue
-      .filter(slot => slot.fittingSet !== null)
-      .map(slot => {
-        const set = slot.fittingSet;
-        if (set.isTemporary) {
-          // Individual product - send as ProductSelected
-          return { id: set.productIds[0] };
-        } else {
-          // Full set - send as ProductSelectedSet
-          return {
-            title: set.title,
-            description: set.description,
-            product_set: set.productIds.map(id => ({ id }))
-          };
-        }
-      });
-
-    if (productSelections.length === 0) return;
+    const outfitItems = queue.filter(s => s.product).map(s => s.product);
+    if (outfitItems.length === 0) return;
 
     setIsGenerating(true);
     setThinkingText('');
@@ -202,32 +143,14 @@ export const FittingRoomProvider = ({ children }) => {
     const token = consumerAuthService.getToken();
     if (token) {
       const abort = generateLookbookStream({
-        productSelections,
-        journeyId: journeyId,
-        stylistThreadId: stylistThreadId,
+        productSelections: outfitItems,
         threadId: fittingThreadId,
         onThinking: (content) => {
           setThinkingText(prev => prev + content);
         },
         onComplete: (data) => {
           if (data.threadId) setFittingThreadId(data.threadId);
-
-          // Transform and REPLACE queue with backend sets
-          if (data.fittingSets) {
-            const transformedSets = transformFittingSets(data.fittingSets);
-            setQueue(prev => {
-              const newQueue = createEmptySlots(QUEUE_SIZE);
-              transformedSets.slice(0, QUEUE_SIZE).forEach((set, index) => {
-                newQueue[index] = {
-                  slot: index + 1,
-                  fittingSet: set,
-                  isFavorite: false
-                };
-              });
-              return newQueue;
-            });
-          }
-
+          if (data.fittingSets) setFittingSets(data.fittingSets);
           if (data.message) {
             setChatMessages(prev => [...prev, { role: 'ai', content: data.message }]);
           }
@@ -251,33 +174,18 @@ export const FittingRoomProvider = ({ children }) => {
 
     // Fallback: sync endpoint (unauthenticated / no token)
     try {
-      const result = await getAIStylingAdvice(productSelections, {
+      const result = await getAIStylingAdvice(outfitItems, {
         threadId: fittingThreadId,
       });
 
       if (result.threadId) setFittingThreadId(result.threadId);
-
-      // Transform and replace queue with backend sets
-      if (result.fittingSets) {
-        const transformedSets = transformFittingSets(result.fittingSets);
-        setQueue(prev => {
-          const newQueue = createEmptySlots(QUEUE_SIZE);
-          transformedSets.slice(0, QUEUE_SIZE).forEach((set, index) => {
-            newQueue[index] = {
-              slot: index + 1,
-              fittingSet: set,
-              isFavorite: false
-            };
-          });
-          return newQueue;
-        });
-      }
+      if (result.fittingSets) setFittingSets(result.fittingSets);
 
       return result;
     } finally {
       setIsGenerating(false);
     }
-  }, [queue, fittingThreadId, journeyId, stylistThreadId]);
+  }, [queue, fittingThreadId]);
 
   const resetOutfit = () => {
     if (abortStreamRef.current) {
@@ -286,6 +194,7 @@ export const FittingRoomProvider = ({ children }) => {
     }
     setQueue(createEmptySlots(QUEUE_SIZE));
     setFittingThreadId(null);
+    setFittingSets([]);
     setThinkingText('');
     setChatMessages([
       { role: 'ai', content: 'Outfit reset! Let\'s start fresh and create something amazing!' }
@@ -293,35 +202,23 @@ export const FittingRoomProvider = ({ children }) => {
   };
 
   const buyOutfit = () => {
-    // Flatten all sets to individual product IDs
-    const productIds = queue
-      .filter(slot => slot.fittingSet !== null)
-      .flatMap(slot => slot.fittingSet.productIds);
-
-    console.log('Buy outfit - Product IDs:', productIds);
-    alert(`Processing purchase for ${productIds.length} items!`);
+    const outfit = queue.filter(slot => slot.product !== null).map(slot => slot.product);
+    console.log('Buy outfit:', outfit);
+    alert(`Processing purchase for ${outfit.length} items!`);
   };
 
   const value = {
-    queue,  // Now contains FittingSetObjects
+    queue,
     activeCategory,
     displayedProducts,
     chatMessages,
     isTyping,
     fittingThreadId,
-    // REMOVED: fittingSets (queue is now single source of truth)
+    fittingSets,
     isGenerating,
     thinkingText,
-    journeyId,
-    stylistThreadId,
-    setJourneyId,
-    setStylistThreadId,
-    // Product-based operations (wrap as temporary sets)
-    addProductToQueue,        // Renamed from addToQueue
-    addProductsToQueue,       // Renamed from addMultipleToQueue
-    // Set-based operations (work with FittingSetObjects directly)
-    addSetToQueue,            // NEW
-    addMultipleSetsToQueue,   // NEW
+    addToQueue,
+    addMultipleToQueue,
     removeFromQueue,
     reorderQueue,
     toggleFavorite,

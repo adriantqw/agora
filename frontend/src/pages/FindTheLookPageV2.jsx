@@ -114,7 +114,7 @@ const FindTheLookPageV2 = () => {
     type: 'success'
   });
 
-  const { queue, addProductToQueue, addProductsToQueue, addSetToQueue, removeFromQueue } = useFittingRoom();
+  const { queue, addToQueue, addMultipleToQueue, removeFromQueue } = useFittingRoom();
   const cleanupRef = useRef(null);
 
   // Stream callbacks shared between initial load and refinement
@@ -174,10 +174,10 @@ const FindTheLookPageV2 = () => {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Get fitting room items from context (flatten sets to products)
+  // Get fitting room items from context
   const queueItems = queue
-    .filter(slot => slot.fittingSet !== null)
-    .flatMap(slot => slot.fittingSet.productIds.map(id => ({ id })));
+    .filter(slot => slot.product !== null)
+    .map(slot => slot.product);
 
   const handleSelectLook = (look) => {
     setSelectedLook(look);
@@ -189,7 +189,7 @@ const FindTheLookPageV2 = () => {
   };
 
   const handleAddToQueue = (item) => {
-    const wasAdded = addProductToQueue(item);  // Now wraps as set internally
+    const wasAdded = addToQueue(item);
     if (wasAdded) {
       setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
       setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
@@ -202,7 +202,7 @@ const FindTheLookPageV2 = () => {
   };
 
   const handleAddAllToQueue = (items) => {
-    const addedCount = addProductsToQueue(items);  // Now wraps as sets internally
+    const addedCount = addMultipleToQueue(items);
     if (addedCount > 0) {
       setGrowl({ show: true, message: `Added ${addedCount} items to fitting room`, type: 'success' });
       setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
@@ -211,9 +211,7 @@ const FindTheLookPageV2 = () => {
   };
 
   const handleRemoveFromQueue = (itemId) => {
-    const slotIndex = queue.findIndex(slot =>
-      slot.fittingSet?.productIds.includes(itemId)
-    );
+    const slotIndex = queue.findIndex(slot => slot.product?.id === itemId);
     if (slotIndex !== -1) {
       removeFromQueue(slotIndex);
     }
@@ -820,13 +818,7 @@ const FindTheLookPageV2 = () => {
       <Mascot
         variant="default"
         message={queueItems.length > 0 ? "Let's fit!" : ''}
-        onClick={queueItems.length > 0 ? () => navigate('/fitting-room', {
-          state: {
-            journeyId,
-            stylistThreadId,
-            journeyTitle,
-          }
-        }) : undefined}
+        onClick={queueItems.length > 0 ? () => navigate('/fitting-room') : undefined}
         isSearching={queueItems.length > 0}
         position="bottom-right"
       />
