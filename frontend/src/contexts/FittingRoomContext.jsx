@@ -10,7 +10,7 @@ export const useFittingRoom = () => {
   return context;
 };
 
-const QUEUE_SIZE = 10;
+const QUEUE_SIZE = 7;
 
 const createEmptySlots = (count) =>
   Array.from({ length: count }, (_, i) => ({ slot: i + 1, product: null, isFavorite: false }));
@@ -54,6 +54,25 @@ export const FittingRoomProvider = ({ children }) => {
       return newQueue;
     });
     return wasAdded;
+  };
+
+  const addMultipleToQueue = (products) => {
+    let addedCount = 0;
+    setQueue(prev => {
+      const newQueue = [...prev];
+      for (const product of products) {
+        const emptySlotIndex = newQueue.findIndex(slot => slot.product === null);
+        if (emptySlotIndex === -1) break;
+        newQueue[emptySlotIndex] = {
+          ...newQueue[emptySlotIndex],
+          product: product,
+          isFavorite: false
+        };
+        addedCount++;
+      }
+      return newQueue;
+    });
+    return addedCount;
   };
 
   const removeFromQueue = (slotIndex) => {
@@ -123,6 +142,7 @@ export const FittingRoomProvider = ({ children }) => {
     chatMessages,
     isTyping,
     addToQueue,
+    addMultipleToQueue,
     removeFromQueue,
     reorderQueue,
     toggleFavorite,

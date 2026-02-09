@@ -955,6 +955,8 @@ async def _agent_stream_async(agent_stream_coro):
 
     The parser is instantiated per-stream (stateful — tracks partial JSON).
     """
+    import os
+    
     parser = AgentEventParser("personal_stylist")
     had_non_thinking = False  # Track if non-thinking content appeared since last thinking
 
@@ -980,7 +982,34 @@ async def _agent_stream_async(agent_stream_coro):
 
         # Stream journey field updates as they complete
         if parsed.get("journey_delta"):
-            yield {"type": "journey_field", "data": parsed["journey_delta"]}
+            journey_delta = parsed["journey_delta"]
+            
+            # Upload mood board to R2 if present and is a local file
+            if "mood_board_path" in journey_delta and journey_delta["mood_board_path"]:
+                mood_board_path = journey_delta["mood_board_path"]
+                
+                if _is_local_file_path(mood_board_path):
+                    logger.info(f"Uploading mood board to R2: {mood_board_path}")
+                    
+                    upload_result = await storage_service.upload_file_from_path(
+                        mood_board_path, folder="generated-images"
+                    )
+                    
+                    # Clean up temp file regardless of upload success
+                    try:
+                        os.remove(mood_board_path)
+                        logger.info(f"Deleted temp file: {mood_board_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete temp file {mood_board_path}: {e}")
+                    
+                    if "error" in upload_result:
+                        logger.error(f"R2 upload failed for mood board {mood_board_path}: {upload_result['error']}")
+                    else:
+                        r2_url = upload_result["url"]
+                        logger.info(f"Uploaded mood board to R2: {r2_url}")
+                        journey_delta["mood_board_path"] = r2_url
+            
+            yield {"type": "journey_field", "data": journey_delta}
 
         # Stream blurb message when it completes
         if parsed.get("message"):

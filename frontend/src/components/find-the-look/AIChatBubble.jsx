@@ -61,9 +61,9 @@ const AIChatBubble = ({ message, isShimmering = false, showSkeleton = false }) =
         <Mascot variant="avatar" size={36} />
       </div>
 
-      <div style={bubbleWrapStyle}>
+        <div style={bubbleWrapStyle}>
         <div style={bubbleStyle} className={isShimmering ? 'ai-bubble-shimmer' : ''}>
-          {showSkeleton ? (
+          {showSkeleton || isShimmering ? (
             <div style={{ minWidth: '240px' }}>
               <div style={skeletonLineStyle('85%')} />
               <div style={{ ...skeletonLineStyle('65%'), marginBottom: 0 }} />

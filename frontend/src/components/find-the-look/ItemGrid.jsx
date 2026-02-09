@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 import ItemCard from './ItemCard';
 
-const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
+const ItemGrid = ({ items, onAddToQueue, onAddAllToQueue, onItemClick }) => {
   const containerStyle = {
     background: 'rgba(255, 255, 255, 0.4)', // Semi-transparent
     backdropFilter: 'blur(12px)',           // The "Frosted" effect
@@ -37,9 +37,13 @@ const ItemGrid = ({ items, onAddToQueue, onItemClick }) => {
   };
 
   const handleFitAll = () => {
-    for (const item of items) {
-      const wasAdded = onAddToQueue(item);
-      if (!wasAdded) break;
+    if (onAddAllToQueue) {
+      onAddAllToQueue(items);
+    } else {
+      for (const item of items) {
+        const wasAdded = onAddToQueue(item);
+        if (!wasAdded) break;
+      }
     }
   };
 

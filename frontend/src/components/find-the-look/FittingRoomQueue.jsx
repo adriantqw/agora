@@ -9,9 +9,11 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     height: '100%',
     padding: '24px',
     background: 'linear-gradient(135deg, #E6E6FA 0%, #FFB6C1 100%)',
-    overflowY: 'auto',
     borderRadius: '16px',
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08)',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
   };
 
   const titleStyle = {
@@ -19,6 +21,13 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
     fontWeight: '700',
     color: '#793DB0',
     marginBottom: '24px',
+    flexShrink: 0,
+  };
+
+  const itemsContainerStyle = {
+    flex: 1,
+    overflowY: 'auto',
+    overflowX: 'hidden',
   };
 
   const emptyStateStyle = {
@@ -44,6 +53,22 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
 
   return (
     <div style={containerStyle}>
+      <style>{`
+        .fitting-room-items::-webkit-scrollbar {
+          width: 6px;
+        }
+        .fitting-room-items::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 3px;
+        }
+        .fitting-room-items::-webkit-scrollbar-thumb {
+          background: rgba(121, 61, 176, 0.4);
+          border-radius: 3px;
+        }
+        .fitting-room-items::-webkit-scrollbar-thumb:hover {
+          background: rgba(121, 61, 176, 0.6);
+        }
+      `}</style>
       <h2 style={titleStyle}>Fitting Room Queue</h2>
 
       {items.length === 0 ? (
@@ -52,12 +77,12 @@ const FittingRoomQueue = ({ items, onRemoveItem }) => {
           <p style={emptyTextStyle}>Add items to try on</p>
         </div>
       ) : (
-        <div>
+        <div style={itemsContainerStyle} className="fitting-room-items">
           {items.map((item) => (
             <QueueItem
               key={item.id}
               item={item}
-              onRemove={() => onRemoveItem(item.slotIndex)}
+              onRemove={() => onRemoveItem(item.id)}
             />
           ))}
         </div>

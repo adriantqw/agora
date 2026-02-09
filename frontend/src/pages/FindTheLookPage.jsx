@@ -114,7 +114,7 @@ const FindTheLookPage = () => {
     type: 'success'
   });
 
-  const { queue, addToQueue, removeFromQueue } = useFittingRoom();
+  const { queue, addToQueue, addMultipleToQueue, removeFromQueue } = useFittingRoom();
   const cleanupRef = useRef(null);
 
   // Stream callbacks shared between initial load and refinement
@@ -199,6 +199,15 @@ const FindTheLookPage = () => {
     setGrowl({ show: true, message: 'Fitting room is full', type: 'error' });
     setTimeout(() => setGrowl({ show: false, message: '', type: 'error' }), 3000);
     return false;
+  };
+
+  const handleAddAllToQueue = (items) => {
+    const addedCount = addMultipleToQueue(items);
+    if (addedCount > 0) {
+      setGrowl({ show: true, message: `Added ${addedCount} items to fitting room`, type: 'success' });
+      setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+    }
+    return addedCount;
   };
 
   const handleRemoveFromQueue = (itemId) => {
@@ -568,6 +577,7 @@ const FindTheLookPage = () => {
                     items={selectedLook.items}
                     onItemClick={handleItemClick}
                     onAddToQueue={handleAddToQueue}
+                    onAddAllToQueue={handleAddAllToQueue}
                   />
                 )}
               </section>
