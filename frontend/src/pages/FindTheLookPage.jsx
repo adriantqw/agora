@@ -77,6 +77,7 @@ function transformMatchesToLooks(matches) {
 }
 
 const FindTheLookPage = () => {
+  const MAX_CAROUSEL_ITEMS = 12;
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -117,7 +118,7 @@ const FindTheLookPage = () => {
   const cleanupRef = useRef(null);
 
   // Stream callbacks shared between initial load and refinement
-  const makeCallbacks = (onDone) => ({
+  const makeCallbacks = (onDone, isRefinement = false) => ({
     onThinkingStart: () => {
       setIsThinking(true);
       setThinkingText('');
@@ -126,9 +127,21 @@ const FindTheLookPage = () => {
     onThinkingEnd: () => setIsThinking(false),
     onProcessing: () => {},
     onComplete: (data) => {
-      const newLooks = transformMatchesToLooks(data.matches || []);
-      setLooks(newLooks);
-      setSelectedLook(newLooks[0] || null);
+      const allLooks = transformMatchesToLooks(data.matches || []);
+      const newMatchCount = Math.max(0, data.newMatchCount || 0);
+
+      if (isRefinement && newMatchCount > 0) {
+        const boundedNewCount = Math.min(newMatchCount, allLooks.length);
+        const newLooks = allLooks.slice(allLooks.length - boundedNewCount);
+        const oldLooks = allLooks.slice(0, allLooks.length - boundedNewCount);
+        const mergedLooks = [...newLooks, ...oldLooks].slice(0, MAX_CAROUSEL_ITEMS);
+        setLooks(mergedLooks);
+        setSelectedLook(mergedLooks[0] || null);
+      } else {
+        const limitedLooks = allLooks.slice(0, MAX_CAROUSEL_ITEMS);
+        setLooks(limitedLooks);
+        setSelectedLook(limitedLooks[0] || null);
+      }
       setThreadId(data.threadId);
       setAiMessage(data.message || '');
       setIsLoading(false);
@@ -176,9 +189,16 @@ const FindTheLookPage = () => {
   };
 
   const handleAddToQueue = (item) => {
-    addToQueue(item);
-    setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
-    setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+    const wasAdded = addToQueue(item);
+    if (wasAdded) {
+      setGrowl({ show: true, message: `Added ${item.name} to fitting room`, type: 'success' });
+      setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
+      return true;
+    }
+
+    setGrowl({ show: true, message: 'Fitting room is full', type: 'error' });
+    setTimeout(() => setGrowl({ show: false, message: '', type: 'error' }), 3000);
+    return false;
   };
 
   const handleRemoveFromQueue = (itemId) => {
@@ -187,6 +207,7 @@ const FindTheLookPage = () => {
       removeFromQueue(slotIndex);
     }
   };
+
 
   const handleToggleFeedback = () => {
     setShowFeedbackInput(prev => !prev);
@@ -208,7 +229,7 @@ const FindTheLookPage = () => {
       makeCallbacks(() => {
         setGrowl({ show: true, message: 'Matches refined!', type: 'success' });
         setTimeout(() => setGrowl({ show: false, message: '', type: 'success' }), 3000);
-      })
+      }, true)
     );
 
     setFeedbackText('');
@@ -307,6 +328,7 @@ const FindTheLookPage = () => {
     fontWeight: '700',
     color: '#1A202C',
     margin: 0,
+    marginTop: '4px',
   };
 
   const chatAreaStyle = {
@@ -324,6 +346,7 @@ const FindTheLookPage = () => {
     justifyContent: 'flex-end',
     marginTop: 'auto',
     width: '100%',
+    boxSizing: 'border-box',
   };
 
   const chatInputStyle = {
@@ -359,6 +382,7 @@ const FindTheLookPage = () => {
     gap: '12px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
+    zIndex: 1000
   };
 
   const refineTextStyle = {
@@ -488,6 +512,20 @@ const FindTheLookPage = () => {
           background: linear-gradient(90deg, #f0e6f6 25%, #e8d5f5 50%, #f0e6f6 75%);
           background-size: 200% 100%;
           animation: shimmer 1.5s infinite;
+        }
+
+        .ai-bubble-shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .ai-bubble-shimmer::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0) 100%);
+          background-size: 200% 100%;
+          animation: shimmer 1.4s infinite;
         }
 
         .thinking-content p { margin: 2px 0; }

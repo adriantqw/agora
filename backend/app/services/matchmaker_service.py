@@ -37,13 +37,15 @@ def match(
     
     # Extract matches from agent state and enrich
     matches = _extract_and_enrich_matches(agent_result, db)
+    new_match_count = _get_latest_batch_size(agent_result)
     
     # Format response
     return {
         "threadId": thread_id,
         "matches": matches,
         "message": _extract_message(agent_result),
-        "iterationCount": agent_result.get("iteration_count", 1)
+        "iterationCount": agent_result.get("iteration_count", 1),
+        "newMatchCount": new_match_count
     }
 
 
@@ -85,6 +87,7 @@ async def match_stream(
         if final_state:
             state_values = final_state.values if hasattr(final_state, 'values') else {}
             matches = _extract_and_enrich_matches(state_values, db)
+            new_match_count = _get_latest_batch_size(state_values)
             msg = _extract_message(state_values)
             yield {
                 "type": "complete",
@@ -92,7 +95,8 @@ async def match_stream(
                     "threadId": thread_id,
                     "matches": matches,
                     "message": msg,
-                    "iterationCount": state_values.get("iteration_count", 1)
+                    "iterationCount": state_values.get("iteration_count", 1),
+                    "newMatchCount": new_match_count
                 }
             }
     except Exception as e:
@@ -196,9 +200,16 @@ def _get_attr(obj, key, default=None):
 def _extract_and_enrich_matches(agent_state: dict, db: Session) -> list[dict]:
     """Extract matches from agent state and enrich with product details."""
     matches_data = agent_state.get("matches", [])
-    enriched = []
+    flat_matches = []
 
     for item in matches_data:
+        if isinstance(item, list):
+            flat_matches.extend(item)
+        else:
+            flat_matches.append(item)
+    enriched = []
+
+    for item in flat_matches:
         product_set = _get_attr(item, 'product_set') or _get_attr(item, 'productSet')
         if product_set:
             # ProductMatchSet
@@ -226,6 +237,16 @@ def _extract_and_enrich_matches(agent_state: dict, db: Session) -> list[dict]:
             ))
 
     return enriched
+
+
+def _get_latest_batch_size(agent_state: dict) -> int:
+    matches_data = agent_state.get("matches", [])
+    if not matches_data:
+        return 0
+    last_batch = matches_data[-1]
+    if isinstance(last_batch, list):
+        return len(last_batch)
+    return 0
 
 
 def _enrich_product_match(match_id: str, score: Optional[float], reason: str, db: Session) -> dict:
@@ -284,5 +305,4 @@ def _extract_message(agent_state: dict) -> str:
         elif isinstance(last_message, dict):
             return last_message.get("content", "Matches found!")
     return "Matches found!"
-
 

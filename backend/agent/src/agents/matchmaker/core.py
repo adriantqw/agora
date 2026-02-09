@@ -177,7 +177,7 @@ class MatchMakerAgent:
         response: MatchResult = structured_model.invoke(state["messages"])
         return {
             "messages": [AIMessage(response.message)],
-            "matches": response.matches
+            "matches": [response.matches]
         }
     
     def _retrieve_memory(self, state: MatchmakerState, config: RunnableConfig):
