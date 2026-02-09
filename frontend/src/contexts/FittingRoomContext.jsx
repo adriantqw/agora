@@ -10,15 +10,13 @@ export const useFittingRoom = () => {
   return context;
 };
 
+const QUEUE_SIZE = 10;
+
+const createEmptySlots = (count) =>
+  Array.from({ length: count }, (_, i) => ({ slot: i + 1, product: null, isFavorite: false }));
+
 export const FittingRoomProvider = ({ children }) => {
-  // Initialize 5 empty slots
-  const [queue, setQueue] = useState([
-    { slot: 1, product: null, isFavorite: false },
-    { slot: 2, product: null, isFavorite: false },
-    { slot: 3, product: null, isFavorite: false },
-    { slot: 4, product: null, isFavorite: false },
-    { slot: 5, product: null, isFavorite: false },
-  ]);
+  const [queue, setQueue] = useState(createEmptySlots(QUEUE_SIZE));
 
   const [activeCategory, setActiveCategory] = useState('current');
   const [displayedProducts, setDisplayedProducts] = useState([]);
@@ -42,19 +40,20 @@ export const FittingRoomProvider = ({ children }) => {
   ];
 
   const addToQueue = (product) => {
-    // Find first empty slot
-    const emptySlotIndex = queue.findIndex(slot => slot.product === null);
-    if (emptySlotIndex !== -1) {
-      const newQueue = [...queue];
+    let wasAdded = false;
+    setQueue(prev => {
+      const emptySlotIndex = prev.findIndex(slot => slot.product === null);
+      if (emptySlotIndex === -1) return prev;
+      const newQueue = [...prev];
       newQueue[emptySlotIndex] = {
         ...newQueue[emptySlotIndex],
         product: product,
         isFavorite: false
       };
-      setQueue(newQueue);
-      return true;
-    }
-    return false; // Queue is full
+      wasAdded = true;
+      return newQueue;
+    });
+    return wasAdded;
   };
 
   const removeFromQueue = (slotIndex) => {
@@ -104,13 +103,7 @@ export const FittingRoomProvider = ({ children }) => {
   };
 
   const resetOutfit = () => {
-    setQueue([
-      { slot: 1, product: null, isFavorite: false },
-      { slot: 2, product: null, isFavorite: false },
-      { slot: 3, product: null, isFavorite: false },
-      { slot: 4, product: null, isFavorite: false },
-      { slot: 5, product: null, isFavorite: false },
-    ]);
+    setQueue(createEmptySlots(QUEUE_SIZE));
     setChatMessages([
       { role: 'ai', content: 'Outfit reset! Let\'s start fresh and create something amazing!' }
     ]);
