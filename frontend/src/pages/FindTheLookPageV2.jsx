@@ -417,7 +417,6 @@ const FindTheLookPageV2 = () => {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
-    height: '80px',
     boxSizing: 'border-box',
     height: '100%',
   };
