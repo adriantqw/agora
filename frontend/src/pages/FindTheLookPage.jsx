@@ -113,7 +113,7 @@ const FindTheLookPage = () => {
     type: 'success'
   });
 
-  const { addToQueue } = useFittingRoom();
+  const { queue, addToQueue, removeFromQueue } = useFittingRoom();
   const cleanupRef = useRef(null);
 
   // Stream callbacks shared between initial load and refinement
@@ -162,7 +162,9 @@ const FindTheLookPage = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Get fitting room items from context
-  const queueItems = [];
+  const queueItems = queue
+    .filter(slot => slot.product !== null)
+    .map(slot => slot.product);
 
   const handleSelectLook = (look) => {
     setSelectedLook(look);
@@ -180,7 +182,10 @@ const FindTheLookPage = () => {
   };
 
   const handleRemoveFromQueue = (itemId) => {
-    console.log('Removed from queue:', itemId);
+    const slotIndex = queue.findIndex(slot => slot.product?.id === itemId);
+    if (slotIndex !== -1) {
+      removeFromQueue(slotIndex);
+    }
   };
 
   const handleToggleFeedback = () => {
