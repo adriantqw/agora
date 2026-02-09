@@ -4,7 +4,7 @@ import ItemCard from './ItemCard';
 
 const ItemGrid = ({ items, onAddToQueue, onAddAllToQueue, onItemClick }) => {
   const containerStyle = {
-    background: 'rgba(255, 255, 255, 0.4)', // Semi-transparent
+    background: 'rgba(255, 255, 255, 0.7)', // Semi-transparent
     backdropFilter: 'blur(12px)',           // The "Frosted" effect
     WebkitBackdropFilter: 'blur(12px)',     // Safari support
     borderRadius: '24px',                   // Softer, rounder corners
