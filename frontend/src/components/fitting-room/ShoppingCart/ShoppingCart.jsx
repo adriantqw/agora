@@ -1,7 +1,7 @@
 import React from 'react';
-import { ShoppingCart as ShoppingCartIcon } from 'lucide-react';
+import { ShoppingCart as ShoppingCartIcon, X } from 'lucide-react';
 
-const ShoppingCart = ({ items = [], onCheckout }) => {
+const ShoppingCart = ({ items = [], onCheckout, onRemoveItem }) => {
   const total = items.reduce((sum, item) => sum + item.price, 0);
 
   const containerStyle = {
@@ -25,23 +25,6 @@ const ShoppingCart = ({ items = [], onCheckout }) => {
     gap: '8px',
   };
 
-  const outfitImageAreaStyle = {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '6px',
-    marginBottom: '20px',
-    borderRadius: '10px',
-    overflow: 'hidden',
-    backgroundColor: '#f7f7f7',
-    minHeight: '120px',
-  };
-
-  const outfitImgStyle = {
-    width: '100%',
-    height: '80px',
-    objectFit: 'cover',
-  };
-
   const lineItemsStyle = {
     flex: 1,
     overflowY: 'auto',
@@ -53,30 +36,63 @@ const ShoppingCart = ({ items = [], onCheckout }) => {
 
   const lineItemStyle = {
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingBottom: '12px',
-    borderBottom: '1px solid #f0f0f0',
+    gap: '12px',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '12px',
+    border: '1px solid #f0f0f0',
+    transition: 'all 0.2s ease',
+  };
+
+  const thumbnailStyle = {
+    width: '64px',
+    height: '64px',
+    borderRadius: '8px',
+    objectFit: 'cover',
+    flexShrink: 0,
+  };
+
+  const infoStyle = {
+    flex: '1',
+    minWidth: '0',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
   };
 
   const itemNameStyle = {
     fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
-  };
-
-  const itemDescStyle = {
-    fontSize: '12px',
-    color: '#888',
-    marginTop: '2px',
-  };
-
-  const itemPriceStyle = {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '500',
+    color: '#1A202C',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    marginLeft: '12px',
+  };
+
+  const brandStyle = {
+    fontSize: '12px',
+    color: '#718096',
+  };
+
+  const priceStyle = {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#793DB0',
+  };
+
+  const removeButtonStyle = {
+    width: '24px',
+    height: '24px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '50%',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    flexShrink: 0,
   };
 
   const totalRowStyle = {
@@ -139,27 +155,35 @@ const ShoppingCart = ({ items = [], onCheckout }) => {
         </div>
       ) : (
         <>
-          {/* Composite outfit images */}
-          <div style={outfitImageAreaStyle}>
-            {items.slice(0, 4).map((item) => (
-              <img
-                key={item.id}
-                src={item.image}
-                alt={item.name}
-                style={outfitImgStyle}
-              />
-            ))}
-          </div>
-
           {/* Line items */}
           <div style={lineItemsStyle}>
             {items.map((item) => (
               <div key={item.id} style={lineItemStyle}>
-                <div>
-                  <div style={itemNameStyle}>{item.brand}</div>
-                  <div style={itemDescStyle}>{item.name}</div>
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  style={thumbnailStyle}
+                />
+
+                <div style={infoStyle}>
+                  <p style={itemNameStyle}>{item.name}</p>
+                  <p style={brandStyle}>{item.brand}</p>
+                  <p style={priceStyle}>${item.price.toFixed(2)}</p>
                 </div>
-                <div style={itemPriceStyle}>${item.price.toFixed(2)} AUD</div>
+
+                <button
+                  style={removeButtonStyle}
+                  onClick={() => onRemoveItem(item.id)}
+                  aria-label="Remove item"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <X size={16} color="#4A5568" />
+                </button>
               </div>
             ))}
           </div>

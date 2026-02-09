@@ -220,6 +220,7 @@ const FittingRoomPage = () => {
           <ShoppingCart
             items={outfitItems}
             onCheckout={handleCheckout}
+            onRemoveItem={handleRemoveFromOutfit}
           />
         </div>
       </div>
