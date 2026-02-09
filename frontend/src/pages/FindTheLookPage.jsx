@@ -307,9 +307,9 @@ const FindTheLookPage = () => {
   };
 
   const mainContentStyle = {
-    display: 'grid',
-    gridTemplateRows: 'auto 2fr 1.5fr 1fr',
-    gap: '12px',
+    display: 'flex',
+    gridTemplateRows: 'auto auto 1fr auto',
+    gap: '32px', // Increased from 12px for better "luxury" spacing
     height: '100%',
     padding: '24px 50px', // Slightly more padding on the sides
     overflow: 'hidden',
@@ -351,14 +351,13 @@ const FindTheLookPage = () => {
 
   const chatInputStyle = {
     flex: '1',
-    padding: '0 20px',
+    padding: '14px 20px',
     borderRadius: '24px',
     border: '1px solid #E2E8F0',
-    fontSize: '14px',
+    fontSize: '16px',
     outline: 'none',
     fontFamily: '"Readex Pro", -apple-system, sans-serif',
-    height: '44px',
-    boxSizing: 'border-box',
+    minHeight: '44px',
   };
 
   const sendButtonStyle = {
@@ -376,6 +375,9 @@ const FindTheLookPage = () => {
   };
 
   const refineSectionStyle = {
+    position: 'fixed',
+    bottom: '32px',
+    right: 'calc(30vw + 40px)',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -564,7 +566,7 @@ const FindTheLookPage = () => {
 
           {(isLoading || isRefining) ? renderLoadingState() : (
             <>
-              {/* Row 2: Look Carousel */}
+              {/* Look Carousel */}
               <section style={{ overflow: 'hidden' }}>
                 {looks.length > 0 && (
                   <LookCarousel
@@ -574,8 +576,8 @@ const FindTheLookPage = () => {
                 )}
               </section>
 
-              {/* Row 3: Items Grid */}
-              <section style={{ overflow: 'hidden', minHeight: 0 }}>
+              {/* Items Grid */}
+              <section style={{ overflow: 'hidden', minHeight: 0, maxHeight: '30vh' }}>
                 {selectedLook?.items && (
                   <ItemGrid
                     items={selectedLook.items}
@@ -587,94 +589,97 @@ const FindTheLookPage = () => {
             </>
           )}
 
-          {/* Row 4: Chat Area - AI Message + Refine/Feedback */}
-          <section style={chatAreaStyle}>
-            {/* AI Recommendation */}
-            {aiMessage && !isLoading && (
-              <div style={{ overflow: 'visible', minHeight: 'fit-content', width: '100%' }}>
-                <AIChatBubble message={aiMessage} />
-              </div>
-            )}
-
-            {/* Refine / Feedback — single row */}
-            {!isLoading && !isRefining && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                justifyContent: 'flex-end',
-                marginTop: 'auto',
-                height: '44px',
-              }}>
-                {/* Text input — expands when active */}
-                {showFeedbackInput && (
-                  <input
-                    type="text"
-                    value={feedbackText}
-                    onChange={(e) => setFeedbackText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Tell me what you'd like..."
-                    style={chatInputStyle}
-                    autoFocus
-                  />
-                )}
-
-                {/* Refine label — hidden when input is open */}
-                {!showFeedbackInput && (
-                  <p
-                    style={{ ...refineTextStyle, cursor: 'pointer' }}
-                    onClick={handleToggleFeedback}
-                  >
-                    Not quite right? Refine your search
-                  </p>
-                )}
-
-                {/* Send button — only when input is open */}
-                {showFeedbackInput && (
-                  <button
-                    onClick={handleFeedbackSubmit}
-                    style={sendButtonStyle}
-                    disabled={!feedbackText.trim() || isRefining}
-                    aria-label="Send feedback"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2 11" />
-                    </svg>
-                  </button>
-                )}
-
-                {/* Gradient circle button — toggles input */}
-                <div
+            {/* Feedback Input (replaces Refine Search when active) */}
+            {showFeedbackInput ? (
+              <div style={chatInputContainerStyle}>
+                <input
+                  type="text"
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Tell me what you'd like..."
+                  style={chatInputStyle}
+                  autoFocus
+                />
+                <button
+                  onClick={handleFeedbackSubmit}
+                  style={sendButtonStyle}
+                  disabled={!feedbackText.trim() || isRefining}
+                  aria-label="Send feedback"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2 11" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowFeedbackInput(false)}
                   style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    color: '#718096',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                  }}
+                  aria-label="Close feedback"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#F7FAFC';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              !isLoading && !isRefining && (
+                /* Refine Search Bubble */
+                <div
+                  style={refineSectionStyle}
+                  onClick={handleToggleFeedback}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.opacity = '0.9';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.opacity = '1';
+                  }}
+                >
+                  <p style={refineTextStyle}>Not quite right? Refine your search</p>
+                  <div style={{
                     width: '40px',
                     height: '40px',
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
                     padding: '2px',
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={handleToggleFeedback}
-                >
-                  <button
-                    style={{
-                      ...refineButtonStyle,
-                      width: '100%',
-                      height: '100%',
-                      background: 'white',
-                      border: 'none',
-                    }}
-                    aria-label={showFeedbackInput ? 'Close feedback' : 'Refine search'}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#F7FAFC'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'white'; }}
-                  >
-                    {showFeedbackInput ? (
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#793DB0" strokeWidth="2">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
-                    ) : (
+                  }}>
+                    <button
+                      style={{
+                        ...refineButtonStyle,
+                        width: '100%',
+                        height: '100%',
+                        background: 'white',
+                        border: 'none',
+                      }}
+                      aria-label="Refine search"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#F7FAFC';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'white';
+                      }}
+                    >
                       <MessageCircle
                         size={20}
                         style={{
@@ -684,10 +689,10 @@ const FindTheLookPage = () => {
                           backgroundClip: 'text',
                         }}
                       />
-                    )}
-                  </button>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             )}
           </section>
         </main>
