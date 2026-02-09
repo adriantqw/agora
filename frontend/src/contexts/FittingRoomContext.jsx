@@ -29,8 +29,11 @@ export const FittingRoomProvider = ({ children }) => {
 
   // Fitting assistant state
   const [fittingThreadId, setFittingThreadId] = useState(null);
+  const [journeyId, setJourneyId] = useState(null);
+  const [stylistThreadId, setStylistThreadId] = useState(null);
   const [fittingSets, setFittingSets] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const [thinkingText, setThinkingText] = useState('');
   const abortStreamRef = useRef(null);
 
@@ -144,9 +147,17 @@ export const FittingRoomProvider = ({ children }) => {
     if (token) {
       const abort = generateLookbookStream({
         productSelections: outfitItems,
+        journeyId,
+        stylistThreadId,
         threadId: fittingThreadId,
+        onThinkingStart: () => {
+          setIsThinking(true);
+        },
         onThinking: (content) => {
           setThinkingText(prev => prev + content);
+        },
+        onThinkingEnd: () => {
+          setIsThinking(false);
         },
         onComplete: (data) => {
           if (data.threadId) setFittingThreadId(data.threadId);
@@ -156,6 +167,7 @@ export const FittingRoomProvider = ({ children }) => {
           }
           setIsGenerating(false);
           setThinkingText('');
+          setIsThinking(false);
           abortStreamRef.current = null;
         },
         onError: (msg) => {
@@ -165,6 +177,7 @@ export const FittingRoomProvider = ({ children }) => {
           setChatMessages(prev => [...prev, { role: 'ai', content: fallback }]);
           setIsGenerating(false);
           setThinkingText('');
+          setIsThinking(false);
           abortStreamRef.current = null;
         },
       });
@@ -175,6 +188,8 @@ export const FittingRoomProvider = ({ children }) => {
     // Fallback: sync endpoint (unauthenticated / no token)
     try {
       const result = await getAIStylingAdvice(outfitItems, {
+        journeyId,
+        stylistThreadId,
         threadId: fittingThreadId,
       });
 
@@ -185,7 +200,58 @@ export const FittingRoomProvider = ({ children }) => {
     } finally {
       setIsGenerating(false);
     }
-  }, [queue, fittingThreadId]);
+  }, [queue, fittingThreadId, journeyId, stylistThreadId]);
+
+  const refineLookbook = useCallback(async (message) => {
+    const outfitItems = queue.filter(s => s.product).map(s => s.product);
+    if (outfitItems.length === 0) return;
+
+    setIsGenerating(true);
+    setThinkingText('');
+
+    const token = consumerAuthService.getToken();
+    if (!token) {
+      setIsGenerating(false);
+      setIsThinking(false);
+      return;
+    }
+
+    const abort = generateLookbookStream({
+      productSelections: outfitItems,
+      journeyId,
+      stylistThreadId,
+      threadId: fittingThreadId,
+      message,
+      onThinkingStart: () => {
+        setIsThinking(true);
+      },
+      onThinking: (content) => {
+        setThinkingText(prev => prev + content);
+      },
+      onThinkingEnd: () => {
+        setIsThinking(false);
+      },
+      onComplete: (data) => {
+        if (data.threadId) setFittingThreadId(data.threadId);
+        if (data.fittingSets) setFittingSets(data.fittingSets);
+        if (data.message) {
+          setChatMessages(prev => [...prev, { role: 'ai', content: data.message }]);
+        }
+        setIsGenerating(false);
+        setThinkingText('');
+        setIsThinking(false);
+        abortStreamRef.current = null;
+      },
+      onError: (msg) => {
+        console.error('Refine error:', msg);
+        setIsGenerating(false);
+        setThinkingText('');
+        setIsThinking(false);
+        abortStreamRef.current = null;
+      },
+    });
+    abortStreamRef.current = abort;
+  }, [queue, fittingThreadId, journeyId, stylistThreadId]);
 
   const resetOutfit = () => {
     if (abortStreamRef.current) {
@@ -196,6 +262,7 @@ export const FittingRoomProvider = ({ children }) => {
     setFittingThreadId(null);
     setFittingSets([]);
     setThinkingText('');
+    setIsThinking(false);
     setChatMessages([
       { role: 'ai', content: 'Outfit reset! Let\'s start fresh and create something amazing!' }
     ]);
@@ -214,9 +281,14 @@ export const FittingRoomProvider = ({ children }) => {
     chatMessages,
     isTyping,
     fittingThreadId,
+    journeyId,
+    stylistThreadId,
     fittingSets,
     isGenerating,
+    isThinking,
     thinkingText,
+    setJourneyId,
+    setStylistThreadId,
     addToQueue,
     addMultipleToQueue,
     removeFromQueue,
@@ -226,6 +298,7 @@ export const FittingRoomProvider = ({ children }) => {
     setDisplayedProducts,
     sendChatMessage,
     generateLookbook,
+    refineLookbook,
     resetOutfit,
     buyOutfit
   };

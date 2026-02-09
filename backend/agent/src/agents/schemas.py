@@ -73,7 +73,7 @@ class JourneySchema(BaseModel):
     title: str = Field(description="User-friendly title of the journey")
     summary: str = Field(default=None, description="A one-sentence summary of captured user preference")
     time_of_day: Optional[TimeOfDay] = Field(default=None, description="Preferred time of day for the outfit style")
-    season: Optional[Season] = Field(description="Seasonal vibe for the outfit")
+    season: Optional[Season] = Field(default=None, description="Seasonal vibe for the outfit")
     occasion: Optional[OccasionType] = Field(default=None, description="Occasion for the outfit")
     location: Optional[LocationType] = Field(default=None, description="Location or setting")
     fit_preference: Optional[FitType] = Field(default_factory=list, description="User fit preference")

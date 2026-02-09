@@ -45,6 +45,7 @@ fitting_assistant:
   <<: *base_agent_recipe
   model:
     <<: *base_model_recipe
+    name: gemini-3-pro-preview
     params:
       <<: *base_model_params_recipe
       thinking_level: low
