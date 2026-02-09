@@ -42,20 +42,20 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
   const cardStyle = (isActive) => ({
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '10px 12px',
-    borderRadius: '12px',
+    gap: '16px',
+    padding: '16px 18px',
+    borderRadius: '16px',
     border: isActive ? '2px solid #793DB0' : '1px solid #E2E8F0',
     backgroundColor: isActive ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
-    boxShadow: isActive ? '0 4px 12px rgba(121, 61, 176, 0.2)' : 'none',
+    boxShadow: isActive ? '0 6px 16px rgba(121, 61, 176, 0.2)' : 'none',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
   });
 
   const thumbStyle = {
-    width: '52px',
-    height: '52px',
-    borderRadius: '10px',
+    width: '88px',
+    height: '88px',
+    borderRadius: '12px',
     objectFit: 'contain',
     flexShrink: 0,
     background: '#FFFFFF',
@@ -70,7 +70,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
   };
 
   const setTitleStyle = {
-    fontSize: '12px',
+    fontSize: '14px',
     fontWeight: '700',
     color: '#1A202C',
     whiteSpace: 'nowrap',
@@ -79,7 +79,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
   };
 
   const setSubtitleStyle = {
-    fontSize: '11px',
+    fontSize: '12px',
     color: '#6b5b7a',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -90,7 +90,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
     <div style={containerStyle}>
       <div style={titleRowStyle}>
         <Shirt size={18} color="#7B3FA0" />
-        <h3 style={titleStyle}>Lookbook Sets</h3>
+        <h3 style={titleStyle}>Try-On Queue</h3>
       </div>
 
       {isGenerating && (!fittingSets || fittingSets.length === 0) ? (
@@ -120,7 +120,7 @@ const OutfitGallery = ({ fittingSets, selectedIndex, onSelectSet, isGenerating }
               )}
               <div style={textWrapStyle}>
                 <div style={setTitleStyle}>{set.title || `Set ${index + 1}`}</div>
-                <div style={setSubtitleStyle}>{set.description || 'Generated lookbook set'}</div>
+                <div style={setSubtitleStyle}>{set.description || 'Generated try-on queue'}</div>
               </div>
             </div>
           );

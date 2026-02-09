@@ -38,13 +38,52 @@ const journeyService = {
   },
 
   /**
+   * Get a journey by ID
+   */
+  async getJourneyById(journeyId) {
+    const token = consumerAuthService.getToken();
+
+    if (!token) return null;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/journeys/${journeyId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Token might be expired
+          return null;
+        }
+        if (response.status === 403) {
+          throw new Error('Not authorized to access this journey');
+        }
+        if (response.status === 404) {
+          throw new Error('Journey not found');
+        }
+        throw new Error('Failed to fetch journey');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching journey:', error);
+      return null;
+    }
+  },
+
+  /**
    * Delete a journey by ID
    */
   async deleteJourney(journeyId) {
     const token = consumerAuthService.getToken();
-    
+
     if (!token) return false;
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/journeys/${journeyId}`, {
         method: 'DELETE',

@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Sparkles, ChevronDown, MessageCircle, ArrowRight, X, Plus } from 'lucide-react';
+import { Sparkles, ChevronDown, Plus } from 'lucide-react';
 import Markdown from 'react-markdown';
 import { useFittingRoom } from '../contexts/FittingRoomContext';
 import Header from '../components/common/Header/Header';
@@ -8,6 +8,7 @@ import Growl from '../components/common/Growl/Growl';
 import OutfitGallery from '../components/fitting-room/OutfitGallery/OutfitGallery';
 import ShoppingCart from '../components/fitting-room/ShoppingCart/ShoppingCart';
 import Mascot from '../components/common/Mascot/Mascot';
+import journeyService from '../services/journeyService';
 
 function ThinkingDropdown({ text, isActive, startTime }) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -127,13 +128,11 @@ const FittingRoomPage = () => {
 
   const [selectedSetIndex, setSelectedSetIndex] = useState(0);
   const [thinkingStartTime, setThinkingStartTime] = useState(null);
-  const [showRefineInput, setShowRefineInput] = useState(false);
-  const [refineText, setRefineText] = useState('');
-  const [isRefining, setIsRefining] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState(() => new Set());
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [hoveredItemId, setHoveredItemId] = useState(null);
+  const [journeyName, setJourneyName] = useState('Fitting Room');
   const [growl, setGrowl] = useState({
     show: false,
     message: '',
@@ -152,11 +151,18 @@ const FittingRoomPage = () => {
     }
   }, [isThinking]);
 
+  // Fetch journey name when journeyId changes
   useEffect(() => {
-    if (!isGenerating) {
-      setIsRefining(false);
-    }
-  }, [isGenerating]);
+    const fetchJourneyName = async () => {
+      if (location.state?.journeyId) {
+        const journey = await journeyService.getJourneyById(location.state.journeyId);
+        if (journey && journey.title) {
+          setJourneyName(journey.title);
+        }
+      }
+    };
+    fetchJourneyName();
+  }, [location.state?.journeyId]);
 
   // Load queue items and journey context from navigation state
   const hasInitialised = useRef(false);
@@ -215,28 +221,12 @@ const FittingRoomPage = () => {
     }
   }, [selectedSet, productMap]);
 
-  const mascotMessage = [...chatMessages].reverse().find(m => m.role === 'ai')?.content
-    || 'Ready to refine your fit?';
-
-  const handleRefineSubmit = () => {
-    if (!refineText.trim() || isRefining) return;
-    setShowRefineInput(false);
-    setIsRefining(true);
-    refineLookbook(refineText.trim());
-    setRefineText('');
-  };
-
-  const handleToggleRefine = () => {
-    setShowRefineInput(prev => !prev);
-    setRefineText('');
-  };
-
-  const handleRefineKeyDown = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      handleRefineSubmit();
+  const mascotMessage = useMemo(() => {
+    if (selectedSet?.description) {
+      return selectedSet.description;
     }
-  };
+    return 'Select an outfit from the Try-On Queue';
+  }, [selectedSet]);
 
   const handleAddToCart = (product) => {
     setCartItems(prev => {
@@ -326,10 +316,7 @@ const FittingRoomPage = () => {
   const titleStyle = {
     fontSize: '28px',
     fontWeight: '700',
-    background: 'linear-gradient(135deg, #7B3FA0, #4A1D6A)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
+    color: '#1a202c',
     marginBottom: '4px',
     textAlign: 'left',
   };
@@ -360,14 +347,7 @@ const FittingRoomPage = () => {
   const setTitleStyle = {
     fontSize: '18px',
     fontWeight: '700',
-    color: '#2d1a3a',
-    margin: 0,
-  };
-
-  const setDescStyle = {
-    fontSize: '13px',
-    color: '#6b5b7a',
-    lineHeight: '1.6',
+    color: '#793DB0',
     margin: 0,
   };
 
@@ -404,6 +384,31 @@ const FittingRoomPage = () => {
     justifyContent: 'center',
     color: '#4A5568',
   };
+
+  const itemsHeaderStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  };
+
+  const itemsLabelStyle = {
+    fontSize: '12px',
+    fontWeight: '700',
+    color: '#6b5b7a',
+  };
+
+  const topAddAllButtonStyle = (hasItems) => ({
+    padding: '8px 16px',
+    borderRadius: '999px',
+    border: 'none',
+    background: hasItems ? 'linear-gradient(135deg, #7B3FA0 0%, #9F6AD6 100%)' : '#E2E8F0',
+    color: hasItems ? '#fff' : '#A0AEC0',
+    fontWeight: '700',
+    fontSize: '12px',
+    cursor: hasItems ? 'pointer' : 'not-allowed',
+    transition: 'all 0.2s ease',
+  });
 
   const itemsStripStyle = {
     display: 'flex',
@@ -461,64 +466,6 @@ const FittingRoomPage = () => {
     opacity: isHovered ? 1 : 0,
   });
 
-  const addAllButtonStyle = {
-    marginTop: '10px',
-    padding: '8px 16px',
-    borderRadius: '999px',
-    border: 'none',
-    background: 'linear-gradient(135deg, #7B3FA0 0%, #9F6AD6 100%)',
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: '12px',
-    cursor: 'pointer',
-  };
-
-  const chatInputStyle = {
-    flex: '1',
-    padding: '0 20px',
-    borderRadius: '24px',
-    border: `1px solid ${designTokens.border}`,
-    fontSize: '14px',
-    outline: 'none',
-    height: '44px',
-    boxSizing: 'border-box',
-    fontFamily: designTokens.fontFamily,
-  };
-
-  const sendButtonStyle = {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: '#793DB0',
-    color: 'white',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.2s',
-  };
-
-  const refineTextStyle = {
-    fontSize: '14px',
-    color: '#4A5568',
-    margin: 0,
-  };
-
-  const refineButtonStyle = {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    border: '2px solid transparent',
-    background: 'white',
-    backgroundClip: 'padding-box',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.2s ease',
-    position: 'relative',
-  };
 
   const bottomMascotAreaStyle = {
     display: 'flex',
@@ -581,7 +528,7 @@ const FittingRoomPage = () => {
         {/* Center column: Lookbook display */}
         <div style={centerColumnStyle}>
           <div>
-            <h1 style={titleStyle}>Fitting Room</h1>
+            <h1 style={titleStyle}>{journeyName}</h1>
             <ThinkingDropdown text={thinkingText} isActive={isGenerating || isThinking} startTime={thinkingStartTime} />
           </div>
 
@@ -595,8 +542,7 @@ const FittingRoomPage = () => {
             <>
               <div style={setCardStyle}>
                 <div>
-                  <h2 style={setTitleStyle}>{selectedSet?.title || 'Your Lookbook Set'}</h2>
-                  {selectedSet?.description && <p style={setDescStyle}>{selectedSet.description}</p>}
+                  <h2 style={setTitleStyle}>{selectedSet?.title || 'Your Try-On Queue'}</h2>
                 </div>
 
                 <div style={imageContainerStyle}>
@@ -633,8 +579,17 @@ const FittingRoomPage = () => {
 
                 {resolvedProducts.length > 0 && (
                   <div>
-                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#6b5b7a', marginBottom: '8px' }}>
-                      Items in this set
+                    <div style={itemsHeaderStyle}>
+                      <div style={itemsLabelStyle}>
+                        Items in this set
+                      </div>
+                      <button
+                        style={topAddAllButtonStyle(selectedItems.size > 0)}
+                        onClick={handleAddSelectedToCart}
+                        disabled={selectedItems.size === 0}
+                      >
+                        {selectedItems.size > 0 ? `Add ${selectedItems.size} to Cart` : 'Add to Cart'}
+                      </button>
                     </div>
                     <div style={itemsStripStyle}>
                       {resolvedProducts.map((product) => {
@@ -695,115 +650,29 @@ const FittingRoomPage = () => {
                         );
                       })}
                     </div>
-                    {selectedItems.size > 0 && (
-                      <button style={addAllButtonStyle} onClick={handleAddSelectedToCart}>
-                        Add {selectedItems.size} items to Cart
-                      </button>
-                    )}
                   </div>
                 )}
               </div>
 
               <div style={bottomMascotAreaStyle}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flex: 1, minWidth: 0 }}>
-                  <Mascot variant="avatar" size={60} />
+                  <Mascot variant="avatar" size={70} />
                   <div style={{
                     background: 'white',
                     border: '2px solid #F5A5B8',
                     borderRadius: '16px 16px 16px 4px',
-                    padding: '12px 16px',
+                    padding: '18px 24px',
                     flex: 1,
                     maxWidth: '100%',
-                    fontSize: '14px',
+                    fontSize: '16px',
                     fontWeight: '500',
                     color: '#1a202c',
                     boxShadow: '0 4px 12px rgba(245, 165, 184, 0.25)',
-                    lineHeight: '1.5',
+                    lineHeight: '1.6',
                   }}>
                     {mascotMessage}
                   </div>
                 </div>
-
-                {!isGenerating && !isRefining && (
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      justifyContent: 'flex-end',
-                      marginTop: 'auto',
-                      height: '44px',
-                      fontFamily: designTokens.fontFamily,
-                    }}>
-                    {showRefineInput && (
-                      <input
-                        type="text"
-                        value={refineText}
-                        onChange={(e) => setRefineText(e.target.value)}
-                        onKeyDown={handleRefineKeyDown}
-                        placeholder="Tell me what you'd like..."
-                        style={chatInputStyle}
-                        autoFocus
-                      />
-                    )}
-
-                    {!showRefineInput && (
-                      <p style={{ ...refineTextStyle, cursor: 'pointer' }} onClick={handleToggleRefine}>
-                        Not quite right? Refine your search
-                      </p>
-                    )}
-
-                    {showRefineInput && (
-                      <button
-                        onClick={handleRefineSubmit}
-                        style={sendButtonStyle}
-                        disabled={!refineText.trim() || isRefining}
-                        aria-label="Send refine request"
-                      >
-                        <ArrowRight size={20} />
-                      </button>
-                    )}
-
-                    <div
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                        padding: '2px',
-                        flexShrink: 0,
-                        cursor: 'pointer',
-                      }}
-                      onClick={handleToggleRefine}
-                    >
-                      <button
-                        style={{
-                          ...refineButtonStyle,
-                          width: '100%',
-                          height: '100%',
-                          background: 'white',
-                          border: 'none',
-                        }}
-                        aria-label={showRefineInput ? 'Close refine' : 'Refine fit'}
-                        onMouseEnter={(event) => { event.currentTarget.style.background = '#F7FAFC'; }}
-                        onMouseLeave={(event) => { event.currentTarget.style.background = 'white'; }}
-                      >
-                        {showRefineInput ? (
-                          <X size={18} color="#793DB0" />
-                        ) : (
-                          <MessageCircle
-                            size={20}
-                            style={{
-                              background: 'linear-gradient(135deg, #793DB0 0%, #9F6AD6 100%)',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text',
-                            }}
-                          />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </>
           )}

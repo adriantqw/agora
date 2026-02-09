@@ -21,6 +21,25 @@ def get_journeys(
     journeys = journey_service.get_journeys_by_consumer(db, str(current_consumer.id))
     return journeys
 
+@router.get("/{journey_id}", response_model=JourneyResponse)
+def get_journey(
+    journey_id: str,
+    current_consumer: Consumer = Depends(get_current_consumer),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a journey by ID for current authenticated consumer.
+    """
+    journey = journey_service.get_journey_by_id(db, journey_id)
+
+    if not journey:
+        raise HTTPException(status_code=404, detail="Journey not found")
+
+    if str(journey.consumer_id) != str(current_consumer.id):
+        raise HTTPException(status_code=403, detail="Not authorized to access this journey")
+
+    return journey
+
 @router.delete("/{journey_id}")
 def delete_journey(
     journey_id: str,
@@ -31,12 +50,12 @@ def delete_journey(
     Delete a journey (and all associated outfits) for current consumer.
     """
     journey = journey_service.get_journey_by_id(db, journey_id)
-    
+
     if not journey:
         raise HTTPException(status_code=404, detail="Journey not found")
-    
+
     if str(journey.consumer_id) != str(current_consumer.id):
         raise HTTPException(status_code=403, detail="Not authorized to delete this journey")
-    
+
     journey_service.delete_journey(db, journey_id)
     return {"success": True, "message": "Journey deleted successfully"}
