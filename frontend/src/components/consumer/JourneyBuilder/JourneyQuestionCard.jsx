@@ -471,6 +471,61 @@ function DualRangeSlider({ question, answer, onAnswer, readOnly }) {
   );
 }
 
+/* ── Scale Rating Slider component ── */
+function ScaleRatingSlider({ question, answer, onAnswer, readOnly }) {
+  const min = question.min ?? 1;
+  const max = question.max ?? 5;
+  const step = question.step ?? 1;
+  const currentValue = answer?.value ?? Math.ceil((min + max) / 2);
+
+  const handleChange = (e) => {
+    if (readOnly) return;
+    onAnswer({
+      questionId: question.id,
+      value: Number(e.target.value),
+      timestamp: Date.now(),
+    });
+  };
+
+  return (
+    <div style={{ width: '100%', padding: '4px 0' }}>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={currentValue}
+        onChange={handleChange}
+        disabled={readOnly}
+        style={{ width: '100%', accentColor: 'var(--consumer-purple)' }}
+      />
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: '6px',
+      }}>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+          {question.minLabel || min}
+        </span>
+        <span style={{
+          fontSize: '13px',
+          fontWeight: '700',
+          color: 'var(--consumer-purple)',
+          background: 'rgba(139, 92, 246, 0.1)',
+          padding: '2px 12px',
+          borderRadius: '12px',
+        }}>
+          {currentValue}/{max}
+        </span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' }}>
+          {question.maxLabel || max}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* ── Unified chip-row for every question type ── */
 function ChipRow({ question, answer, onAnswer, readOnly }) {
   const selected = getSelectedOptions(question, answer);
@@ -489,10 +544,8 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
     }, [question.id, answer, selected]);
   }
 
-  /* --- scale-rating: now uses dual-range slider --- */
+  /* --- scale-rating: single value slider --- */
   if (question.type === 'scale-rating') {
-    // scale-rating now uses the same dual-range slider as dual-range type
-    // Both use { minValue, maxValue } answer format
     return (
       <div style={{
         padding: '10px 0',
@@ -503,20 +556,12 @@ function ChipRow({ question, answer, onAnswer, readOnly }) {
             {label}
           </span>
           <div style={{ flex: 1 }}>
-            <DualRangeSlider
+            <ScaleRatingSlider
               question={question}
               answer={answer}
               onAnswer={onAnswer}
               readOnly={readOnly}
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', padding: '0 100px' }}>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
-                {question.min ?? 0}
-              </span>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>
-                {question.max ?? 100}
-              </span>
-            </div>
           </div>
         </div>
       </div>

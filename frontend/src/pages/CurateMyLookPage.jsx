@@ -17,12 +17,8 @@ function isQuestionAnswered(question, answer) {
       return (Array.isArray(answer.selectedOptions) && answer.selectedOptions.length > 0) ||
         (typeof answer.value === 'string' && answer.value.trim() !== '');
     case 'scale-rating':
-      // scale-rating now uses minValue/maxValue like dual-range
-      return answer.minValue !== undefined &&
-        answer.maxValue !== undefined &&
-        answer.minValue !== null &&
-        answer.maxValue !== null &&
-        answer.minValue < answer.maxValue;
+      return answer.value !== undefined && answer.value !== null
+        && !isNaN(Number(answer.value)) && Number(answer.value) >= 0;
     case 'free-text':
       return typeof answer.value === 'string' && answer.value.length > 0;
     case 'single-choice':
@@ -59,9 +55,9 @@ function resolveAnswerLabel(question, answer) {
       return free || null;
     }
     case 'scale-rating': {
-      // scale-rating now uses minValue/maxValue like dual-range
-      if (answer.minValue === undefined || answer.maxValue === undefined) return null;
-      return `$${answer.minValue} - $${answer.maxValue}`;
+      if (answer.value === undefined || answer.value === null) return null;
+      const max = question.max ?? 5;
+      return `${answer.value}/${max}`;
     }
     case 'free-text': {
       const val = typeof answer.value === 'string' ? answer.value.trim() : '';
@@ -135,6 +131,8 @@ function transformQuestion(backendQuestion) {
     max: backendQuestion.maxValue,
     step: 1,
     minGap: backendQuestion.minValue !== undefined ? Math.max(1, (backendQuestion.maxValue - backendQuestion.minValue) / 20) : 50,
+    minLabel: backendQuestion.min_label || backendQuestion.minLabel,
+    maxLabel: backendQuestion.max_label || backendQuestion.maxLabel,
     multiSelect: backendQuestion.multiSelect,
   };
 }
@@ -579,6 +577,9 @@ export default function CurateMyLookPage() {
       // free-text stores answer in value field — send as freeText
       if (question?.type === 'free-text' && answer.value && !entry.freeText) {
         entry.freeText = answer.value;
+      }
+      if (question?.type === 'scale-rating' && answer.value !== undefined) {
+        entry.selectedOptions = [String(answer.value)];
       }
       backendAnswers[questionId] = entry;
     });

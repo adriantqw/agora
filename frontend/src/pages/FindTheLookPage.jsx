@@ -567,7 +567,7 @@ const FindTheLookPage = () => {
           {(isLoading || isRefining) ? renderLoadingState() : (
             <>
               {/* Look Carousel */}
-              <section style={{ overflow: 'hidden' }}>
+              <section style={{ overflow: 'hidden', height: '35vh'}}>
                 {looks.length > 0 && (
                   <LookCarousel
                     looks={looks}
