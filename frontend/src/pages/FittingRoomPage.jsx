@@ -25,6 +25,7 @@ const FittingRoomPage = () => {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fitDescription, setFitDescription] = useState('Your outfit looks amazing! This combination brings out your personal style perfectly.');
 
   // Load all products on mount
   useEffect(() => {
@@ -90,7 +91,13 @@ const FittingRoomPage = () => {
 
   const pageStyle = {
     minHeight: '100vh',
-    background: 'linear-gradient(180deg, #FDE8EF 0%, #E8D5F0 50%, #F0E6F6 100%)',
+    backgroundColor: '#fff9f5',
+    backgroundImage: `
+      radial-gradient(circle at 0% 50%, #9dcaff 0%, transparent 60%),
+      radial-gradient(circle at 50% 50%, #ffb6e6 0%, transparent 65%),
+      radial-gradient(circle at 100% 0%, #ffecd9 0%, transparent 60%)
+    `,
+    backgroundAttachment: 'fixed',
     display: 'flex',
     flexDirection: 'column',
   };
@@ -123,23 +130,14 @@ const FittingRoomPage = () => {
     textAlign: 'center',
   };
 
-  const refineSearchStyle = {
-    fontSize: '14px',
-    color: '#7B3FA0',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-    background: 'none',
-    border: 'none',
-    fontWeight: '500',
-    marginTop: '8px',
-  };
+
 
   const mascotAreaStyle = {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    width: '100%',
     marginTop: 'auto',
-    paddingTop: '12px',
   };
 
   const mediaQueryStyle = `

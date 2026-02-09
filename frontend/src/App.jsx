@@ -20,6 +20,7 @@ import RecommendationPage from './pages/RecommendationPage'
 import StyleProfilePage from './pages/StyleProfilePage'
 import CurateMyLookPage from './pages/CurateMyLookPage'
 import FindTheLookPage from './pages/FindTheLookPage'
+import FindTheLookPageV2 from './pages/FindTheLookPageV2'
 import MerchantHomePage from './pages/MerchantHomePage'
 import LoginPage from './pages/MerchantLoginPage'
 import DashboardPage from './pages/MerchantDashboardPage'
@@ -59,7 +60,7 @@ function AppRoutes() {
       <Route path="/curate-my-fit" element={<CurateMyLookPage />} />
       <Route path="/browse" element={<BrowsePage />} />
       <Route path="/browse/:category" element={<BrowsePage />} />
-      <Route path="/find-the-look" element={<FindTheLookPage />} />
+      <Route path="/find-the-look" element={<FindTheLookPageV2 />} />
       
       <Route 
         path="/login" 

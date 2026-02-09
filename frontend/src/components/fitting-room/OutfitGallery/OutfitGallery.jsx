@@ -3,7 +3,8 @@ import { X, Shirt, Loader } from 'lucide-react';
 
 const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGenerating = false, thinkingText = '' }) => {
   const containerStyle = {
-    background: 'linear-gradient(180deg, #E8B4CB 0%, #C9A0DC 100%)',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid var(--border-color)',
     borderRadius: '16px',
     padding: '24px 16px',
     display: 'flex',
@@ -24,7 +25,7 @@ const OutfitGallery = ({ items = [], onRemoveItem, fittingSets = [], isGeneratin
     fontSize: '16px',
     fontWeight: '700',
     color: '#7B3FA0',
-    textAlign: 'center',
+    textAlign: 'left',
     margin: 0,
   };
 

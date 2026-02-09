@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingCart as ShoppingCartIcon } from 'lucide-react';
 
 const ShoppingCart = ({ items = [], onCheckout }) => {
   const total = items.reduce((sum, item) => sum + item.price, 0);
@@ -129,7 +129,7 @@ const ShoppingCart = ({ items = [], onCheckout }) => {
   return (
     <div style={containerStyle}>
       <div style={titleStyle}>
-        <ShoppingBag size={20} color="#7B3FA0" />
+        <ShoppingCartIcon size={20} color="#7B3FA0" />
         Shopping Cart
       </div>
 
