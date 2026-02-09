@@ -419,7 +419,7 @@ const ConsumerSettingsPage = () => {
                       transition: 'all 0.2s'
                     }}
                   >
-                    Aura-chan
+                    Aura
                   </button>
                 </div>
 
@@ -689,8 +689,8 @@ const ConsumerSettingsPage = () => {
                           <Sparkles size={24} />
                         </div>
                         <div>
-                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Aura-chan's Personality</h3>
-                          <p style={{ fontSize: '14px', color: colors.text.secondary, marginTop: '4px' }}>Choose how Aura-chan interacts with you. This affects her tone and style recommendations.</p>
+                          <h3 style={{ fontSize: '16px', fontWeight: '700', color: colors.text.primary }}>Aura's Personality</h3>
+                          <p style={{ fontSize: '14px', color: colors.text.secondary, marginTop: '4px' }}>Choose how Aura interacts with you. This affects her tone and style recommendations.</p>
                         </div>
                       </div>
                     </div>
